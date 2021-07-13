@@ -1767,141 +1767,166 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 			netconn_delete( pxNetCon );
 			netbuf_delete( pxRxBuffer );
 			pxNetCon=NULL;
+			pxNetCon=NULL;
 			vTaskDelay(300);
 			vParTestSetLED(2, pdFALSE);
 			return;
 		}
 	}
-	if( pxRxBuffer == NULL ) {
-		netconn_close( pxNetCon );
-		netconn_delete( pxNetCon );
-		return;
-	}
-	netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
-
-	*(pcRxString+pxRxBuffer->ptr->len) = '\0';
 	
-	
-	#ifdef WEBSOCKET_VERSION
-	
-	if(( NULL != pcRxString               ) && ( NULL != strstr( pcRxString,(const char*) "favicon" ) )   )  // 단어를 포함하면.
+	if( pxRxBuffer != NULL )
+		netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
+	if( pxRxBuffer != NULL )
 	{
-		//LWIP_DEBUGF_UDP(WEB_DEBUG, ("\n favicon.ico !! \n"));
-		webHTML_netconn_write(pxNetCon,"HTTP/1.1 404 Not Found");
-		webHTML_netconn_write(pxNetCon,"Content-Type: 'image/ico'");
-		webHTML_netconn_write(pxNetCon,"\r\n");
-		webHTML_netconn_write(pxNetCon,"<!DOCTYPE HTML><head>");
-		webHTML_netconn_write(pxNetCon,"<html>\r\n");
-		webHTML_netconn_write(pxNetCon,"<body>\r\n");
-		webHTML_netconn_write(pxNetCon,"<head/>\r\n");
-		webHTML_netconn_write(pxNetCon,"</head/>\r\n");
-		webHTML_netconn_write(pxNetCon,"</body>\r\n");
-		webHTML_netconn_write(pxNetCon,"</html>\r\n");
-	}
-	else if(( NULL != pcRxString ) && ( NULL != strstr( pcRxString,(const char*) "websocket" ) )  && ( !strncmp( pcRxString, "GET", 3 ) )  )  // 단어를 포함하면.
-	{
-		vParTestSetLED(2, pdTRUE);
-		if( webSocket_proc(pxNetCon, pcRxString) != 0){  // -100
-			LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nForce return for error!\n") );
-			pxNetCon = NULL;
-		}
-		vParTestSetLED(2, pdFALSE);
-	}
-	else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /SETUP_EMAIL.html") )    ) //이제 GET으로 데이타를 확인한다.
-	{
-		if(strstr(pcRxString,(const char*)"reboot") != NULL) while(1) ;
-
-		char *decode_pcRxString =  urlDecode(pcRxString);
-		html_SETUP_EMAIL(pxNetCon,decode_pcRxString);
-		free(decode_pcRxString);
-	}
-	else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /CHANGE_PASSWD.html") )    )
-	{
-		data_ethernet_t ethernet_t;
-
-		flash_read__ethernetInfo(&ethernet_t);   // 기존의 값을 읽는다.
-
-		webHTML_netconn_write(pxNetCon,webHTTP_OK);
-		webHTML_netconn_write(pxNetCon,webHTML_passwd_script);
-		webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
-		webHTML_netconn_write(pxNetCon,webHTML_HEAD_END);
-		webHTML_netconn_write(pxNetCon,webHTML_CSS);
-		webHTML_netconn_write(pxNetCon,webHTML_menu);
-
-
-		sprintf( cDynamicPage,"<script>\
-		var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+		*(pcRxString+pxRxBuffer->ptr->len) = '\0';
 		
-		sprintf( cDynamicPage,"var agentIpAddress='%d.%d.%d.%d';",ethernet_t.Ethernet_Conf_IpAddr0,ethernet_t.Ethernet_Conf_IpAddr1,ethernet_t.Ethernet_Conf_IpAddr2,ethernet_t.Ethernet_Conf_IpAddr3);
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-
-		sprintf( cDynamicPage,"\
-		if(idAns==null){\
-			do{\
-				var idAns = prompt('사용자 아이디를 입력하여 주십시요');\
-			}while(idAns != userId);\
-			do{\
-				var passAns = prompt('패스워드를 입력하여 주십시요');\
-			}while(passAns != passwd );\
-		};\
-		</script>");
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-		webHTML_netconn_write(pxNetCon,webHTML_PASSWD_content );
-
-		webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
-	}
-	else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /SETUP_UPS.html") )    ) //이제 GET으로 데이타를 확인한다.
-	{
-		if(strstr(pcRxString,(const char*)"reboot") != NULL) while(1) ;
-
-		portCHAR commandType[30];
-		portCHAR param[30];
-		memset(commandType,0x00,sizeof(commandType));
-		memset(param,0x00,sizeof(param));
+		#ifdef SIMPLEWEB_VERSION
+		
+		if(( NULL != pcRxString               ) && ( NULL != strstr( pcRxString,(const char*) "favicon" ) )   )  // 단어를 포함하면.
 		{
-			if(strstr(pcRxString,(const char*)"?") == NULL || strstr(pcRxString,(const char*)"=") == NULL )
-			{
-				LWIP_DEBUGF_UDP(WEB_DEBUG, ("html_SETUP_UPS()\n") );
-				html_SETUP_UPS(pxNetCon,"","");
+		
+			webHTML_netconn_write(pxNetCon,"HTTP/1.1 404 Not Found");
+			webHTML_netconn_write(pxNetCon,"Content-Type: 'image/ico'");
+			webHTML_netconn_write(pxNetCon,"\r\n");
+			webHTML_netconn_write(pxNetCon,"<!DOCTYPE HTML><head>");
+			webHTML_netconn_write(pxNetCon,"<html>\r\n");
+			webHTML_netconn_write(pxNetCon,"<body>\r\n");
+			webHTML_netconn_write(pxNetCon,"<head/>\r\n");
+			webHTML_netconn_write(pxNetCon,"</head/>\r\n");
+			webHTML_netconn_write(pxNetCon,"</body>\r\n");
+			webHTML_netconn_write(pxNetCon,"</html>\r\n");
+			
+		}
+		else {
+			html_default(pxNetCon,false);
+			//LWIP_DEBUGF_UDP(WEB_DEBUG, ("Web End!! \n"));
+		}
+		#endif
+		
+		
+		
+		#ifdef WEBSOCKET_VERSION
+		
+		if(( NULL != pcRxString               ) && ( NULL != strstr( pcRxString,(const char*) "favicon" ) )   )  // 단어를 포함하면.
+		{
+			//LWIP_DEBUGF_UDP(WEB_DEBUG, ("\n favicon.ico !! \n"));
+			webHTML_netconn_write(pxNetCon,"HTTP/1.1 404 Not Found");
+			webHTML_netconn_write(pxNetCon,"Content-Type: 'image/ico'");
+			webHTML_netconn_write(pxNetCon,"\r\n");
+			webHTML_netconn_write(pxNetCon,"<!DOCTYPE HTML><head>");
+			webHTML_netconn_write(pxNetCon,"<html>\r\n");
+			webHTML_netconn_write(pxNetCon,"<body>\r\n");
+			webHTML_netconn_write(pxNetCon,"<head/>\r\n");
+			webHTML_netconn_write(pxNetCon,"</head/>\r\n");
+			webHTML_netconn_write(pxNetCon,"</body>\r\n");
+			webHTML_netconn_write(pxNetCon,"</html>\r\n");
+		}
+		else if(( NULL != pcRxString ) && ( NULL != strstr( pcRxString,(const char*) "websocket" ) )  && ( !strncmp( pcRxString, "GET", 3 ) )  )  // 단어를 포함하면.
+		{
+			vParTestSetLED(2, pdTRUE);
+			if( webSocket_proc(pxNetCon, pcRxString) != 0){  // -100
+				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nForce return for error!\n") );
+				pxNetCon = NULL;
 			}
-			else
+			vParTestSetLED(2, pdFALSE);
+		}
+		else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /SETUP_EMAIL.html") )    ) //이제 GET으로 데이타를 확인한다.
+		{
+			if(strstr(pcRxString,(const char*)"reboot") != NULL) while(1) ;
+
+			char *decode_pcRxString =  urlDecode(pcRxString);
+			html_SETUP_EMAIL(pxNetCon,decode_pcRxString);
+			free(decode_pcRxString);
+		}
+		else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /CHANGE_PASSWD.html") )    ) 
+		{
+			data_ethernet_t ethernet_t;
+
+			flash_read__ethernetInfo(&ethernet_t);   // 기존의 값을 읽는다.
+
+			webHTML_netconn_write(pxNetCon,webHTTP_OK);
+			webHTML_netconn_write(pxNetCon,webHTML_passwd_script);
+			webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
+			webHTML_netconn_write(pxNetCon,webHTML_HEAD_END);
+			webHTML_netconn_write(pxNetCon,webHTML_CSS);
+			webHTML_netconn_write(pxNetCon,webHTML_menu);
+
+
+			sprintf( cDynamicPage,"<script>\
+			var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
+			netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+			
+			sprintf( cDynamicPage,"var agentIpAddress='%d.%d.%d.%d';",ethernet_t.Ethernet_Conf_IpAddr0,ethernet_t.Ethernet_Conf_IpAddr1,ethernet_t.Ethernet_Conf_IpAddr2,ethernet_t.Ethernet_Conf_IpAddr3);
+			netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+			sprintf( cDynamicPage,"\
+			if(idAns==null){\
+				do{\
+					var idAns = prompt('사용자 아이디를 입력하여 주십시요');\
+				}while(idAns != userId);\
+				do{\
+					var passAns = prompt('패스워드를 입력하여 주십시요');\
+				}while(passAns != passwd );\
+			};\
+			</script>");
+			netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+			webHTML_netconn_write(pxNetCon,webHTML_PASSWD_content );
+
+			webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
+		}
+		else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /SETUP_UPS.html") )    ) //이제 GET으로 데이타를 확인한다.
+		{
+			if(strstr(pcRxString,(const char*)"reboot") != NULL) while(1) ;
+
+			portCHAR commandType[30];
+			portCHAR param[30];
+			memset(commandType,0x00,sizeof(commandType));
+			memset(param,0x00,sizeof(param));
 			{
-				pcRxString = strstr(pcRxString,(const char*)"?");
-				for(int i=0;i<30;i++)
+				if(strstr(pcRxString,(const char*)"?") == NULL || strstr(pcRxString,(const char*)"=") == NULL )
 				{
-					if(pcRxString[i+1] == '=') break;
-					commandType[i] = pcRxString[i+1];
+					LWIP_DEBUGF_UDP(WEB_DEBUG, ("html_SETUP_UPS()\n") );
+					html_SETUP_UPS(pxNetCon,"","");
 				}
-				pcRxString = strstr(pcRxString,(const char*)"=");
-				for(int i=0;i<30;i++)
+				else
 				{
-					if(pcRxString[i+1] == NULL || pcRxString[i+1] == 0x20 || pcRxString[i+1] == '\r' || pcRxString[i+1] == '\n'){
-						param[i] = 0x00;
-						break;
+					pcRxString = strstr(pcRxString,(const char*)"?");
+					for(int i=0;i<30;i++)
+					{
+						if(pcRxString[i+1] == '=') break;
+						commandType[i] = pcRxString[i+1];
 					}
-					param[i] = pcRxString[i+1];
+					pcRxString = strstr(pcRxString,(const char*)"=");
+					for(int i=0;i<30;i++)
+					{
+						if(pcRxString[i+1] == NULL || pcRxString[i+1] == 0x20 || pcRxString[i+1] == '\r' || pcRxString[i+1] == '\n'){
+							param[i] = 0x00;
+							break;
+						}
+						param[i] = pcRxString[i+1];
+					}
+					LWIP_DEBUGF_UDP(WEB_DEBUG, ("html_SETUP_UPS()\n %s,%s",commandType,param) );
+					html_SETUP_UPS(pxNetCon,commandType,param);
 				}
-				LWIP_DEBUGF_UDP(WEB_DEBUG, ("html_SETUP_UPS()\n %s,%s",commandType,param) );
-				html_SETUP_UPS(pxNetCon,commandType,param);
 			}
 		}
-	}
-	else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString,(const char*) "GET /SETUP_UPSBASIC.html" ) )    )
-	{
-		html_SETUP_UPSBASIC(pxNetCon,"","");
-	}
-	else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString, (const char*)"GET /UPS_LOGVIEW.html" ) )    ) //이제 GET으로 데이타를 확인한다.
-	{
-		html_default(pxNetCon,true);
-	}
-	else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString,(const char*) "GET /index.html" ) )    ) //이제 GET으로 데이타를 확인한다.
-	{
-		//LWIP_DEBUGF_UDP(WEB_DEBUG, ("html_default()\n") );
+		else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString,(const char*) "GET /SETUP_UPSBASIC.html" ) )    )
+		{
+			html_SETUP_UPSBASIC(pxNetCon,"","");
+		}
+		else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString, (const char*)"GET /UPS_LOGVIEW.html" ) )    ) //이제 GET으로 데이타를 확인한다.
+		{
+			html_default(pxNetCon,true);
+		}
+		else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString,(const char*) "GET /index.html" ) )    ) //이제 GET으로 데이타를 확인한다.
+		{
+			//LWIP_DEBUGF_UDP(WEB_DEBUG, ("html_default()\n") );
+			html_default(pxNetCon,false);
+		}
+		else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString,(const char*) "GET" ) )    )
 		html_default(pxNetCon,false);
+		#endif
 	}
-	else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString,(const char*) "GET" ) )    )
-	html_default(pxNetCon,false);
 	{
 		netconn_close( pxNetCon );
 		netconn_delete( pxNetCon );
