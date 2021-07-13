@@ -130,11 +130,12 @@ int webFunction(int port)
 			if( pxHTTPListener->last_err != ERR_TIMEOUT  && pxHTTPListener->last_err != ERR_OK)
 			{
 				vTaskDelay( webSHORT_DELAY );
+				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accept error %d",pxHTTPListener->last_err ) );
 				break;
 			}
 			//else 
 			//{    //ERR_CONN -13  not connected
-				//LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accept delay %d",pxHTTPListener->last_err ) );
+			
 		//		vTaskDelay( webSHORT_DELAY );
 		//		vTaskDelay( webSHORT_DELAY );
 		//	    break;	
@@ -148,11 +149,13 @@ int webFunction(int port)
 			{
 				isNowWebServiceRunning=true;
 				portENTER_CRITICAL();
+				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accepted! ") );
 				prvweb_ParseHTMLRequest(pxNewConnection);
 				portEXIT_CRITICAL();
 			}
 		}
 	}
+	LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn Closed..! ") );
 	netconn_close(pxNewConnection );
 	netconn_close(pxHTTPListener);
 	netconn_delete(pxHTTPListener);
@@ -1826,7 +1829,12 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 			vParTestSetLED(2, pdTRUE);
 			if( webSocket_proc(pxNetCon, pcRxString) != 0){  // -100
 				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nForce return for error!\n") );
-				pxNetCon = NULL;
+				netconn_close( pxNetCon );
+				netconn_delete( pxNetCon );
+				netbuf_delete( pxRxBuffer );
+				pxNetCon=NULL;
+				pxNetCon=NULL;
+				vTaskDelay(300);
 			}
 			vParTestSetLED(2, pdFALSE);
 		}
@@ -1927,10 +1935,8 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 		html_default(pxNetCon,false);
 		#endif
 	}
-	{
-		netconn_close( pxNetCon );
-		netconn_delete( pxNetCon );
-	}
+	netconn_close( pxNetCon );
+	netconn_delete( pxNetCon );
 	netbuf_delete( pxRxBuffer );
 	//LWIP_DEBUGF_UDP(WEB_DEBUG, ("Web closed!\n") );
 }
