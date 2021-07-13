@@ -1,0 +1,79 @@
+-- extracted from rfc1628.txt
+-- at Mon Nov 15 17:11:52 1999
+
+   IFTECH_UPS-MIB DEFINITIONS ::= BEGIN
+
+   IMPORTS
+       MODULE-IDENTITY, OBJECT-TYPE, NOTIFICATION-TYPE,
+       OBJECT-IDENTITY, Counter32, Gauge32, Integer32
+           FROM SNMPv2-SMI
+       DisplayString, TimeStamp, TimeInterval, TestAndIncr,
+         AutonomousType
+           FROM SNMPv2-TC
+       MODULE-COMPLIANCE, OBJECT-GROUP
+           FROM SNMPv2-CONF;
+
+
+   upsMIB MODULE-IDENTITY
+       LAST-UPDATED "9402230000Z"
+       ORGANIZATION "IETF UPS MIB Working Group"
+       CONTACT-INFO
+              "        Jeffrey D. Case
+
+                Postal: SNMP Research, Incorporated
+                        3001 Kimberlin Heights Road
+                        Knoxville, TN  37920
+                        US
+
+                   Tel: +1 615 573 1434
+                   Fax: +1 615 573 9197
+
+                E-mail: case@snmp.com"
+       DESCRIPTION
+               "The MIB module to describe Uninterruptible Power
+               Supplies."
+       ::= { mib-2 33 }
+
+   PositiveInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-zero and non-negative value."
+       SYNTAX       INTEGER (1..2147483647)
+
+   NonNegativeInteger ::= TEXTUAL-CONVENTION
+       DISPLAY-HINT "d"
+       STATUS       current
+       DESCRIPTION
+               "This data type is a non-negative value."
+       SYNTAX       INTEGER (0..2147483647)
+
+   upsObjects            OBJECT IDENTIFIER ::= { IFTECH_upsMIB 1 }
+
+
+   --
+   -- The Device Identification group.
+   --      All objects in this group except for upsIdentName and
+   --      upsIdentAttachedDevices are set at device initialization
+   --      and remain static.
+   --
+
+   upsStatus              OBJECT IDENTIFIER ::= { upsObjects 1 }
+
+   year OBJECT-TYPE
+       SYNTAX     Integer32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "UPS의 제조년도 혹은 설치년도"
+       ::= { upsStatus 1 }
+
+   month OBJECT-TYPE
+       SYNTAX     Integer32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+               "UPS의 제조월 혹은 설치월"
+       ::= { upsStatus 2 }
+
+   END

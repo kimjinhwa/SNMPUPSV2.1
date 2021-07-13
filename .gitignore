@@ -1,0 +1,14 @@
+<<<<<<< HEAD
+#.vs/SnmpForUPS_V2.0.1/v14/.atsuo  
+.vs/
+Debug/
+Release/
+*.*~
+*.bak
+=======
+*~
+Debug/
+Release/
+.vs/
+*.bak
+>>>>>>> snmpDebug
