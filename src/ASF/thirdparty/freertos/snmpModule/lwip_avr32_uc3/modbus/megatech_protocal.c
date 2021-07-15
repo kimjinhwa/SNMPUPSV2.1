@@ -189,9 +189,10 @@ Bool parseQ1_megatec(char *str)
 		
 	str = strtokExt(str, ptr);  // e output current
 	if (ptr == NULL)return	false;
+	upsModeBusData.Output_R_Load=(int)atof(ptr);
 	upsModeBusData.Output_u_current_rms = 
-		(int)(ups_info.capacity/ups_info.out_voltage)* ((atof(ptr)/100));  //
-    upsModeBusData.Output_R_Load=(int)atof(ptr);
+		(int)(ups_info.capacity*1000/upsModeBusData.Output_Voltage)* (upsModeBusData.Output_R_Load/100.0);  //
+    
 	upsModeBusData.Inverter_U_curr_rms=upsModeBusData.Output_u_current_rms ; 
 		//upsModeBusData.Ups_Capacitor
 	//simulate
@@ -357,15 +358,15 @@ Bool parse_G2_megatec(char *str)
 // 1
 	argv[0] = strtok(str," ");
     if( argv[0]== NULL) return false;
-	ups_status_1= strToInt(argv[0]);  //소수점을 정수화 한다. // I/P voltage is 208.4V.
+	ups_status_1= strToInt(argv[0]);  
 // 2
 	argv[0] = strtok(NULL," ");
     if( argv[0]== NULL) return false;
-	ups_status_2= strToInt(argv[0]);  //소수점을 정수화 한다. // I/P voltage is 208.4V.
+	ups_status_2= strToInt(argv[0]); 
 // 3
 	argv[0] = strtok(NULL," ");
     if( argv[0]== NULL) return false;
-	ups_status_3= strToInt(argv[0]);  //소수점을 정수화 한다. // I/P voltage is 208.4V.
+	ups_status_3= strToInt(argv[0]);  
 
 	upsModeBusData.Inverter_State &= 0x00ff ;
 	upsModeBusData.Inverter_State |= (ups_status_1<<8);
@@ -474,16 +475,18 @@ Bool parseG3_megatec(char *str)
 		if( argv[0] == NULL) return false;
 		voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_r_volt_rms= voltage;
-
+		upsModeBusData.Inverter_u_volt_rms =upsModeBusData.Output_r_volt_rms;
 		*argv = strtok(NULL,"/");
 		if( argv[0] == NULL) return false;
 		voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_s_volt_rms= voltage;
+		upsModeBusData.Inverter_v_volt_rms =upsModeBusData.Output_s_volt_rms;
 
 		*argv = strtok(NULL,"/");
 		if( argv[0] == NULL) return false;
 		voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_t_volt_rms= voltage;
+		upsModeBusData.Inverter_w_volt_rms =upsModeBusData.Output_t_volt_rms;
 		
 	// 4 ------------------------------
 	str = strtokExt(str, ptr);  // RST Load Percentage
@@ -493,16 +496,19 @@ Bool parseG3_megatec(char *str)
 		if( argv[0] == NULL) return false;
 		voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_R_Load= voltage;
-
+		upsModeBusData.Output_u_current_rms = (upsModeBusData.Ups_Capacitor*1000/upsModeBusData.Output_r_volt_rms*(upsModeBusData.Output_R_Load/100.0));
+		
 		*argv = strtok(NULL,"/");
 		if( argv[0] == NULL) return false;
 		voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_S_Load= voltage;
+		upsModeBusData.Output_v_current_rms = (upsModeBusData.Ups_Capacitor*1000/upsModeBusData.Output_s_volt_rms*(upsModeBusData.Output_S_Load/100.0));
 
 		*argv = strtok(NULL,"/");
 		if( argv[0] == NULL) return false;
 		voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_T_Load= voltage;
+		upsModeBusData.Output_w_current_rms = (upsModeBusData.Ups_Capacitor*1000/upsModeBusData.Output_t_volt_rms*(upsModeBusData.Output_T_Load/100.0));
 	//------------------------------
 	return true;
 }
@@ -526,9 +532,9 @@ Bool parse_I_megatec(char *str)
 {
 		char temp[63];
 		memset(temp,0x00,63);
-		memcpy(ups_info.upsIdentManufacturer,temp,31) ;
-		memcpy(ups_info.upsIdentModel,temp,63) ;
-		memcpy(ups_info.upsIdentUPSSoftwareVersion,temp,11) ;
+		memset(ups_info.upsIdentManufacturer,0x00,31) ;
+		memset(ups_info.upsIdentModel,0x00,63) ;
+		memset(ups_info.upsIdentUPSSoftwareVersion,0x00,11) ;
 
 		if(strlen(str) < 35 ) return false;
         strncpy(temp, str, 15);

@@ -42,7 +42,7 @@
 #include "emailTask.h"
 #include "eventSMTP.h"
 #include "BasicWEB.h"
-
+#include "IndexHtml.h"
 #include "netdb.h"
 #include "dns.h"
 /*! The size of the buffer in which the dynamic WEB page is created. */
@@ -626,26 +626,14 @@ int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 	flash_read_ups_info(&ups_info);
 
 	KeyAndValue *keyvalue;
-	keyvalue = (KeyAndValue  *)mem_malloc(sizeof(KeyAndValue)*20);
+	keyvalue = (KeyAndValue  *)mem_malloc(sizeof(KeyAndValue)*16);// 15개르 사용하고 있다.
 	if(keyvalue == NULL){
 		mem_free(keyvalue);
 		LWIP_DEBUGF_UDP(WEB_DEBUG,("\r\n Memory Alloc Error!!!!!  "));
 		while(1);
 	}
-	memset(keyvalue,0x00,sizeof(KeyAndValue)*20);
+	memset(keyvalue,0x00,sizeof(KeyAndValue)*16);
 	
-	/*
-	char *pcrx ;
-	pcrx = mem_malloc(strlen(pcRxString));
-	memset(pcrx,0x00,strlen(pcRxString));
-	if(pcrx== NULL) {
-		mem_free(keyvalue);
-		LWIP_DEBUGF_UDP(WEB_DEBUG,("\n Memory Alloc Error!!!!!  "));
-		while(1);
-		return -1;
-	}
-	strcpy(pcrx,pcRxString);
-	*/	
 	//UPS제조년월일 때문에 13개에서 1개을 더늘려 14개로 해 준다.
 	//UPS업체명 때문에 14개에서 1개을 더늘려 15개로 해 준다.
 	//int keycount = cmd_parse(pcrx,keyvalue,15);
@@ -664,13 +652,32 @@ int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 	}
 
 	if( keycount < 2){
-		memset(send_buf,0x00,80);
+		//memset(send_buf,0x00,80);
+		ups_info.ups_type = ups_info.ups_type; 
+		ups_info.out_voltage=ups_info.out_voltage;
+		ups_info.ups_version=121;   // 121 -> 1.21
+		ups_info.charging_voltage=ups_info.charging_voltage;
+		uint8_t ayear,amonth,aday,aHour,aMinute ;
+		ups_info.bat_install_year=ups_info.bat_install_year;
+		ups_info.bat_install_month=ups_info.bat_install_month;
+		ups_info.bat_install_day = ups_info.bat_install_day ;
+		ups_info.log_write_period= ups_info.log_write_period;
+		ups_info.ups_test_period= ups_info.ups_test_period;
+		ups_info.ups_test_day= ups_info.ups_test_day;
+		ups_info.ups_test_hour = ups_info.ups_test_hour ;
+		ups_info.ups_test_minute = ups_info.ups_test_minute ;
+		ups_info.limit_load= ups_info.limit_load;
+		ups_info.limit_temp= ups_info.limit_temp;
+		ups_info.limit_capacity = ups_info.limit_capacity ;
+		ups_info.install_year= ups_info.install_year;
+		ups_info.install_month= ups_info.install_month;
+		ups_info.install_day= ups_info.install_day;
+		/* UPS의 제조회사를 등록하기 위하여 사용한다.  keyvalue[13]  : SBC UPS 제조년월일 */
 		setUpsInfoToweb(pxNetCon,keyvalue,keycount,send_buf,"SET_BASIC_A");
 	}
 	else
 	{
 		ups_info.ups_type =  atoi(keyvalue[1].value); // 31;   // 33, 31, 11, 50, 51, 52 , 80  SB0
-		
 		memset(ups_info.sysname, 0x00, sizeof(ups_info.sysname)) ;
 		memcpy(ups_info.sysname, keyvalue[2].value, strlen(keyvalue[2].value)) ;// keyvalue[2].value  : SB1 UPS 모델 IFU550
 		ups_info.out_voltage=atoi(keyvalue[3].value);//ups_info.company_code=00; 					//ups_info.capacity=30;					//ups_info.input_voltage=380;					// keyvalue[3].value  : SB2 UPS 정격전압   380
@@ -710,7 +717,8 @@ int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 		flash_write_ups_info(&ups_info);
 		setUpsInfoToweb(pxNetCon,keyvalue,keycount,send_buf,"SET_BASIC_R");
 		// System Rebooting
-		while(1) ;
+		//while(1) ;
+
 	}
 //	mem_free(pcrx);
 	mem_free(send_buf);
@@ -941,15 +949,18 @@ int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 	int errCount=0;
 	err=0;
 	pxNetCon->recv_timeout = 2000;
-	while(netconn_recv( pxNetCon, &pxRxBuffer)  != ERR_OK)
-	{
-		vTaskDelay( webSHORT_DELAY );
-		if( pxNetCon->last_err< 0){
+	do{
+		err = netconn_recv( pxNetCon, &pxRxBuffer) ;
+		if(err != ERR_OK){
+			vTaskDelay( webSHORT_DELAY );
+			//if( pxNetCon->last_err< 0){
 			netbuf_delete( pxRxBuffer );
 			LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\nnetconn last_err errrCount err:  %d %d %d",pxNetCon->last_err,errCount,err) );
 			return pxNetCon->last_err;
+			//}
 		}
-	}
+		else break;
+	}while( err != ERR_OK );
 	
 	if( pxRxBuffer != NULL )
 	{
@@ -1110,9 +1121,9 @@ void inline setUpsInfoToweb(struct netconn *pxNetCon, KeyAndValue *keyvalue,int 
 	memcpy(keyvalue[13].value,send_buf, strlen(send_buf) );   // 원래는 SBB가 되어야 하나 0번을 ID로 사용하기 때문에 하나가 밀려서 SBC가된다.
 	//  SBD keyvalue[14].value  : SB1 UPS 모델 IFU550
 	//strncpy(keyvalue[14].value, ups_info.upsIdentManufacturer,strlen(ups_info.upsIdentManufacturer));		 
-	sprintf(send_buf,"%s",ups_info.upsIdentManufacturer);
+	//sprintf(send_buf,"%s",ups_info.upsIdentManufacturer);
 	memcpy(keyvalue[14].value,send_buf, strlen(send_buf) );   
-	//memcpy(keyvalue[14].value, ups_info.upsIdentManufacturer,strlen(ups_info.upsIdentManufacturer));		 
+	memcpy(keyvalue[14].value, ups_info.upsIdentManufacturer,strlen(ups_info.upsIdentManufacturer));		 
 
 	memcpy(keyvalue[15].value,"0", strlen("0") );              // SBE
 	memset(send_buf,0x00,sizeof(send_buf));
@@ -1553,6 +1564,8 @@ void html_SETUP_UPS(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *pa
 void html_default(struct netconn *pxNetCon,Bool bLogview)
 {
 	//ups_info_t ups_info;
+	webHTML_netconn_write(pxNetCon,indexHtml);
+	return;
 	flash_read_ups_info(&ups_info);
 	netconn_write( pxNetCon, webHTTP_OK, (u16_t) strlen( webHTTP_OK ), NETCONN_COPY );
 	webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
@@ -1750,8 +1763,7 @@ void html_default(struct netconn *pxNetCon,Bool bLogview)
 
 
 }
-//#define		SIMPLEWEB_VERSION
-#define		WEBSOCKET_VERSION
+
 static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 {
 	struct netbuf *pxRxBuffer;
@@ -1778,37 +1790,12 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 	}
 	
 	if( pxRxBuffer != NULL )
-		netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
+	netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
 	if( pxRxBuffer != NULL )
 	{
 		*(pcRxString+pxRxBuffer->ptr->len) = '\0';
 		
-		#ifdef SIMPLEWEB_VERSION
 		
-		if(( NULL != pcRxString               ) && ( NULL != strstr( pcRxString,(const char*) "favicon" ) )   )  // 단어를 포함하면.
-		{
-		
-			webHTML_netconn_write(pxNetCon,"HTTP/1.1 404 Not Found");
-			webHTML_netconn_write(pxNetCon,"Content-Type: 'image/ico'");
-			webHTML_netconn_write(pxNetCon,"\r\n");
-			webHTML_netconn_write(pxNetCon,"<!DOCTYPE HTML><head>");
-			webHTML_netconn_write(pxNetCon,"<html>\r\n");
-			webHTML_netconn_write(pxNetCon,"<body>\r\n");
-			webHTML_netconn_write(pxNetCon,"<head/>\r\n");
-			webHTML_netconn_write(pxNetCon,"</head/>\r\n");
-			webHTML_netconn_write(pxNetCon,"</body>\r\n");
-			webHTML_netconn_write(pxNetCon,"</html>\r\n");
-			
-		}
-		else {
-			html_default(pxNetCon,false);
-			//LWIP_DEBUGF_UDP(WEB_DEBUG, ("Web End!! \n"));
-		}
-		#endif
-		
-		
-		
-		#ifdef WEBSOCKET_VERSION
 		
 		if(( NULL != pcRxString               ) && ( NULL != strstr( pcRxString,(const char*) "favicon" ) )   )  // 단어를 포함하면.
 		{
@@ -1829,12 +1816,6 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 			vParTestSetLED(2, pdTRUE);
 			if( webSocket_proc(pxNetCon, pcRxString) != 0){  // -100
 				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nForce return for error!\n") );
-				netconn_close( pxNetCon );
-				netconn_delete( pxNetCon );
-				netbuf_delete( pxRxBuffer );
-				pxNetCon=NULL;
-				pxNetCon=NULL;
-				vTaskDelay(300);
 			}
 			vParTestSetLED(2, pdFALSE);
 		}
@@ -1846,7 +1827,7 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 			html_SETUP_EMAIL(pxNetCon,decode_pcRxString);
 			free(decode_pcRxString);
 		}
-		else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /CHANGE_PASSWD.html") )    ) 
+		else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /CHANGE_PASSWD.html") )    )
 		{
 			data_ethernet_t ethernet_t;
 
@@ -1933,12 +1914,12 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 		}
 		else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString,(const char*) "GET" ) )    )
 		html_default(pxNetCon,false);
-		#endif
 	}
 	netconn_close( pxNetCon );
 	netconn_delete( pxNetCon );
 	netbuf_delete( pxRxBuffer );
-	//LWIP_DEBUGF_UDP(WEB_DEBUG, ("Web closed!\n") );
+	pxNetCon=NULL;
+	vTaskDelay(300);
 }
 #define TIME_SERVER_PORT	37
 Bool getTimeFromServerExt(int tServer,ip_addr_t server_ipaddr)

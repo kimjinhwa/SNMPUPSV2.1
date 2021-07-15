@@ -65,13 +65,13 @@ uint8_t getLogPoslast_log_position(nvram_log_pos_t *nvram_data) ;
 uint8_t flash_write_reLoadTime(uint8_t *reloadTime){
 	flashc_memset8((void *)&(nvram_reloadTime), *reloadTime, sizeof(uint8_t), true);
 	uint8_t reloadTime_[1];
-	memcpy( reloadTime_,(void *)&(nvram_reloadTime),  sizeof(nvram_reloadTime));
+	flashc_memcpy( reloadTime_,(void *)&(nvram_reloadTime),  sizeof(nvram_reloadTime),false);
 	return reloadTime_[0];
 }
 
 uint8_t flash_read_reLoadTime(){
 	uint8_t reloadTime_[1];
-	memcpy( reloadTime_,(void *)&(nvram_reloadTime),  sizeof(nvram_reloadTime));
+	flashc_memcpy( reloadTime_,(void *)&(nvram_reloadTime),  sizeof(nvram_reloadTime),false);
 	return reloadTime_[0];
 }
 
@@ -211,7 +211,8 @@ void flash_write_ups_info(ups_info_t *ups_info)
 }
 void flash_read_ups_info(ups_info_t *ups_info)
 {
-	memcpy( ups_info,(void *)&(nvram_ups_info),  sizeof(ups_info_t));
+	//memcpy( ups_info,(void *)&(nvram_ups_info),  sizeof(ups_info_t));
+	flashc_memcpy( ups_info,(void *)&(nvram_ups_info),  sizeof(ups_info_t),false);
 }
 
 void flash_write_smtp_info(smtp_info_t *smtp_info)
@@ -225,7 +226,7 @@ void flash_read_smtp_info(smtp_info_t *smtp_info)
 {
 	smtp_info_t *nv_smtp_info;
 	nv_smtp_info = &nvram_smtp_info ;
-	memcpy( smtp_info , &nvram_smtp_info,  sizeof(smtp_info_t));
+	flashc_memcpy( smtp_info , &nvram_smtp_info,  sizeof(smtp_info_t),false);
 
 }
 
@@ -241,7 +242,7 @@ void flash_read_email_list(int pos, nvram_send_event_mail_t *emailAddress)
 {
 	 nvram_send_event_mail_t *nvram_emailAddress ;
 	 nvram_emailAddress = &(nvram_send_event_mail[pos]);
-	 memcpy( emailAddress , nvram_emailAddress,  sizeof(nvram_send_event_mail_t));
+	 flashc_memcpy( emailAddress , nvram_emailAddress,  sizeof(nvram_send_event_mail_t),false);
 }
 
 void flash_write__ethernetInfo(data_ethernet_t *ethernet_t)
