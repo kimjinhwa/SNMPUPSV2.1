@@ -355,19 +355,21 @@ Bool parse_G2_megatec(char *str)
 	unsigned char ups_status_3=0;
 
 	strtoreplace(str);
-// 1
+// 1  status of rectifie    BIT(1) : 0 float charge 1 boot charge
 	argv[0] = strtok(str," ");
     if( argv[0]== NULL) return false;
 	ups_status_1= strToInt(argv[0]);  
-// 2
+// 2 status of UPS
 	argv[0] = strtok(NULL," ");
     if( argv[0]== NULL) return false;
 	ups_status_2= strToInt(argv[0]); 
-// 3
+// 3 The fault condition of inverter
 	argv[0] = strtok(NULL," ");
     if( argv[0]== NULL) return false;
 	ups_status_3= strToInt(argv[0]);  
 
+	//	Inverter_State Á¤Àü BIT(10) 
+	//	Inverter_State ºÎµ¿ ±Õµî BIT(9) 
 	upsModeBusData.Inverter_State &= 0x00ff ;
 	upsModeBusData.Inverter_State |= (ups_status_1<<8);
 	upsModeBusData.Converter_State = (ups_status_2<<8) + ups_status_3;
@@ -554,6 +556,83 @@ Bool parse_I_megatec(char *str)
 		return true;
 }
 
+bool upsInformationCommand_GF_megatec()
+{
+	isSerialLineUsed=true;	
+	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
+	int receivedCount = megatec_command_CR("GF\r",3,'#',500,buffer); 
+	
+	if(receivedCount > 0) 
+	{
+		parse_GF_megatec(buffer+1);
+	}
+	isSerialLineUsed=false;	
+	free(buffer);
+	if(receivedCount > 0) return true;
+	else return false;
+}
+
+Bool parse_GF_megatec(char *str)
+{
+	char argv[15];
+	float output_voltage=0;
+	float output_current=0;
+	strtoreplace(str);
+	// a  Rectifier Voltage of Phase 
+	strncpy(argv,str,14); argv[14]='\0';
+	if (*argv == NULL)return	false;
+	*(argv) = *(argv+14+1);  // space¸¦ °Ç³Ê ¶Ú´Ù.
+	
+	//b Rectifier Frequency Rating
+	strncpy(argv,str,3); argv[3]='\0';
+	if (*argv == NULL)return	false;
+	*argv = *(argv+3+1);  // space¸¦ °Ç³Ê ¶Ú´Ù.
+	output_voltage=  atof(argv); 
+
+	// c Bypass source voltage 
+	strncpy(argv,str,14); argv[14]='\0';
+	if (*argv == NULL)return	false;
+	*argv = *(argv+14+1);  // space¸¦ °Ç³Ê ¶Ú´Ù.
+	
+	//d Bypass Frequency 
+	strncpy(argv,str,3); argv[3]='\0';
+	if (*argv == NULL)return	false;
+	*(argv) = *(argv+3+1);  // space¸¦ °Ç³Ê ¶Ú´Ù.
+	output_voltage=  atof(argv); 
+	ups_info.input_frequency=output_voltage;
+
+	// e Output voltage 
+	strncpy(argv,str,14); argv[14]='\0';
+	if (*argv == NULL)return	false;
+	*argv = *(argv+14+1);  // space¸¦ °Ç³Ê ¶Ú´Ù.
+	
+
+	//f Output Frequency 
+	strncpy(argv,str,3); argv[3]='\0';
+	if (*argv == NULL)return	false;
+	*argv = *(argv+3+1);  // space¸¦ °Ç³Ê ¶Ú´Ù.
+	output_voltage=  atof(argv); 
+	ups_info.output_frequency=output_voltage;
+	ups_info.output_frequency=output_voltage;
+	//g Battery Voltage 
+	strncpy(argv,str,3); argv[3]='\0';
+	if (*argv == NULL)return	false;
+	*argv = *(argv+3+1);  // space¸¦ °Ç³Ê ¶Ú´Ù.
+	output_voltage=  atof(argv); 
+	ups_info.charging_voltage=output_voltage;
+
+	//f Power Rating 
+	strncpy(argv,str,3); argv[3]='\0';
+	if (*argv == NULL)return	false;
+	*argv = *(argv+3+1);  // space¸¦ °Ç³Ê ¶Ú´Ù.
+	output_voltage=  atof(argv); 
+	ups_info.capacity = output_voltage;
+	upsModeBusData.Ups_Capacitor= ups_info.capacity;
+
+	flash_write_ups_info(&ups_info);
+	return true;
+
+}
 bool upsInformationCommand_F_megatec()
 {
 	isSerialLineUsed=true;	

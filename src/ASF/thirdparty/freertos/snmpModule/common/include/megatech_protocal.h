@@ -33,6 +33,8 @@ Bool parse_I_megatec(char *str);
 
 bool upsInformationCommand_F_megatec();
 Bool parse_F_megatec(char *str);
+bool upsInformationCommand_GF_megatec();
+Bool parse_GF_megatec(char *str);
 Bool requestUpsStatus_megatec();
 
 void checkTrap_2phase_megatec();

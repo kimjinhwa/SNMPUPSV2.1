@@ -412,6 +412,8 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 			// 3p3p  3p1p  1p1p all applied
 			rx_char= upsInformationCommand_I_megatec() ;
 			rx_char= upsInformationCommand_F_megatec() ;
+			if(ups_info.ups_type== 50 || ups_info.ups_type== 51)	
+				upsInformationCommand_GF_megatec();
             if(rx_char)break;
 			vParTestSetLED(1, pdFALSE);
 			vTaskDelay( 1000);

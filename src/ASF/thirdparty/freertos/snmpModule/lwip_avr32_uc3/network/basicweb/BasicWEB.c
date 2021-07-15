@@ -717,7 +717,7 @@ int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 		flash_write_ups_info(&ups_info);
 		setUpsInfoToweb(pxNetCon,keyvalue,keycount,send_buf,"SET_BASIC_R");
 		// System Rebooting
-		//while(1) ;
+		while(1) ;
 
 	}
 //	mem_free(pcrx);
@@ -1400,8 +1400,26 @@ void html_SETUP_UPSBASIC(struct netconn *pxNetCon, portCHAR *commandType,portCHA
 	webHTML_netconn_write(pxNetCon,webHTTP_OK);
 	
 	webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
-	sprintf( cDynamicPage,"<script>var agentIpAddress='%d.%d.%d.%d';</script>",ethernet_t.Ethernet_Conf_IpAddr0,ethernet_t.Ethernet_Conf_IpAddr1,ethernet_t.Ethernet_Conf_IpAddr2,ethernet_t.Ethernet_Conf_IpAddr3);
+	sprintf( cDynamicPage,"<script>var agentIpAddress= document.location.host;</script>",ethernet_t.Ethernet_Conf_IpAddr0,ethernet_t.Ethernet_Conf_IpAddr1,ethernet_t.Ethernet_Conf_IpAddr2,ethernet_t.Ethernet_Conf_IpAddr3);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	//Pass routine
+	sprintf( cDynamicPage,"<script>\
+	var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	sprintf( cDynamicPage,"\
+	if(idAns==null){\
+		do{\
+			var idAns = prompt('사용자 아이디를 입력하여 주십시요');\
+		}while(idAns != userId);\
+		do{\
+			var passAns = prompt('패스워드를 입력하여 주십시요');\
+		}while(passAns != passwd );\
+	};\
+	</script>");
 	webHTML_netconn_write(pxNetCon,cDynamicPage);
+
 	webHTML_netconn_write(pxNetCon,webHTML_websocket_script);
 	webHTML_netconn_write(pxNetCon,webHTML_UPSSETUPBASIC_script);
 	
@@ -1430,6 +1448,23 @@ void html_SETUP_UPS(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *pa
 	
 	webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
 	
+	//Pass routine
+	sprintf( cDynamicPage,"<script>\
+	var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	sprintf( cDynamicPage,"\
+	if(idAns==null){\
+		do{\
+			var idAns = prompt('사용자 아이디를 입력하여 주십시요');\
+		}while(idAns != userId);\
+		do{\
+			var passAns = prompt('패스워드를 입력하여 주십시요');\
+		}while(passAns != passwd );\
+	};\
+	</script>");
+
+	webHTML_netconn_write(pxNetCon,cDynamicPage);
 	webHTML_netconn_write(pxNetCon,webHTML_HEAD_END);
 	if( strcmp( commandType,"macaddress_input_text") == 0)
 	{
@@ -1563,19 +1598,28 @@ void html_SETUP_UPS(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *pa
 }
 void html_default(struct netconn *pxNetCon,Bool bLogview)
 {
-	//ups_info_t ups_info;
-	webHTML_netconn_write(pxNetCon,indexHtml);
-	return;
+	ups_info_t ups_info;
 	flash_read_ups_info(&ups_info);
+	webHTML_netconn_write(pxNetCon,indexHtml_1);
+	sprintf( cDynamicPage,"<script>var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	sprintf( cDynamicPage,"var UpsSystemName='%s';",ups_info.upsIdentManufacturer);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	sprintf( cDynamicPage,"</script>");
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	webHTML_netconn_write(pxNetCon,indexHtml_2);
+	return;
+
+	/*
 	netconn_write( pxNetCon, webHTTP_OK, (u16_t) strlen( webHTTP_OK ), NETCONN_COPY );
 	webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
 	webHTML_netconn_write(pxNetCon,webHTML_HEAD_END);
 	uint16_t *pData ;
 	
 	pData =&upsModeBusData ;
-	
-	//sprintf( cDynamicPage,"<script></script>");
-	//netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 
 	sprintf( cDynamicPage,"<script> var autoLoadTime = %d;  setInterval( function(){ WebSocketToSnmp('UPS_EX_DATA','');}, autoLoadTime);</script>", flash_read_reLoadTime()*1000*360) ;
 	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
@@ -1715,26 +1759,7 @@ void html_default(struct netconn *pxNetCon,Bool bLogview)
 	sprintf( cDynamicPage,"var systemTime='%u'*1000- 2208965020*1000 ;var systemTime_1='%u';",snmp_systemTime,sssTime );
 	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 	
-	sprintf( cDynamicPage,"var UpsSystemName='%s';",ups_info.upsIdentManufacturer);
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 	
-	sprintf( cDynamicPage,"var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-	
-	/*
-	sprintf( cDynamicPage,"\
-		if(idAns==null){\
-		do{\
-		var idAns = prompt('사용자 아이디를 입력하여 주십시요');\
-		}while(idAns != userId);\
-		do{\
-		var passAns = prompt('패스워드를 입력하여 주십시요');\
-		}while(passAns != passwd );\
-		};\
-	");
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-	*/
-
 	webHTML_netconn_write(pxNetCon,"</script>");
 	
 	{
@@ -1760,7 +1785,7 @@ void html_default(struct netconn *pxNetCon,Bool bLogview)
 	webHTML_netconn_write(pxNetCon,webHTML_default_START_content);
 	webHTML_netconn_write(pxNetCon,webHTML_default_START_log);
 	webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
-
+*/
 
 }
 
