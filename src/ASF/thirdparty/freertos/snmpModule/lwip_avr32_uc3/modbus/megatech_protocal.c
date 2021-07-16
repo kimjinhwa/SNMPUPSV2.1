@@ -33,6 +33,9 @@ extern bool is_Converter_Operation_Fault_send_to_snmp_b1;
 extern bool is_Converter_Operation_Fault_send_to_snmp_b0;
 extern int16_t  before_Inverter_State;
 extern Bool isMegatecSupport_3P ;
+
+float upsRankedCurrent=0.0;
+
 unsigned char strToInt(char *str )
 {
 	unsigned char retByte=0;
@@ -176,24 +179,25 @@ Bool parseQ1_megatec(char *str)
 	upsModeBusData.Output_r_volt_rms = (int) atof(ptr);  
 	//simulate
 	//upsModeBusData.Output_r_volt_rms = 222;
-
 	upsModeBusData.Output_Voltage = upsModeBusData.Output_r_volt_rms;  
+	upsModeBusData.Inverter_u_volt_rms=upsModeBusData.Output_r_volt_rms ;
+	upsModeBusData.Inverter_v_volt_rms=upsModeBusData.Output_s_volt_rms ;
+	upsModeBusData.Inverter_w_volt_rms=upsModeBusData.Output_t_volt_rms ;
+	if((upsModeBusData.Output_Phase == 1) )
+	{
 	upsModeBusData.Output_s_volt_rms =0;
 	upsModeBusData.Output_t_volt_rms = 0;
-    if(upsModeBusData.Output_r_volt_rms > 0)
-		upsModeBusData.Inverter_u_volt_rms=upsModeBusData.Output_r_volt_rms ;
-    if(upsModeBusData.Output_s_volt_rms > 0)
-		upsModeBusData.Inverter_v_volt_rms=upsModeBusData.Output_s_volt_rms ;
-    if(upsModeBusData.Output_t_volt_rms > 0)
-		upsModeBusData.Inverter_w_volt_rms=upsModeBusData.Output_t_volt_rms ;
+	upsModeBusData.Inverter_v_volt_rms=upsModeBusData.Output_s_volt_rms ;
+	upsModeBusData.Inverter_w_volt_rms=upsModeBusData.Output_t_volt_rms ;
+	}
 		
 	str = strtokExt(str, ptr);  // e output current
 	if (ptr == NULL)return	false;
 	upsModeBusData.Output_R_Load=(int)atof(ptr);
 	upsModeBusData.Output_u_current_rms = 
-		(int)(ups_info.capacity*1000/upsModeBusData.Output_Voltage)* (upsModeBusData.Output_R_Load/100.0);  //
-    
+		upsModeBusData.Output_u_current_rms = upsRankedCurrent*(upsModeBusData.Output_R_Load/100.0);
 	upsModeBusData.Inverter_U_curr_rms=upsModeBusData.Output_u_current_rms ; 
+
 		//upsModeBusData.Ups_Capacitor
 	//simulate
 	//upsModeBusData.Output_u_current_rms = 111;
@@ -410,8 +414,8 @@ bool requestUps_G3_megatec()
 		upsModeBusData.Bypass_s_volt_rms= 0;
 		upsModeBusData.Bypass_t_volt_rms= 0;
 		upsModeBusData.Output_r_volt_rms = 0;
-		upsModeBusData.Output_s_volt_rms = 0;
-		upsModeBusData.Output_t_volt_rms = 0;
+		//upsModeBusData.Output_s_volt_rms = 0;
+		//upsModeBusData.Output_t_volt_rms = 0;
 		upsModeBusData.Output_R_Load= 0;
 		upsModeBusData.Output_S_Load= 0;
 		upsModeBusData.Output_T_Load= 0;
@@ -485,10 +489,10 @@ Bool parseG3_megatec(char *str)
 		upsModeBusData.Inverter_v_volt_rms =upsModeBusData.Output_s_volt_rms;
 
 		*argv = strtok(NULL,"/");
-		if( argv[0] == NULL) return false;
-		voltage= (int) atof(argv[0]);  
+		if( argv[0] == NULL) return false; voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_t_volt_rms= voltage;
 		upsModeBusData.Inverter_w_volt_rms =upsModeBusData.Output_t_volt_rms;
+		
 		
 	// 4 ------------------------------
 	str = strtokExt(str, ptr);  // RST Load Percentage
@@ -498,19 +502,19 @@ Bool parseG3_megatec(char *str)
 		if( argv[0] == NULL) return false;
 		voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_R_Load= voltage;
-		upsModeBusData.Output_u_current_rms = (upsModeBusData.Ups_Capacitor*1000/upsModeBusData.Output_r_volt_rms*(upsModeBusData.Output_R_Load/100.0));
-		
+		upsModeBusData.Output_u_current_rms = upsRankedCurrent*(upsModeBusData.Output_R_Load/100.0);
+
 		*argv = strtok(NULL,"/");
 		if( argv[0] == NULL) return false;
 		voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_S_Load= voltage;
-		upsModeBusData.Output_v_current_rms = (upsModeBusData.Ups_Capacitor*1000/upsModeBusData.Output_s_volt_rms*(upsModeBusData.Output_S_Load/100.0));
+		upsModeBusData.Output_v_current_rms = upsRankedCurrent*(upsModeBusData.Output_S_Load/100.0);
 
 		*argv = strtok(NULL,"/");
 		if( argv[0] == NULL) return false;
 		voltage= (int) atof(argv[0]);  
 		upsModeBusData.Output_T_Load= voltage;
-		upsModeBusData.Output_w_current_rms = (upsModeBusData.Ups_Capacitor*1000/upsModeBusData.Output_t_volt_rms*(upsModeBusData.Output_T_Load/100.0));
+		upsModeBusData.Output_w_current_rms = upsRankedCurrent*(upsModeBusData.Output_T_Load/100.0);
 	//------------------------------
 	return true;
 }
@@ -649,7 +653,6 @@ bool upsInformationCommand_F_megatec()
 	else return false;
 }
 
-
 Bool parse_F_megatec(char *str)
 {
 	char *argv[1];
@@ -666,6 +669,7 @@ Bool parse_F_megatec(char *str)
 	*argv = strtok(NULL, " ");  
 	if (*argv == NULL)return	false;
 	output_current =   atof(argv[0]);  
+	upsRankedCurrent =output_current*1.027;
 	//3상이면 1.732를 곱하여준다.
 	if(ups_info.ups_type == 50 ) ups_info.capacity =(uint16_t) (output_voltage*output_current*1.73205/1000.0) ;
 	else ups_info.capacity =(uint16_t) (output_voltage*output_current/1000.0) ;

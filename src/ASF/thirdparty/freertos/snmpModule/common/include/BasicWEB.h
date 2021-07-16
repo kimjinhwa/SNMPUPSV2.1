@@ -95,7 +95,9 @@ const static char *webHTML_passwd_script="\
 	};\
 function WebSocketToSnmp(sendParam,param) {              \
 	var ws = new WebSocket('ws://'+agentIpAddress+':80/echo');\
-	var paramm='?passwd_text='+document.getElementById('passwd_text').value+'&';\
+	var paramm='?passwd='+document.getElementById('passwd_text').value+'&' + 'userid='+document.getElementById('userid_text').value+'&'     ;\
+	if(document.getElementById('passwd_text').value.length > 20 ){alert('패스워드는 20개보다 작아야 합니다');return};\
+	if(document.getElementById('userid_text').value.length > 8 ){alert('사용자아이디는 8개보다 작아야 합니다');return};\
 	ws.onopen = function() { document.getElementById('status_bar').innerHTML = '데이타 요청중';                  \
 		console.log(agentIpAddress + ' Connected OK!');\
 		ws.send(sendParam+paramm);\
@@ -1513,10 +1515,16 @@ const static char *webHTML_PASSWD_content =
 		<fieldset id='SetNetWork_fieldset'>   \
 		<legend id='network_Legend'>SNMP 비밀번호 변경</legend>\
 		<p>\
+		<label>사용자ID</label>\
+		<input type = 'text' id=userid_text value=''/>\
+		</p><br>	\
+		<p>\
 		<label>비밀번호</label>\
 		<input type = 'text' id=passwd_text value=''/><button type='button' onClick = WebSocketToSnmp('changePasswd','') >변경</button>\
 		</p><br>	\
 		<div><span class='ups_status' id='status_bar' ></span></div>\
+		<script>document.getElementById('userid_text').value=userId;</script>\
+		<script>document.getElementById('passwd_text').value=passwd;</script>\
 ";
 const static char *webHTML_UPSSETUP_content = 
 "\

@@ -64,6 +64,8 @@ typedef struct keyAndValue_{
 
 char email_server[24] = "ift.iptime.org";
 char dns_server[14] = "time.bora.net";
+uint8_t cmd_sub_idEx(portCHAR* cmd,  KeyAndValue *array) ;
+uint8_t cmd_parseEx(portCHAR *pcRxString, KeyAndValue *array,int argCount);
 
 uint8_t cmd_parse(portCHAR *pcRxString, KeyAndValue *array,int argCount);
 uint8_t cmd_sub_id(portCHAR* cmd,  KeyAndValue *array,int pos);
@@ -605,10 +607,12 @@ int webSocket_Function_S_PASSWD(struct netconn *pxNetCon ,portCHAR *pcRxString){
 	KeyAndValue keyvalue[3];
 	memset(keyvalue,0x00,sizeof(KeyAndValue)*3);
 	//int keycount = 
-	cmd_parse(pcRxString,keyvalue,2);
+
+	cmd_parseEx(pcRxString,keyvalue,2);
 
 	//write_set_time(keyvalue[1].value );
 	strcpy(ups_info.passwd,keyvalue[1].value);
+	strcpy(ups_info.user_id,keyvalue[2].value);
 	flash_write_ups_info(&ups_info);
 
 	sprintf(pcRxString,"change_ok");
@@ -1842,6 +1846,7 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 			if( webSocket_proc(pxNetCon, pcRxString) != 0){  // -100
 				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nForce return for error!\n") );
 			}
+			vTaskDelay(1000);
 			vParTestSetLED(2, pdFALSE);
 		}
 		else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /SETUP_EMAIL.html") )    ) //이제 GET으로 데이타를 확인한다.
@@ -2048,6 +2053,75 @@ uint8_t cmd_sub_id(portCHAR* cmd,  KeyAndValue *array,int pos) {
 		argv[++i] = strtok(NULL, "=");
 		if(argv[i]!=NULL) strncpy(array[pos].value, argv[i], min(strlen(argv[i] ),MAX_ARG_COUNT));
 	} while (i < 2 && (argv[i] != NULL));
+	return 0;
+}
+
+
+uint8_t cmd_parseEx(portCHAR *pcRxString, KeyAndValue *array,int argCount) 
+{
+	int i=0;
+	int j=0;
+	portCHAR *argv[1];
+	portCHAR temp[20];
+	*argv = strtok(pcRxString, "?");
+	if(*argv != NULL) strcpy(array[i].id,argv[0]);
+
+	*argv = strtok(NULL, "?");
+	if(argv[0]!=NULL)
+			strcpy(pcRxString, argv[0]);
+
+	//*argv = strtok(pcRxString, "&");
+
+	i++;
+	for(j=0;j<20;j++)temp[j]=0;
+	j=0;
+	while( *(pcRxString+j) !=  '=')	
+	{
+		temp[j++] =*(pcRxString+j) ; 	
+	}
+	strcpy( array[i].id, temp);
+	pcRxString = (pcRxString+j+1) ;
+
+	for(j=0;j<20;j++)temp[j]=0;
+	j=0;
+	while( *(pcRxString+j) !=  '&')	
+	{
+		temp[j++] =*(pcRxString+j) ; 	
+	}
+	strcpy( array[i].value, temp);
+	pcRxString = (pcRxString+j+1) ;
+
+
+	i++;
+	for(j=0;j<20;j++)temp[j]=0;
+	j=0;
+	while( *(pcRxString+j) !=  '=')	
+	{
+		temp[j++] =*(pcRxString+j) ; 	
+	}
+	strcpy(array[i].id, temp);
+	pcRxString = (pcRxString+j+1) ;
+
+	for(j=0;j<20;j++)temp[j]=0;
+	j=0;
+	while( *(pcRxString+j) !=  '&')	
+	{
+		temp[j++] =*(pcRxString+j) ; 	
+	}
+	strcpy( array[i].value, temp);
+	pcRxString = (pcRxString+j+1) ;
+
+}
+uint8_t cmd_sub_idEx(portCHAR* cmd,  KeyAndValue *array) {
+	portCHAR *argv[1];
+	int i = 0;
+	*argv = strtok(cmd, "=");
+	if (*argv != NULL)
+		strncpy(array->id, argv[0] , strlen(argv[0]));
+	*argv = strtok(NULL, "=");
+	if (*argv != NULL)
+		strncpy(array->value, argv[0] , strlen(argv[0]));
+
 	return 0;
 }
 uint8_t cmd_parse(portCHAR *pcRxString, KeyAndValue *array,int argCount) 

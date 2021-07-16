@@ -179,7 +179,7 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 		*uint_ptr =(u32_t)( *(pData+43));
 		break;
 		case 5://Output_u_current_rms
-		*uint_ptr =(u32_t)( *(pData+46));
+		*uint_ptr =(u32_t)( *(pData+46))+(u32_t)( *(pData+47))+(u32_t)( *(pData+48));
 		break;
 		case 6://Bat_volt_rms
 		*uint_ptr =(u32_t)( *(pData+37));
