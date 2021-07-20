@@ -87,6 +87,31 @@ to use an MII interface. */
 // 0x 3B까지 영신에 출고`
 // 0x 47까지 영신에 출고
 /*! The IP address being used. */
+#define IFTECH_ADDRESS
+//#define KEP_SEOUL_DIVSION
+
+#ifdef IFTECH_ADDRESS
+/*! The ipaddress being used. */
+#define ETHERNET_CONF_IPADDR0                        192 
+#define ETHERNET_CONF_IPADDR1                        168 
+#define ETHERNET_CONF_IPADDR2                        0 
+#define ETHERNET_CONF_IPADDR3                        57 
+
+/*! The gateway address being used. */
+#define ETHERNET_CONF_GATEWAY_ADDR0                  192 
+#define ETHERNET_CONF_GATEWAY_ADDR1                  168 
+#define ETHERNET_CONF_GATEWAY_ADDR2                  0 
+#define ETHERNET_CONF_GATEWAY_ADDR3                  1 
+
+/*! The network mask being used. */
+#define ETHERNET_CONF_NET_MASK0                       255
+#define ETHERNET_CONF_NET_MASK1                       255
+#define ETHERNET_CONF_NET_MASK2                       255
+#define ETHERNET_CONF_NET_MASK3                       0
+#endif
+
+#ifdef KEP_SEOUL_DIVSION
+/*! The ipaddress being used. */
 #define ETHERNET_CONF_IPADDR0                        100 
 #define ETHERNET_CONF_IPADDR1                        101 
 #define ETHERNET_CONF_IPADDR2                        200 
@@ -98,12 +123,17 @@ to use an MII interface. */
 #define ETHERNET_CONF_GATEWAY_ADDR2                  200 
 #define ETHERNET_CONF_GATEWAY_ADDR3                  1 
 
+#define ETHERNET_CONF_GATEWAY_ADDR0                  100	 
+#define ETHERNET_CONF_GATEWAY_ADDR1                  101 
+#define ETHERNET_CONF_GATEWAY_ADDR2                  200 
+#define ETHERNET_CONF_GATEWAY_ADDR3                  1 
+
 /*! The network mask being used. */
 #define ETHERNET_CONF_NET_MASK0                       255
 #define ETHERNET_CONF_NET_MASK1                       255
 #define ETHERNET_CONF_NET_MASK2                       255
 #define ETHERNET_CONF_NET_MASK3                       0
-
+#endif
 #define webHTTP_PORT		( 80 )
 
 

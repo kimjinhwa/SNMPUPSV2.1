@@ -89,6 +89,7 @@ int isNowWebServiceRunningCount =0;
 Bool isNowWebServiceRunning =false;
 extern ups_info_t ups_info;
 extern ups_modbus_data_t upsModeBusData;
+extern uint16_t isModebusRunning;
 
 int webFunction(int port);
 portTASK_FUNCTION( vBasicWEBServer, pvParameters );
@@ -840,6 +841,11 @@ void sendErrorWebSocket(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t e
 	cDynamicPage[3]=0x00;
 	netconn_write( pxNetCon, cDynamicPage,3, NETCONN_COPY );
 }
+
+
+//extern	Bool (*requestUpsData)();
+
+extern Bool getDataFromSerial();
 int webSocket_Function_UPS_EX_DATA(struct netconn *pxNetCon ,portCHAR *pcRxString,char* commandData)
 {
 	uint16_t *pData ;//=(int *)&upsModeBusData ;//
@@ -849,6 +855,13 @@ int webSocket_Function_UPS_EX_DATA(struct netconn *pxNetCon ,portCHAR *pcRxStrin
 	flash_read_ups_info(&ups_info);
 	memset(cDynamicPage,0x00,sizeof(cDynamicPage));
 	pData =(int16_t *)&upsModeBusData ;
+	//만일 시리얼 포트를 사용중이면 대기한다. 
+	if(getDataFromSerial()==false) return;
+
+	//if(upsModeBusData.Bat_volt_rms != 245){
+	//		LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nupsModeBusData.Bat_volt_rms=%d",upsModeBusData.Bat_volt_rms) );
+	//	}
+
 	portTickType snmp_systemTime=getTimeLong();
 	pData[10] =  (uint16_t)(0xFFFF & snmp_systemTime);
 	pData[11] =  (uint16_t)(snmp_systemTime>>16);

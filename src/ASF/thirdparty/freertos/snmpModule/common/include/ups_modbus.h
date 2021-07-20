@@ -29,7 +29,8 @@ extern bool isSerialLineUsed;
 //extern ups_modbus_data_t upsModeBusData;
 
 void vStartUPSModeBus( unsigned portBASE_TYPE uxPriority );
-bool requestUpsData();
+//bool requestUpsData();
+Bool (*requestUpsData)();
 void  write_log_event();
 
 typedef struct {

@@ -352,7 +352,7 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 	//portTickType xFlashRate, xLastFlashTime;
 	portTickType xTimeBefore, xTotalTimeSuspended;
 	unsigned portBASE_TYPE uxLED;
-	Bool (*requestUpsData)();
+	//Bool (*requestUpsData)();
 	void (*write_log_event)();
 	
 	// 처음 프로세서를 가동할 때 프로토콜을 결정 한다.
@@ -413,7 +413,9 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 			rx_char= upsInformationCommand_I_megatec() ;
 			rx_char= upsInformationCommand_F_megatec() ;
 			if(ups_info.ups_type== 50 || ups_info.ups_type== 51)	
+			{
 				upsInformationCommand_GF_megatec();
+			}
             if(rx_char)break;
 			vParTestSetLED(1, pdFALSE);
 			vTaskDelay( 1000);
@@ -464,6 +466,8 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 				taskENTER_CRITICAL() ;
 				isModebusRunning=true;
 				bRet = requestUpsData();   // 173 ms taken
+				//에러가 생기면 한번만 더 해 본다.
+				if(!bRet)requestUpsData();   // 173 ms taken
 				isModebusRunning=false;
 				taskEXIT_CRITICAL();
 				//xTotalTimeSuspended = xTaskGetTickCount()-xTimeBefore ;
@@ -486,8 +490,19 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 	}
 }
 
-
-
-
-
-
+Bool getDataFromSerial(){
+	
+	int reTraycount=10;
+	while(isModebusRunning == true)
+	{
+			vTaskDelay(100);
+			if(reTraycount--)return false;
+	}
+	reTraycount=10;
+	while( requestUpsData() == false)	
+	{
+			vTaskDelay(100);
+			if(reTraycount--)return false;
+	}
+	return true;
+}

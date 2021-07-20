@@ -147,6 +147,7 @@ static void ups_get_object_def_kep(u8_t ident_len, s32_t *ident, struct obj_def 
 }
 static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 {
+
 	/*{ 1,2,3,4,5,6,7,8,9,200,201,202,203,210,211,212,213,214,215,216,217,224,225 };*/
 	u32_t *uint_ptr = (u32_t*)value;
 	u8_t id;
@@ -160,10 +161,11 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 	uint16_t lValue=0;
 	while( isModebusRunning)
 	{
-		vTaskDelay(10);
-		if(lValue>200)break;
+		vTaskDelay(100);
+		if(lValue>20)break;
 		lValue++;
 	};
+	if(upsModeBusData.Bat_volt_rms == 0 ) return;
 	lValue=0;
 	switch (id){
 		case 1:// Input_r_volt_rms
@@ -171,7 +173,7 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 		break;
 		case 2: // Input_s_volt_rms
 		*uint_ptr=(u32_t)(*(pData+4))==1 ?  0:(u32_t)( *(pData+17)) ;
-		break;  // Input_s_volt_rms
+		break;  
 		case 3: // Input_t_volt_rms
 		*uint_ptr=(u32_t)(*(pData+4))==1 ?  0:(u32_t)( *(pData+18)) ;
 		break;
@@ -187,8 +189,8 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 		case 7://Bat_current_rms
 		*uint_ptr =(u32_t)( *(pData+38));
 		break;
-		case 8:// 부동충전 or 균등 충전 inverter_State
-		*uint_ptr =(u32_t)( (*(pData+13) & BIT(9)) >> 9  );
+		case 8:// 부동충전 or 균등 충전 Converter Status 
+		*uint_ptr =(u32_t)( (*(pData+12) & BIT(1)) >> 1  );
 		break;
 		case 9://Output_frequency 10으로 나누어 준다
 		*uint_ptr =((u32_t)( *(pData+49)))/10;

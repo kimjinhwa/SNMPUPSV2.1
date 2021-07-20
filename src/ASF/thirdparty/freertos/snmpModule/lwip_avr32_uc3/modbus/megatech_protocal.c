@@ -92,13 +92,12 @@ bool requestUpsStatus_Q1_megatec()
 	if(receivedCount > 0) 
 	{
 
-		upsModeBusData.Input_r_volt_rms = 0;
-		upsModeBusData.Output_r_volt_rms = 0;
-		upsModeBusData.Output_u_current_rms=0;
-		upsModeBusData.Output_frequency=0;
-		upsModeBusData.Bat_volt_rms=0;
-		upsModeBusData.Battery_Room_Temper=0;
-		upsModeBusData.Inverter_State=0;
+		//upsModeBusData.Input_r_volt_rms = 0;
+		//upsModeBusData.Output_r_volt_rms = 0;
+		//upsModeBusData.Output_u_current_rms=0;
+		//upsModeBusData.Output_frequency=0;
+		//upsModeBusData.Battery_Room_Temper=0;
+		//upsModeBusData.Inverter_State=0;
 		parseQ1_megatec(buffer+1);
 		free(buffer);
 		return true;
@@ -278,6 +277,7 @@ bool parseG1_megatec(char *str)
 	voltage= (int) atof(argv[0]);
 	upsModeBusData.Bat_volt_rms= voltage;
 
+
 	//2 c ----------Battery Capacity percentage PPP
 	*argv = strtok(NULL," ");
 	if (argv[0] == NULL) return false;
@@ -348,7 +348,24 @@ bool requestUps_G2_megatec()
 	free(buffer);
     return false	;
 }
-
+// !00000010 00000100 00000000<cr>
+// Status of rectifier
+// BIT(7)	BIT(6)						BIT(5)					BIT(4)		 BIT(3)					BIT(2)		BIT(1)			BIT(0) 
+// No Use	Rectifier Rotation Error	1:Low Batery ShutDown	Low Battery	 1:Three in-One Out		Backup		1:Boost Charge	1:Rectifier Operating 
+//																			 0:Three in three out   AC Normal   0:Float Charge									
+// Status of inverter
+// BIT(7)	BIT(6)	BIT(5)					BIT(4)		 BIT(3)				BIT(2)					BIT(1)								BIT(0) 
+// No Use	No Use	BYPASS FREQUENCY FAIL	1:Manual Bypass Breaker ON		1:BYPASS AC Normal		1:Static switch in Inverter Mode	 Inverter Operating 
+//										    0:Manual Bypass Breaker OFF		0:BYPASS AC AbNormal	0:Static switch in Bypass Mode						 0:Three in three out   AC Normal   0:Float Charge									
+// Fault Condition of inverter
+// BIT(7)	 No Use   
+//BIT(6)	1:Emergency Stop(EPO)
+//BIT(5)	1:High Dc Shotdown
+//BIT(4)    1:Manual Bypass Breaker on Shutdown
+//BIT(3)    1:Overload Shutdown	
+//BIT(2)	1:Inverter O/P Fail Shutdown
+//BIT(1)    1:Overtemperature Shutdown
+//BIT(0)    1:Short Circuit Shutdown 
 Bool parse_G2_megatec(char *str)
 {
 	int init_size = strlen(str);
@@ -374,9 +391,14 @@ Bool parse_G2_megatec(char *str)
 
 	//	Inverter_State 정전 BIT(10) 
 	//	Inverter_State 부동 균등 BIT(9) 
+	//Q1에서 Inverter_State는 얻었다.
+	//Inverter_State 의 상위 8bit에 3P UPS STATUS를 넣는다.
 	upsModeBusData.Inverter_State &= 0x00ff ;
-	upsModeBusData.Inverter_State |= (ups_status_1<<8);
-	upsModeBusData.Converter_State = (ups_status_2<<8) + ups_status_3;
+	upsModeBusData.Inverter_State |= (ups_status_2 << 8);
+	upsModeBusData.Converter_State = (ups_status_3 << 8) + ups_status_1;
+
+	//새롭게 아래의 항목을 집어 넣었다. 
+	upsModeBusData.Inverter_Operation_Fault=ups_status_3;
 
     if( ups_status_1  & BIT(3) ) 
 	{
@@ -564,7 +586,7 @@ bool upsInformationCommand_GF_megatec()
 {
 	isSerialLineUsed=true;	
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
-	int receivedCount = megatec_command_CR("GF\r",3,'#',500,buffer); 
+	int receivedCount = megatec_command_CR("GF\r",3,'!',500,buffer); 
 	
 	if(receivedCount > 0) 
 	{
@@ -575,63 +597,79 @@ bool upsInformationCommand_GF_megatec()
 	if(receivedCount > 0) return true;
 	else return false;
 }
-
+//!220V/380V 3P4W 060 220V/380V 3P4W 060 220V/380V 3P4W 060 360 150KVA    //a Rect_Volt 14byte 
+//b Recifier Frequency CCC
+//c Bypss Source Voltage 14byte
+//d Bypass Source Frequency
+//e O/P Voltage  14 char
+//f 0/p Frequcncy QQQ
+// g Battery Voltages :SSS
+//h : PowerRating 10 character
 Bool parse_GF_megatec(char *str)
 {
 	char argv[15];
 	float output_voltage=0;
 	float output_current=0;
+	int i;
 	strtoreplace(str);
 	// a  Rectifier Voltage of Phase 
 	strncpy(argv,str,14); argv[14]='\0';
 	if (*argv == NULL)return	false;
-	*(argv) = *(argv+14+1);  // space를 건너 뛴다.
+	str = str+14+1;  // space를 건너 뛴다.
 	
 	//b Rectifier Frequency Rating
 	strncpy(argv,str,3); argv[3]='\0';
 	if (*argv == NULL)return	false;
-	*argv = *(argv+3+1);  // space를 건너 뛴다.
+	str = (str +3+1);  // space를 건너 뛴다.
 	output_voltage=  atof(argv); 
 
 	// c Bypass source voltage 
 	strncpy(argv,str,14); argv[14]='\0';
 	if (*argv == NULL)return	false;
-	*argv = *(argv+14+1);  // space를 건너 뛴다.
+	str = (str+14+1);  // space를 건너 뛴다.
 	
 	//d Bypass Frequency 
 	strncpy(argv,str,3); argv[3]='\0';
 	if (*argv == NULL)return	false;
-	*(argv) = *(argv+3+1);  // space를 건너 뛴다.
+	(str) = (str+3+1);  // space를 건너 뛴다.
 	output_voltage=  atof(argv); 
 	ups_info.input_frequency=output_voltage;
 
 	// e Output voltage 
 	strncpy(argv,str,14); argv[14]='\0';
 	if (*argv == NULL)return	false;
-	*argv = *(argv+14+1);  // space를 건너 뛴다.
+	str= (str+14+1);  // space를 건너 뛴다.
 	
 
 	//f Output Frequency 
 	strncpy(argv,str,3); argv[3]='\0';
 	if (*argv == NULL)return	false;
-	*argv = *(argv+3+1);  // space를 건너 뛴다.
+	str= (str+3+1);  // space를 건너 뛴다.
 	output_voltage=  atof(argv); 
 	ups_info.output_frequency=output_voltage;
 	ups_info.output_frequency=output_voltage;
+
 	//g Battery Voltage 
 	strncpy(argv,str,3); argv[3]='\0';
 	if (*argv == NULL)return	false;
-	*argv = *(argv+3+1);  // space를 건너 뛴다.
+
+	//(str) = (str+3+1);  // space를 건너 뛴다.
+	//(str) = (str+3+1);  // space를 건너 뛴다.
+	(str) = (str+3+1);  // space를 건너 뛴다.
+	//(str) = (str+3+1);  // space를 건너 뛴다.
 	output_voltage=  atof(argv); 
 	ups_info.charging_voltage=output_voltage;
 
-	//f Power Rating 
-	strncpy(argv,str,3); argv[3]='\0';
+	//h Power Rating 
+	strncpy(argv,str,14); argv[14]='\0';
 	if (*argv == NULL)return	false;
-	*argv = *(argv+3+1);  // space를 건너 뛴다.
+	for( i=0;argv[i] != NULL ;i++){
+		if(argv[i] >= 0x40 || argv[i]<0x30){ argv[i]=0x00;break;};
+	}	
 	output_voltage=  atof(argv); 
 	ups_info.capacity = output_voltage;
 	upsModeBusData.Ups_Capacitor= ups_info.capacity;
+	//str= (str+14+2);  // space를 건너 뛴다.
 
 	flash_write_ups_info(&ups_info);
 	return true;
@@ -739,6 +777,7 @@ Bool requestUpsStatus_megatec()
 {
 	flash_read_ups_info(&ups_info);
 	Bool ret;
+	upsModeBusData.Bat_volt_rms=0;
 	if( isMegatecSupport_3P )  // 삼상 프로토콜을 지원하지 않으면 무조건 단상이다.
 	{
 		if(ups_info.ups_type== 50 || ups_info.ups_type== 51)
@@ -754,6 +793,7 @@ Bool requestUpsStatus_megatec()
 			if( ret == false ) return  false;
 			//Battery voltage, Battery Capacity,Battery Remaining, Battery current, Temperature,I/P freq,Freq bypss,o/p freq,
 			ret = requestUps_G1_megatec() ;
+
 			if( ret == false ) return  false;
 			// ups status
 			ret = requestUps_G2_megatec();
