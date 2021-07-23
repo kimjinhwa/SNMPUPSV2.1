@@ -2163,7 +2163,7 @@ uint8_t cmd_parse(portCHAR *pcRxString, KeyAndValue *array,int argCount)
 		argv[i] = strtok(NULL, "?");
 		if(argv[i]!=NULL)
 		{
-			strcpy(pcRxString, argv[i]);
+			strcpy(pcRxString, argv[i]);// 이렇게 사용해도 된다.pcRxString=&argv[i];
 		}
 		else pcRxString = 0x00;
 	}

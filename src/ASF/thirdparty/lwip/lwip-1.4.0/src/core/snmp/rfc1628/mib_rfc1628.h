@@ -1874,8 +1874,8 @@ static void ups_get_value(struct obj_def *od, u16_t len, void *value)
  
 	while( isModebusRunning)
 	{
-		vTaskDelay(10);
-		if(id>200)break;
+		vTaskDelay(100);
+		if(id>20)break;
 		id++;
 	};
   
