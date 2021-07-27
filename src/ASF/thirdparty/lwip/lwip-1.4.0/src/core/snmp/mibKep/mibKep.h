@@ -145,6 +145,9 @@ static void ups_get_object_def_kep(u8_t ident_len, s32_t *ident, struct obj_def 
 	if(iCommErrorCount > 0 )
 	od->instance = MIB_OBJECT_NONE;
 }
+
+extern Bool getDataFromSerial();
+extern int16_t charging_method;
 static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 {
 
@@ -159,13 +162,23 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 	// 아이디와 UPS-MIB를 맞추어 준다..나중에
 	//id = id+1;
 	uint16_t lValue=0;
+	/*
 	while( isModebusRunning)
 	{
 		vTaskDelay(100);
-		if(lValue>20)break;
+		if(lValue>50)break;
 		lValue++;
 	};
-	if(upsModeBusData.Bat_volt_rms == 0 ) return;
+	*/
+	portENTER_CRITICAL();
+	if(upsModeBusData.Bat_volt_rms == 0 ){
+		while(getDataFromSerial());
+		 //return;
+	}
+	if(upsModeBusData.Bat_volt_rms == 0 ){
+		portEXIT_CRITICAL();
+		return;
+	}
 	lValue=0;
 	switch (id){
 		case 1:// Input_r_volt_rms
@@ -190,7 +203,7 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 		*uint_ptr =(u32_t)( *(pData+38));
 		break;
 		case 8:// 부동충전 or 균등 충전 Converter Status 
-		*uint_ptr =(u32_t)( (*(pData+12) & BIT(1)) >> 1  );
+		*uint_ptr =charging_method;//(u32_t)( (*(pData+12) & BIT(1)) >> 1  );
 		break;
 		case 9://Output_frequency 10으로 나누어 준다
 		*uint_ptr =((u32_t)( *(pData+49)))/10;
@@ -212,7 +225,7 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 		default:
 		break;
 	}
-
+	portEXIT_CRITICAL();
 }
 static u8_t ups_set_test_kep(struct obj_def *od, u16_t len, void *value)
 {

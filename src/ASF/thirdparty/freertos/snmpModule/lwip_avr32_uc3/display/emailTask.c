@@ -63,17 +63,17 @@
 //! The supervisor queue length.
 #define DISPLAY_QUEUE_SIZE   1
 
-/*! pointer to the memory image of the User Mess line */
+//! pointer to the memory image of the User Mess line 
 portCHAR Line[100];
 
-/*! pointer to the memory image of the User Menu line */
+//! pointer to the memory image of the User Menu line 
 portCHAR * UserMessScreen = Line;
 
 xQueueHandle xDISPLAYQueue = 0;
 
 void vEmail_Start( unsigned portBASE_TYPE uxPriority )
 {
-   /* Spawn the Sentinel task. */
+   // Spawn the Sentinel task. 
    xTaskCreate( vDisplay, ( const signed portCHAR * )"DISPLAY",
                 DISPLAY_STACK_SIZE, NULL, uxPriority, ( xTaskHandle * )NULL );
 
@@ -95,18 +95,18 @@ portTASK_FUNCTION( vDisplay , pvParameters )
   //display_init(FOSC0 * 4);
   for (;;)
   {
-      /*
-	  if ( pdTRUE == xQueueReceive( xDISPLAYQueue, &temp_string, ( portTickType ) 0 ) )
-      {
-        if (temp_string != NULL)
-        {
-          //display_print((const char*)temp_string);
+      //
+	  //if ( pdTRUE == xQueueReceive( xDISPLAYQueue, &temp_string, ( portTickType ) 0 ) )
+      //{
+       // if (temp_string != NULL)
+        //{
+         // //display_print((const char*)temp_string);
 		  //sendEventMail(temp_string);
-		  vTaskDelay(1000);
+		 // vTaskDelay(1000);
 		  
-        }
-      }
-	  */
+      //  }
+      //}
+	  //
 	  vParTestToggleLED(2);
       vTaskDelay(1000);
   }

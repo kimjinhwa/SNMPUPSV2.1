@@ -335,6 +335,9 @@ void printSystemInfo(){
 
 void FlashInit();
 extern ups_info_t ups_info;
+
+xQueueHandle modbusQueue = 0;
+
 int main( void )
 {
 	sysclk_init();
@@ -342,6 +345,9 @@ int main( void )
 	FlashInit();
 	printSystemInfo() ;
 	flash_read_ups_info(&ups_info);
+
+	modbusQueue = xQueueCreate( 5, sizeof(Byte) );
+
 	if(ups_info.ups_type== 31 || ups_info.ups_type== 32 || ups_info.ups_type== 33  ) //아이에프텍
 		serial_init_9600();
 	else if(ups_info.ups_type== 50 || ups_info.ups_type== 51 || ups_info.ups_type== 52  )  // 메가텍
@@ -361,6 +367,10 @@ int main( void )
 	usart_write_line(EXAMPLE_USART, "\r\n timer service started...");
 	vStartSoftTimer(watchdog_TASK_PRIORITY );
 	// 6) Start FreeRTOS.
+
+
+
+
 	vTaskStartScheduler();
 	/* Will only reach here if there was insufficient memory to create the idle task. */
 	return 0;

@@ -35,6 +35,7 @@ extern int16_t  before_Inverter_State;
 extern Bool isMegatecSupport_3P ;
 
 float upsRankedCurrent=0.0;
+int16_t charging_method;
 
 unsigned char strToInt(char *str )
 {
@@ -225,7 +226,6 @@ Bool parseQ1_megatec(char *str)
 	
 	if(strlen(ptr) < 8) return;
 	ups_status = strToInt(ptr);
-
 	upsModeBusData.Inverter_State = ups_status;
 	return true;
 }
@@ -380,6 +380,8 @@ Bool parse_G2_megatec(char *str)
 	argv[0] = strtok(str," ");
     if( argv[0]== NULL) return false;
 	ups_status_1= strToInt(argv[0]);  
+	charging_method = (ups_status_1  & BIT(1)) >> 1; 
+
 // 2 status of UPS
 	argv[0] = strtok(NULL," ");
     if( argv[0]== NULL) return false;
