@@ -77,7 +77,6 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters );
 #include "FlashMemory.h"
 
 //bool modbus_data_request = false;
-bool isSerialLineUsed=false;
 ups_info_t ups_info;
 //struct ups_modbus_data upsModeBusData;
 ups_modbus_data_t upsModeBusData;
@@ -342,7 +341,6 @@ int wait_command()
 err_t snmp_send_trap_ups_kepco(s8_t generic_trap, s32_t specific_trap) ;
 err_t snmp_send_trap_ups(s8_t generic_trap, s32_t specific_trap) ;
 void snmp_coldstart_trap(void);
-Bool isMegatecSupport_3P ;
 
 void serial_init_2400();
 void serial_init_9600();
@@ -427,10 +425,8 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 
 
 		//xTimeBefore= xTaskGetTickCount();
-		isMegatecSupport_3P = requestUps_G1_megatec();
 
 		//simulate
-        //isMegatecSupport_3P = false;
 
 		//xTotalTimeSuspended = xTaskGetTickCount()-xTimeBefore ;
 		upsModeBusData.Year_made =2000+ ups_info.install_year;
@@ -462,13 +458,21 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 			{
 				vParTestSetLED(1, pdFALSE);
 				//xTimeBefore = xTaskGetTickCount();
-				taskENTER_CRITICAL() ;
+				//taskENTER_CRITICAL() ;
 				isModebusRunning=true;
+
+
+
+
 				bModebusSuccess= requestUpsData();   // 173 ms taken
+
+
+
+
 				//에러가 생기면 한번만 더 해 본다.
 				//if(!bRet)requestUpsData();   // 173 ms taken
 				isModebusRunning=false;
-				taskEXIT_CRITICAL();
+				//taskEXIT_CRITICAL();
 				//xTotalTimeSuspended = xTaskGetTickCount()-xTimeBefore ;
 				//if(bRet == true) break;       // 한번 더 수행하라..
 				//else{
@@ -484,23 +488,27 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 		{
 			write_log_event();
 		}
-		vTaskDelay( 1000);
+		else{
+			vParTestSetLED(1,0);
+			vTaskDelay( 100);
+			vParTestSetLED(1,1);
+			vTaskDelay( 100);
+			vParTestSetLED(1,0);
+			vTaskDelay( 100);
+			vParTestSetLED(1,1);
+			vTaskDelay( 100);
+		}
+		vTaskDelay( 1500);
 	}
 }
 
 Bool getDataFromSerial(){
 	
-	int reTraycount=10;
+	int reTraycount=12;
 	while(isModebusRunning == true)
 	{
 			vTaskDelay(100);
-			if(reTraycount--)return false;
-	}
-	reTraycount=10;
-	while( requestUpsData() == false)	
-	{
-			vTaskDelay(100);
-			if(reTraycount--)return false;
+			if(reTraycount-- ==0 )return false;
 	}
 	return true;
 }

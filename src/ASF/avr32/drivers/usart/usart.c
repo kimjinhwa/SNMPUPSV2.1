@@ -938,7 +938,6 @@ void usart_write_byteArray(volatile avr32_usart_t *usart, const char *string,int
 
 int checkUsartData(volatile avr32_usart_t *usart,int timeout){
 	int iCount=0;
-	/*S
 	while( usart_test_hit(usart) == 0)
 	{
 		vTaskDelay(1);
@@ -950,7 +949,7 @@ int checkUsartData(volatile avr32_usart_t *usart,int timeout){
 		}
 	};
 	return 1;	
-	*/
+	/*
 	while( iCount < timeout)
 	{
 	  if(usart_test_hit(usart) 	== 0 )
@@ -959,11 +958,11 @@ int checkUsartData(volatile avr32_usart_t *usart,int timeout){
 		    iCount++;
 	  }
 	  else {
-		  iCount=0;
 		  return 1;
 	  }
 	}
 	return 0;	
+	*/
 }
 
 int usart_get_count_data(volatile avr32_usart_t *usart,char *readBuf , int *receiveLength,int timeout)

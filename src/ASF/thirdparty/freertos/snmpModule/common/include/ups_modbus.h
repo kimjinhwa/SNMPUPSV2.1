@@ -24,7 +24,6 @@
 
 #define BIT(n)  1<<n
 
-extern bool isSerialLineUsed;
 //extern struct ups_modbus_data upsModeBusData;
 //extern ups_modbus_data_t upsModeBusData;
 

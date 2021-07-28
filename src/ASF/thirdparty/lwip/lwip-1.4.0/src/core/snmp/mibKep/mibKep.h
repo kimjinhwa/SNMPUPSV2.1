@@ -117,9 +117,14 @@ const struct mib_array_node mgmt_kep = {
 static void ups_get_object_def_kep(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
 	/* return to object name, adding index depth (1) */
+	int breakCount = 150;
 	while( isModebusRunning)
 	{
 		vTaskDelay(10); //if(lValue>500)break; //lValue++;
+		if( breakCount-- == 0){
+			od->instance = MIB_OBJECT_NONE;
+			return ;	
+		}
 	};
 	if(bModebusSuccess ==  false){
 		od->instance = MIB_OBJECT_NONE;

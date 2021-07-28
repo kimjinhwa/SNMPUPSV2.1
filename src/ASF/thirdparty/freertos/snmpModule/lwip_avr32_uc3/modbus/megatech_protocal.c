@@ -32,7 +32,6 @@ extern bool is_Converter_Operation_Fault_send_to_snmp_b2;
 extern bool is_Converter_Operation_Fault_send_to_snmp_b1;
 extern bool is_Converter_Operation_Fault_send_to_snmp_b0;
 extern int16_t  before_Inverter_State;
-extern Bool isMegatecSupport_3P ;
 
 float upsRankedCurrent=0.0;
 int16_t charging_method;
@@ -82,13 +81,7 @@ bool requestUpsStatus_Q1_megatec()
 	if(buffer == NULL) 	{		return false;	} ;// memory alloc error;
 	memset(buffer,0x00,RECEIVE_BUFFER_SIZE);
 
-	if(isSerialLineUsed==true) vTaskDelay(50);
-	if(isSerialLineUsed==true) vTaskDelay(50);
-	if(isSerialLineUsed==true) vTaskDelay(50);
-	if(isSerialLineUsed==true) return false;
-	isSerialLineUsed=true;	
 	int receivedCount = megatec_command_CR("Q1\r",3,'(',500,buffer); // (는 빼고 넘긴다.
-	isSerialLineUsed=false;	
 
 	if(receivedCount > 0) 
 	{
@@ -115,6 +108,23 @@ int megatec_command_CR(uint8_t *send_command,uint8_t sLength,uint8_t startByte,i
 	int revCount=0;
 	int receive=0;
 	int ret=0 ;
+
+
+	usart_reset_status(&AVR32_USART0);  // 우선 수신 버퍼를 리셋한다.
+	while( usart_read_char(&AVR32_USART0, &revCount) != USART_RX_EMPTY );
+	usart_write_byteArray(&AVR32_USART0,(const char *)send_command,sLength);			// 명령어를 송신한다.
+    if( watingTime == 0 ) return 0;
+	do{
+		if(checkUsartData(&AVR32_USART0,watingTime) == 0 )return -1;
+		ret = usart_read_char(&AVR32_USART0, &receive);
+		*(receive_data+revCount) = (uint8_t)receive;
+		revCount++;
+		if(revCount>=RECEIVE_BUFFER_SIZE)break;
+	}while(receive!='\r');
+	*(receive_data+revCount-1) = 0x00;
+	return revCount;
+
+	/*
 	usart_reset_status(&AVR32_USART0);  // 우선 수신 버퍼를 리셋한다.
 	while( usart_read_char(&AVR32_USART0, &revCount) != USART_RX_EMPTY )
 	{
@@ -123,7 +133,8 @@ int megatec_command_CR(uint8_t *send_command,uint8_t sLength,uint8_t startByte,i
 	usart_write_byteArray(&AVR32_USART0,(const char *)send_command,sLength);			// 명령어를 송신한다.
     if( watingTime == 0 ) return 0;
 //   (000.0 323.0 001.0 001 00.0 00.0 27.5 01110001
-	for(int i=0;i< RECEIVE_BUFFER_SIZE	;i++)
+	revCount=0;
+	for(int iii=0;iii< RECEIVE_BUFFER_SIZE	;iii++)
 	{
 		if(checkUsartData(&AVR32_USART0,watingTime) == 0 )
 		{
@@ -139,12 +150,19 @@ int megatec_command_CR(uint8_t *send_command,uint8_t sLength,uint8_t startByte,i
 				return revCount;
 			}
 			else *(receive_data+revCount) = (uint8_t)receive;
-			if(*(receive_data+0) != startByte ) revCount=0; //  set revCount to 0 from receive startByte
+			if(*(receive_data+0) != startByte ) {
+				revCount=0; //  set revCount to 0 from receive startByte
+				return -1;
+			}
 			else revCount++;
-			i=0; // 
-		}; //vTaskDelay(1);//else if(USART_RX_EMPTY)  vTaskDelay(1);  //
+			
+		}
+		else{
+			return -1;
+		}
 	}
 	return -1;
+	*/
 }
 Bool parseQ1_megatec(char *str)
 {
@@ -230,20 +248,20 @@ Bool parseQ1_megatec(char *str)
 	return true;
 }
 
+//Battery voltage, Battery Capacity,Battery Remaining, Battery current, Temperature,I/P freq,Freq bypss,o/p freq,
 bool requestUps_G1_megatec()
 {
 	int16_t *pData;
 	pData =(int16_t *)&upsModeBusData ;//
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
-	if(buffer == NULL) 	{		return false;	} ;// memory alloc error;
+	if(buffer == NULL) 	{
+				return false;	
+				} ;// memory alloc error;
 	memset(buffer,0x00,RECEIVE_BUFFER_SIZE);
 
-	if(isSerialLineUsed==true) vTaskDelay(50); if(isSerialLineUsed==true) vTaskDelay(50);
-	if(isSerialLineUsed==true) vTaskDelay(50); if(isSerialLineUsed==true) return false;
 
-	isSerialLineUsed=true;	
-	int receivedCount = megatec_command_CR("G1\r",3,'!',500,buffer); // (는 빼고 넘긴다.
-	isSerialLineUsed=false;	
+	int receivedCount;
+	receivedCount = megatec_command_CR("G1\r",3,'!',500,buffer); // (는 빼고 넘긴다.
 	if(receivedCount > 0) 
 	{
 		//Q1 command 에서 이미 배터리의 데이타는 잘 받았다.
@@ -256,6 +274,11 @@ bool requestUps_G1_megatec()
 			free(buffer);
 			return true;
 		}
+		else{
+			free(buffer);
+			return false;
+		}
+			
 	}
 	free(buffer);
     return false	;
@@ -331,18 +354,19 @@ bool requestUps_G2_megatec()
 	if(buffer == NULL) 	{		return false;	} ;// memory alloc error;
 	memset(buffer,0x00,RECEIVE_BUFFER_SIZE);
 
-	if(isSerialLineUsed==true) vTaskDelay(50); if(isSerialLineUsed==true) vTaskDelay(50);
-	if(isSerialLineUsed==true) vTaskDelay(50); if(isSerialLineUsed==true) return false;
 
-	isSerialLineUsed=true;	
 	int receivedCount = megatec_command_CR("G2\r",3,'!',500,buffer); // (는 빼고 넘긴다.
-	isSerialLineUsed=false;	
 	if(receivedCount > 0) 
 	{
 		if(parse_G2_megatec(buffer+1))
 		{
 			free(buffer);
 			return true;
+		}
+		else{
+			
+			free(buffer);
+			return false;
 		}
 	}
 	free(buffer);
@@ -422,12 +446,8 @@ bool requestUps_G3_megatec()
 	if(buffer == NULL) 	{		return false;	} ;// memory alloc error;
 	memset(buffer,0x00,RECEIVE_BUFFER_SIZE);
 
-	if(isSerialLineUsed==true) vTaskDelay(50); if(isSerialLineUsed==true) vTaskDelay(50);
-	if(isSerialLineUsed==true) vTaskDelay(50); if(isSerialLineUsed==true) return false;
 
-	isSerialLineUsed=true;	
 	int receivedCount = megatec_command_CR("G3\r",3,'!',500,buffer); // (는 빼고 넘긴다.
-	isSerialLineUsed=false;	
 	if(receivedCount > 0) 
 	{
 		//memset(&upsModeBusData,NULL,sizeof(upsModeBusData));
@@ -447,6 +467,10 @@ bool requestUps_G3_megatec()
 		{
 			free(buffer);
 			return true;
+		}
+		else{
+			free(buffer);
+			return false;
 		}
 	}
 	free(buffer);
@@ -545,7 +569,6 @@ Bool parseG3_megatec(char *str)
 
 bool upsInformationCommand_I_megatec()
 {
-	isSerialLineUsed=true;	
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
 	int receivedCount = megatec_command_CR("I\r",2,'#',500,buffer); 
 	
@@ -553,7 +576,6 @@ bool upsInformationCommand_I_megatec()
 	{
 		parse_I_megatec(buffer+1);
 	}
-	isSerialLineUsed=false;	
 	free(buffer);
 	if(receivedCount > 0) return true;
 	else return false;
@@ -586,7 +608,6 @@ Bool parse_I_megatec(char *str)
 
 bool upsInformationCommand_GF_megatec()
 {
-	isSerialLineUsed=true;	
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
 	int receivedCount = megatec_command_CR("GF\r",3,'!',500,buffer); 
 	
@@ -594,7 +615,6 @@ bool upsInformationCommand_GF_megatec()
 	{
 		parse_GF_megatec(buffer+1);
 	}
-	isSerialLineUsed=false;	
 	free(buffer);
 	if(receivedCount > 0) return true;
 	else return false;
@@ -679,7 +699,6 @@ Bool parse_GF_megatec(char *str)
 }
 bool upsInformationCommand_F_megatec()
 {
-	isSerialLineUsed=true;	
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
 	int receivedCount = megatec_command_CR("F\r",2,'#',500,buffer); 
 	
@@ -687,7 +706,6 @@ bool upsInformationCommand_F_megatec()
 	{
 		parse_F_megatec(buffer+1);
 	}
-	isSerialLineUsed=false;	
 	free(buffer);
 	if(receivedCount > 0) return true;
 	else return false;
@@ -734,81 +752,69 @@ Bool parse_F_megatec(char *str)
 }
 void TurnOnOff_Q_megatec()
 {
-	isSerialLineUsed=true;	
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
-	 megatec_command_CR("Q\r",2,'#',10,buffer); 
-	isSerialLineUsed=false;	
+	 megatec_command_CR("Q\r",2,'#',500,buffer); 
 	free(buffer);
 }
 
 void Test10Second_T_megatec()
 {
-	isSerialLineUsed=true;	
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
-	 megatec_command_CR("T\r",2,'#',10,buffer); 
-	isSerialLineUsed=false;	
+	 megatec_command_CR("T\r",2,'#',500,buffer); 
 	free(buffer);
 }
 void TestUntilBatteryLow_TL_megatec()
 {
-	isSerialLineUsed=true;	
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
-	megatec_command_CR("TL\r",3,'#',10,buffer); 
-	isSerialLineUsed=false;	
+	megatec_command_CR("TL\r",3,'#',500,buffer); 
 	free(buffer);
 }
 
 void CancelShutDown_C_megatec()
 {
-	isSerialLineUsed=true;	
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
-	megatec_command_CR("C\r",2,'#',10,buffer); 
-	isSerialLineUsed=false;	
+	megatec_command_CR("C\r",2,'#',500,buffer); 
 	free(buffer);
 }
 void CancelTest_CT_megatec()
 {
-	isSerialLineUsed=true;	
 	char *buffer = (char *)malloc(RECEIVE_BUFFER_SIZE);
-	megatec_command_CR("CT\r",3,'#',10,buffer); 
-	isSerialLineUsed=false;	
+	megatec_command_CR("CT\r",3,'#',500,buffer); 
 	free(buffer);
 }
-
 Bool requestUpsStatus_megatec()
 {
 	flash_read_ups_info(&ups_info);
 	Bool ret;
 	upsModeBusData.Bat_volt_rms=0;
-	if( isMegatecSupport_3P )  // 삼상 프로토콜을 지원하지 않으면 무조건 단상이다.
+	if(ups_info.ups_type== 50 || ups_info.ups_type== 51)
 	{
-		if(ups_info.ups_type== 50 || ups_info.ups_type== 51)
-		{
-			// I/P Voltage -> G3.b
-			// I/P fault voltage, 
-			// O/P Voltage ->G3.d 
-			// O/P current 
-			// I/P frequency   --> G1.g support
-			// Battery Voltage ->G1.b
-			// SS.S or S.SS,Temperature,UPS status 
+		// I/P Voltage -> G3.b
+		// I/P fault voltage,
+		// O/P Voltage ->G3.d
+		// O/P current
+		// I/P frequency   --> G1.g support
+		// Battery Voltage ->G1.b
+		// SS.S or S.SS,Temperature,UPS status
+
 			ret = requestUpsStatus_Q1_megatec() ;
 			if( ret == false ) return  false;
 			//Battery voltage, Battery Capacity,Battery Remaining, Battery current, Temperature,I/P freq,Freq bypss,o/p freq,
 			ret = requestUps_G1_megatec() ;
-
 			if( ret == false ) return  false;
-			// ups status
 			ret = requestUps_G2_megatec();
 			if( ret == false ) return  false;
-			// I/P Vol, RST , Bypass RST  , O/P Vol RST Load Persend RST, 
+
 			ret = requestUps_G3_megatec();
 			if( ret == false ) return  false;
-
-			else return true;
-		}
+		/*
+		// ups status
+		// I/P Vol, RST , Bypass RST  , O/P Vol RST Load Persend RST,
+		else return true;
+		*/
+		return true;
 	}
-	else //if(ups_info.ups_type== 52  )
-	{
+	else{
 		return requestUpsStatus_Q1_megatec();
 	}
 }

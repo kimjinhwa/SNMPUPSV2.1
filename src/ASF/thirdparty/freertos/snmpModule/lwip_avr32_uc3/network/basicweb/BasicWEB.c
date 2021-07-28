@@ -151,10 +151,10 @@ int webFunction(int port)
 			if(pxNewConnection != NULL)
 			{
 				stopModebusGet=true;
-				portENTER_CRITICAL();
+				//portENTER_CRITICAL();
 				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accepted! ") );
 				prvweb_ParseHTMLRequest(pxNewConnection);
-				portEXIT_CRITICAL();
+				//portEXIT_CRITICAL();
 			}
 		}
 	}
