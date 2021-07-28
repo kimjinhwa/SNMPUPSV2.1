@@ -8,6 +8,10 @@
 #ifndef MIBKEP_H_
 #define MIBKEP_H_
 
+extern Bool getDataFromSerial();
+extern int16_t charging_method;
+extern Bool bModebusSuccess;
+extern Bool stopModebusGet;
 //kep_mgmt  이렇게 하면 .1.3.6.1.2---과 .1.3.6.1.4---는 동일한 값을 표현한다.
 const mib_scalar_node ups_scalar_kep = {
 	&ups_get_object_def_kep,
@@ -113,6 +117,14 @@ const struct mib_array_node mgmt_kep = {
 static void ups_get_object_def_kep(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
 	/* return to object name, adding index depth (1) */
+	while( isModebusRunning)
+	{
+		vTaskDelay(10); //if(lValue>500)break; //lValue++;
+	};
+	if(bModebusSuccess ==  false){
+		od->instance = MIB_OBJECT_NONE;
+		return ;	
+	}
 	ident_len += 1;
 	ident -= 1;
 	if (ident_len == 2)
@@ -146,8 +158,6 @@ static void ups_get_object_def_kep(u8_t ident_len, s32_t *ident, struct obj_def 
 	od->instance = MIB_OBJECT_NONE;
 }
 
-extern Bool getDataFromSerial();
-extern int16_t charging_method;
 static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 {
 
@@ -162,23 +172,18 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 	// 아이디와 UPS-MIB를 맞추어 준다..나중에
 	//id = id+1;
 	uint16_t lValue=0;
+	stopModebusGet = true;
 	/*
-	while( isModebusRunning)
-	{
-		vTaskDelay(100);
-		if(lValue>50)break;
-		lValue++;
-	};
 	*/
-	portENTER_CRITICAL();
-	if(upsModeBusData.Bat_volt_rms == 0 ){
-		while(getDataFromSerial());
+	//portENTER_CRITICAL();
+	//if(upsModeBusData.Bat_volt_rms == 0 ){
+	//		while(getDataFromSerial());
 		 //return;
-	}
-	if(upsModeBusData.Bat_volt_rms == 0 ){
-		portEXIT_CRITICAL();
-		return;
-	}
+	//}
+	//if(upsModeBusData.Bat_volt_rms == 0 ){
+		//portEXIT_CRITICAL();
+	//	return;
+	//}
 	lValue=0;
 	switch (id){
 		case 1:// Input_r_volt_rms
@@ -225,7 +230,8 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 		default:
 		break;
 	}
-	portEXIT_CRITICAL();
+	stopModebusGet = false;
+	//portEXIT_CRITICAL();
 }
 static u8_t ups_set_test_kep(struct obj_def *od, u16_t len, void *value)
 {

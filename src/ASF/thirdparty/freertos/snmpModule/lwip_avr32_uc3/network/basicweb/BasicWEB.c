@@ -86,7 +86,7 @@ Bool getTimeFromServer(void);
 
 //extern wdt_opt_t opt;
 int isNowWebServiceRunningCount =0;
-Bool isNowWebServiceRunning =false;
+Bool stopModebusGet =false;
 extern ups_info_t ups_info;
 extern ups_modbus_data_t upsModeBusData;
 extern uint16_t isModebusRunning;
@@ -123,7 +123,7 @@ int webFunction(int port)
 	for(;;)
 	{
 		vTaskDelay( webSHORT_DELAY );
-		isNowWebServiceRunning=false;
+		stopModebusGet=false;
 		//accept_err
 		errorCheck=netconn_accept(pxHTTPListener, &pxNewConnection);// != ERR_OK)
 		//while(netconn_accept(pxHTTPListener, &pxNewConnection) != ERR_OK)
@@ -150,7 +150,7 @@ int webFunction(int port)
 			vParTestSetLED(0, pdTRUE);
 			if(pxNewConnection != NULL)
 			{
-				isNowWebServiceRunning=true;
+				stopModebusGet=true;
 				portENTER_CRITICAL();
 				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accepted! ") );
 				prvweb_ParseHTMLRequest(pxNewConnection);

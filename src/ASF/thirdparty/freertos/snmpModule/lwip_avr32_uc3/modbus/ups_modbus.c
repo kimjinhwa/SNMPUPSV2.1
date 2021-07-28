@@ -91,7 +91,7 @@ uint16_t isModebusRunning=0;
 
 
 //extern wdt_opt_t opt;
-extern Bool isNowWebServiceRunning;
+extern Bool stopModebusGet;
 uint32_t  snmp_get_everyMinute();
 void  snmp_set_everyMinute(uint16_t value);
 int wait_command() ;
@@ -346,7 +346,7 @@ Bool isMegatecSupport_3P ;
 
 void serial_init_2400();
 void serial_init_9600();
-
+Bool bModebusSuccess=false;
 static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 {
 	//portTickType xFlashRate, xLastFlashTime;
@@ -453,39 +453,37 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 		vParTestSetLED(3, pdTRUE);
 		modebusPrcessCount++;
 		//잠시 중단
-		Bool bRet=false;
-		//if( isNowWebServiceRunning==false && isNowSNMPServiceRunning == false) 
-		if( isNowWebServiceRunning==false )
+		//if( stopModebusGet==false && isNowSNMPServiceRunning == false) 
+		if( stopModebusGet==false )
 		{
 			//통신에 문제가 있으면 한번더 수행하라.
 			//한전에서 축전지 전압에 문제가 가끔씩 생긴다고 하여 루틴을 추가 한다.
-			for( int i = 0 ; i < 2; i++ )
+			//for( int i = 0 ; i < 2; i++ )
 			{
 				vParTestSetLED(1, pdFALSE);
 				//xTimeBefore = xTaskGetTickCount();
 				taskENTER_CRITICAL() ;
 				isModebusRunning=true;
-				bRet = requestUpsData();   // 173 ms taken
+				bModebusSuccess= requestUpsData();   // 173 ms taken
 				//에러가 생기면 한번만 더 해 본다.
-				if(!bRet)requestUpsData();   // 173 ms taken
+				//if(!bRet)requestUpsData();   // 173 ms taken
 				isModebusRunning=false;
 				taskEXIT_CRITICAL();
 				//xTotalTimeSuspended = xTaskGetTickCount()-xTimeBefore ;
-				if(bRet == true) break;       // 한번 더 수행하라..
-				else{
-					vTaskDelay( 1);
-				}
+				//if(bRet == true) break;       // 한번 더 수행하라..
+				//else{
+			    //		vTaskDelay( 1);
+				//}
 				//if(i>=3){ break; }
 			}
-			vParTestSetLED(1, !bRet);
+			vParTestSetLED(1, !bModebusSuccess);
 		}
 		vParTestSetLED(3, pdFALSE);
 		//portEXIT_CRITICAL();
-		if(bRet ) // 데이타를 받아 오면 그때 데이타 검사를 수행한다.
+		if(bModebusSuccess ) // 데이타를 받아 오면 그때 데이타 검사를 수행한다.
 		{
 			write_log_event();
 		}
-
 		vTaskDelay( 1000);
 	}
 }
