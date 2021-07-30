@@ -141,16 +141,150 @@ static void ups_get_object_def_kep(u8_t ident_len, s32_t *ident, struct obj_def 
 
 		LWIP_ASSERT("invalid id", (ident[0] >= 0) && (ident[0] <= 0xff));
 		id = (u8_t)ident[0];
-		if( id >=1  && id <=255 )
+		switch (id)
 		{
+			case 1:// Input_r_volt_rms
 			od->instance = MIB_OBJECT_SCALAR;
 			od->access = MIB_OBJECT_READ_ONLY;
 			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
 			od->v_len = sizeof(u32_t);
-		}
-		else
-		{
+			break;
+			case 2: // Input_s_volt_rms
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 3: // Input_t_volt_rms
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 4:	//Output_r_volt_rms
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 5://Output_u_current_rms
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 6://Bat_volt_rms
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 7://Bat_current_rms
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 8:// 부동충전 or 균등 충전 Converter Status
+
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_OC_STR);
+			if(charging_method == 0 ) od->v_len = 8;
+			else od->v_len = 10;
+
+			break;
+			case 9://Output_frequency 10으로 나누어 준다
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 200:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 201:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 202:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 203:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 210:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 211:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			case 212:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 213:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			case 214:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 215:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 216:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 217:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 224:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 225:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			default:
 			od->instance = MIB_OBJECT_NONE;
+			break;
 		}
 	}
 	else
@@ -212,8 +346,12 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 		case 7://Bat_current_rms
 		*uint_ptr =(u32_t)( *(pData+38));
 		break;
-		case 8:// 부동충전 or 균등 충전 Converter Status 
+		case 8://부동충전 or 균등 충전 Converter Status  Floating or Equalizing
 		*uint_ptr =charging_method;//(u32_t)( (*(pData+12) & BIT(1)) >> 1  );
+		if(charging_method == 0 ) ocstrncpy((u8_t*)value,  "Floating  ", len);
+		else ocstrncpy((u8_t*)value, "Equalizing", len);
+		// 
+		//
 		break;
 		case 9://Output_frequency 10으로 나누어 준다
 		*uint_ptr =((u32_t)( *(pData+49)))/10;
