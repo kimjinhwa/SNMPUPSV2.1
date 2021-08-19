@@ -1409,46 +1409,6 @@ void html_SETUP_EMAIL(struct netconn *pxNetCon,portCHAR *pcRxString)
 	webHTML_netconn_write(pxNetCon,webHTML_EMAILSETUP_content);
 	webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
 }
-void html_SETUP_UPSBASIC(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *parameter)
-{
-	data_ethernet_t ethernet_t;
-	flash_read__ethernetInfo(&ethernet_t);   // 기존의 값을 읽는다.
-
-	webHTML_netconn_write(pxNetCon,webHTTP_OK);
-	
-	webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
-	sprintf( cDynamicPage,"<script>var agentIpAddress= document.location.host;</script>",ethernet_t.Ethernet_Conf_IpAddr0,ethernet_t.Ethernet_Conf_IpAddr1,ethernet_t.Ethernet_Conf_IpAddr2,ethernet_t.Ethernet_Conf_IpAddr3);
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-
-	//Pass routine
-	sprintf( cDynamicPage,"<script>\
-	var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-
-	sprintf( cDynamicPage,"\
-	if(idAns==null){\
-		do{\
-			var idAns = prompt('사용자 아이디를 입력하여 주십시요');\
-		}while(idAns != userId);\
-		do{\
-			var passAns = prompt('패스워드를 입력하여 주십시요');\
-		}while(passAns != passwd );\
-	};\
-	</script>");
-	webHTML_netconn_write(pxNetCon,cDynamicPage);
-
-	webHTML_netconn_write(pxNetCon,webHTML_websocket_script);
-	webHTML_netconn_write(pxNetCon,webHTML_UPSSETUPBASIC_script);
-	
-	webHTML_netconn_write(pxNetCon,webHTML_HEAD_END);
-	webHTML_netconn_write(pxNetCon,webHTML_CSS);
-	
-	webHTML_netconn_write(pxNetCon,webHTML_menu);
-	webHTML_netconn_write(pxNetCon,webHTML_UPSSETUPBASIC_content);
-	webHTML_netconn_write(pxNetCon,webHTML_EMAILSETUP_content);
-	
-	webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
-}
 void setupUpsReload(struct netconn *pxNetCon,char *commandType){
 	//sprintf( cDynamicPage, "<script>alert('%s'+' 설정완료!');window.location.assign(window.location.pathname)</script>",commandType);		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 }
@@ -1628,184 +1588,52 @@ void html_default(struct netconn *pxNetCon,Bool bLogview)
 	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 
 	webHTML_netconn_write(pxNetCon,indexHtml_2);
+	webHTML_netconn_write(pxNetCon,indexHtml_3);
+	webHTML_netconn_write(pxNetCon,indexHtml_4);
 	return;
-
-	/*
-	netconn_write( pxNetCon, webHTTP_OK, (u16_t) strlen( webHTTP_OK ), NETCONN_COPY );
-	webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
-	webHTML_netconn_write(pxNetCon,webHTML_HEAD_END);
-	uint16_t *pData ;
-	
-	pData =&upsModeBusData ;
-
-	sprintf( cDynamicPage,"<script> var autoLoadTime = %d;  setInterval( function(){ WebSocketToSnmp('UPS_EX_DATA','');}, autoLoadTime);</script>", flash_read_reLoadTime()*1000*360) ;
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-
-	portTickType snmp_systemTime=getTimeLong();
-	pData[10] =  (uint16_t)(0xFFFF & snmp_systemTime);
-	pData[11] =  (uint16_t)(snmp_systemTime>>16);
-
-	sprintf( cDynamicPage,"<script>");
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-
-	sprintf( cDynamicPage,"\
-	var upsModeBusData = { \
-		Year_made:%d,\
-		Month_made:%d,\
-		Date_made:%d,\
-		Ups_Capacitor:%d,\
-		Input_Phase:%d,\
-		Input_Voltage:%d,\
-		Output_Phase:%d,\
-		Output_Voltage:%d,\
-		Company_code_And_upstype:%d,\
-		Installed_Battery_Cells:%d,",
-		pData[0] ,pData[1]  ,pData[2] ,pData[3] ,pData[4] ,pData[5] ,pData[6] ,pData[7] ,pData[8] ,pData[9]\
-		);
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-		
-		sprintf( cDynamicPage,"\
-		reserved_2:%d,\
-		BMS_1_2_STATE:%d,\
-		Converter_State:%d,\
-		Inverter_State:%d,\
-		Converter_Operation_Fault:%d,\
-		Inverter_Operation_Fault:%d,\
-		Input_r_volt_rms:%d,\
-		Input_s_volt_rms:%d,\
-		Input_t_volt_rms:%d,\
-		Input_r_current_rms:%d,",\
-		pData[10],pData[11],pData[12],pData[13],pData[14],pData[15],pData[16],pData[17],pData[18],pData[19]\
-		);
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-		
-		sprintf( cDynamicPage,"\
-		Input_s_current_rms:%d,\
-		Input_t_current_rms:%d,\
-		Input_frequency:%d,\
-		Bypass_r_volt_rms:%d,\
-		Bypass_s_volt_rms:%d,\
-		Bypass_t_volt_rms:%d,\
-		Bypass_r_current_rms:%d,\
-		Bypass_s_current_rms:%d,\
-		Bypass_t_current_rms:%d,\
-		Bypass_Frequency:%d,",\
-		pData[20],pData[21],pData[22],pData[23],pData[24],pData[25],pData[26],pData[27],pData[28],pData[29]\
-		);
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-		
-		
-		sprintf( cDynamicPage,"\
-		Inverter_u_volt_rms:%d,\
-		Inverter_v_volt_rms:%d,\
-		Inverter_w_volt_rms:%d,\
-		Inverter_u_curr_rms:%d,\
-		Inverter_V_curr_rms:%d,\
-		Inverter_W_curr_rms:%d,\
-		Inverter_Frequency:%d,\
-		Bat_volt_rms:%d,\
-		Bat_current_rms:%d,\
-		Input_kva_address_KVA:%d,\
-		Input_kw_KW:%d,",\
-		pData[30],pData[31],pData[32],pData[33],pData[34],pData[35],pData[36],pData[37],pData[38],pData[39],pData[40]\
-		);
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-		
-		sprintf( cDynamicPage,"\
-		Input_kvar_KVAR:%d,\
-		Input_power_factor_Pf:%d,\
-		Output_r_volt_rms:%d,\
-		Output_s_volt_rms:%d,\
-		Output_t_volt_rms:%d,\
-		Output_u_current_rms:%d,\
-		Output_v_current_rms:%d,\
-		Output_w_current_rms:%d,\
-		Output_frequency:%d,\
-		Output_kva_KVA:%d,\
-		",\
-		pData[41],pData[42],pData[43],pData[44],pData[45],pData[46],pData[47],pData[48],pData[49],pData[50]\
-		);
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-		
-		sprintf( cDynamicPage,"\
-		Output_kw_KW:%d,\
-		Output_kvar_KVAR:%d,\
-		Output_Power_factor_Pf:%d,\
-		Output_R_Load:%d,\
-		Output_S_Load:%d,\
-		Output_T_Load:%d,\
-		BMS_Bat_Voltage:%d,\
-		Battery_Room_Temper:%d,\
-	};",\
-	pData[51],pData[52],pData[53],pData[54],pData[55],pData[56],pData[57],pData[58]\
-	);
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-	
-	unsigned long sssTime = getTimeLong() ;
-	webHTML_netconn_write(pxNetCon,"var snmpDateTime = new Date() ;");
-	
-	sprintf( cDynamicPage,"	var snmp_time_value_text = '%d/%02d/%02d %02d:%02d:%02d';", year(),month(),day()+1,hour(),minute(),tmsecond() );
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-	
-	webHTML_netconn_write(pxNetCon,"var dataCount=0;\
-	function doDate(){\
-		var str;var now = new Date();\
-		str = now.getFullYear()+'/' +  (now.getMonth()+1)+'/'  +  now.getDate() + ' ' + now.getHours() +':' + now.getMinutes() + ':' + now.getSeconds();\
-		document.getElementById('system_time_value').innerHTML = str;\
-		dataCount++;\
-		if( dataCount*1000 >= autoLoadTime )dataCount =0;\
-		document.getElementById('status_bar').innerHTML =  dataCount;}\
-		setInterval(doDate, 1000);");
-	
-
-	sprintf(cDynamicPage,"function imageDivHide(){	if(  document.getElementById('imageDiv').style.display == 'block' ||    document.getElementById('imageDiv').style.display == '' ) {		document.getElementById('imageDiv').style.display = 'none';		document.getElementById('statusInfoDiv').style.display = 'block'	}}");
-	       	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-
-	sprintf(cDynamicPage,"function imageDivShow(){	if(  document.getElementById('imageDiv').style.display == 'none'  ) {		document.getElementById('imageDiv').style.display = 'block';		document.getElementById('statusInfoDiv').style.display = 'none'	}};");
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-
-
-	data_ethernet_t ethernet_t;
-	int16_t ipaddress[6] ;
-
-	memset(ipaddress,0x00,sizeof(ipaddress));
-	flash_read__ethernetInfo(&ethernet_t);   // 기존의 값을 읽는다.
-	sprintf( cDynamicPage,"var agentIpAddress='%d.%d.%d.%d';",ethernet_t.Ethernet_Conf_IpAddr0,ethernet_t.Ethernet_Conf_IpAddr1,ethernet_t.Ethernet_Conf_IpAddr2,ethernet_t.Ethernet_Conf_IpAddr3);
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-	
-	sprintf( cDynamicPage,"var systemTime='%u'*1000- 2208965020*1000 ;var systemTime_1='%u';",snmp_systemTime,sssTime );
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-	
-	
-	webHTML_netconn_write(pxNetCon,"</script>");
-	
-	{
-		log_t tlog;
-		int log_start_pos = getFirstLog(&tlog);
-		webHTML_netconn_write(pxNetCon,"<script> var Eventlog = [");
-		while(tlog.kind != 0xff)
-		{
-			sprintf( cDynamicPage,"{time:0x%04"X16_F"%04"X16_F",kind:%d,event:%d},",(u16_t) (tlog.systemTime>>16),(u16_t) (tlog.systemTime & 0x0000ffff),tlog.kind, tlog.event);
-			netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-			log_start_pos++;
-			if(log_start_pos >= MAX_LOG) break;
-			getNextLog(log_start_pos,&tlog);
-		}
-		webHTML_netconn_write(pxNetCon,"]; </script> ");
-	}
-	
-	webHTML_netconn_write(pxNetCon,webCanvasScript);
-	webHTML_netconn_write(pxNetCon,webHTML_websocket_script);
-	webHTML_netconn_write(pxNetCon,webHTML_default_script);
-	webHTML_netconn_write(pxNetCon,webHTML_CSS);
-	webHTML_netconn_write(pxNetCon,webHTML_menu);
-	webHTML_netconn_write(pxNetCon,webHTML_default_START_content);
-	webHTML_netconn_write(pxNetCon,webHTML_default_START_log);
-	webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
-*/
 
 }
 
+void html_SETUP_UPSBASIC(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *parameter)
+{
+	data_ethernet_t ethernet_t;
+	flash_read__ethernetInfo(&ethernet_t);   // 기존의 값을 읽는다.
+
+	webHTML_netconn_write(pxNetCon,webHTTP_OK);
+	
+	webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
+	sprintf( cDynamicPage,"<script>var agentIpAddress= document.location.host;</script>",ethernet_t.Ethernet_Conf_IpAddr0,ethernet_t.Ethernet_Conf_IpAddr1,ethernet_t.Ethernet_Conf_IpAddr2,ethernet_t.Ethernet_Conf_IpAddr3);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	//Pass routine
+	sprintf( cDynamicPage,"<script>\
+	var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	sprintf( cDynamicPage,"\
+	if(idAns==null){\
+		do{\
+			var idAns = prompt('사용자 아이디를 입력하여 주십시요');\
+		}while(idAns != userId);\
+		do{\
+			var passAns = prompt('패스워드를 입력하여 주십시요');\
+		}while(passAns != passwd );\
+	};\
+	</script>");
+	webHTML_netconn_write(pxNetCon,cDynamicPage);
+
+	webHTML_netconn_write(pxNetCon,webHTML_websocket_script);
+	webHTML_netconn_write(pxNetCon,webHTML_UPSSETUPBASIC_script);
+	
+	webHTML_netconn_write(pxNetCon,webHTML_HEAD_END);
+	webHTML_netconn_write(pxNetCon,webHTML_CSS);
+	
+	webHTML_netconn_write(pxNetCon,webHTML_menu);
+	webHTML_netconn_write(pxNetCon,webHTML_UPSSETUPBASIC_content);
+	webHTML_netconn_write(pxNetCon,webHTML_EMAILSETUP_content);
+	
+	webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
+}
 static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 {
 	struct netbuf *pxRxBuffer;
@@ -2217,3 +2045,178 @@ uint8_t parseTime(uint8_t *hour,uint8_t *minute , char *strTime){
 	if( *minute >= 60)*minute= 59;
 }
 #endif
+
+	/*
+	netconn_write( pxNetCon, webHTTP_OK, (u16_t) strlen( webHTTP_OK ), NETCONN_COPY );
+	webHTML_netconn_write(pxNetCon,webHTML_HEAD_START);
+	webHTML_netconn_write(pxNetCon,webHTML_HEAD_END);
+	uint16_t *pData ;
+	
+	pData =&upsModeBusData ;
+
+	sprintf( cDynamicPage,"<script> var autoLoadTime = %d;  setInterval( function(){ WebSocketToSnmp('UPS_EX_DATA','');}, autoLoadTime);</script>", flash_read_reLoadTime()*1000*360) ;
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	portTickType snmp_systemTime=getTimeLong();
+	pData[10] =  (uint16_t)(0xFFFF & snmp_systemTime);
+	pData[11] =  (uint16_t)(snmp_systemTime>>16);
+
+	sprintf( cDynamicPage,"<script>");
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	sprintf( cDynamicPage,"\
+	var upsModeBusData = { \
+		Year_made:%d,\
+		Month_made:%d,\
+		Date_made:%d,\
+		Ups_Capacitor:%d,\
+		Input_Phase:%d,\
+		Input_Voltage:%d,\
+		Output_Phase:%d,\
+		Output_Voltage:%d,\
+		Company_code_And_upstype:%d,\
+		Installed_Battery_Cells:%d,",
+		pData[0] ,pData[1]  ,pData[2] ,pData[3] ,pData[4] ,pData[5] ,pData[6] ,pData[7] ,pData[8] ,pData[9]\
+		);
+		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+		
+		sprintf( cDynamicPage,"\
+		reserved_2:%d,\
+		BMS_1_2_STATE:%d,\
+		Converter_State:%d,\
+		Inverter_State:%d,\
+		Converter_Operation_Fault:%d,\
+		Inverter_Operation_Fault:%d,\
+		Input_r_volt_rms:%d,\
+		Input_s_volt_rms:%d,\
+		Input_t_volt_rms:%d,\
+		Input_r_current_rms:%d,",\
+		pData[10],pData[11],pData[12],pData[13],pData[14],pData[15],pData[16],pData[17],pData[18],pData[19]\
+		);
+		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+		
+		sprintf( cDynamicPage,"\
+		Input_s_current_rms:%d,\
+		Input_t_current_rms:%d,\
+		Input_frequency:%d,\
+		Bypass_r_volt_rms:%d,\
+		Bypass_s_volt_rms:%d,\
+		Bypass_t_volt_rms:%d,\
+		Bypass_r_current_rms:%d,\
+		Bypass_s_current_rms:%d,\
+		Bypass_t_current_rms:%d,\
+		Bypass_Frequency:%d,",\
+		pData[20],pData[21],pData[22],pData[23],pData[24],pData[25],pData[26],pData[27],pData[28],pData[29]\
+		);
+		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+		
+		
+		sprintf( cDynamicPage,"\
+		Inverter_u_volt_rms:%d,\
+		Inverter_v_volt_rms:%d,\
+		Inverter_w_volt_rms:%d,\
+		Inverter_u_curr_rms:%d,\
+		Inverter_V_curr_rms:%d,\
+		Inverter_W_curr_rms:%d,\
+		Inverter_Frequency:%d,\
+		Bat_volt_rms:%d,\
+		Bat_current_rms:%d,\
+		Input_kva_address_KVA:%d,\
+		Input_kw_KW:%d,",\
+		pData[30],pData[31],pData[32],pData[33],pData[34],pData[35],pData[36],pData[37],pData[38],pData[39],pData[40]\
+		);
+		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+		
+		sprintf( cDynamicPage,"\
+		Input_kvar_KVAR:%d,\
+		Input_power_factor_Pf:%d,\
+		Output_r_volt_rms:%d,\
+		Output_s_volt_rms:%d,\
+		Output_t_volt_rms:%d,\
+		Output_u_current_rms:%d,\
+		Output_v_current_rms:%d,\
+		Output_w_current_rms:%d,\
+		Output_frequency:%d,\
+		Output_kva_KVA:%d,\
+		",\
+		pData[41],pData[42],pData[43],pData[44],pData[45],pData[46],pData[47],pData[48],pData[49],pData[50]\
+		);
+		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+		
+		sprintf( cDynamicPage,"\
+		Output_kw_KW:%d,\
+		Output_kvar_KVAR:%d,\
+		Output_Power_factor_Pf:%d,\
+		Output_R_Load:%d,\
+		Output_S_Load:%d,\
+		Output_T_Load:%d,\
+		BMS_Bat_Voltage:%d,\
+		Battery_Room_Temper:%d,\
+	};",\
+	pData[51],pData[52],pData[53],pData[54],pData[55],pData[56],pData[57],pData[58]\
+	);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	
+	unsigned long sssTime = getTimeLong() ;
+	webHTML_netconn_write(pxNetCon,"var snmpDateTime = new Date() ;");
+	
+	sprintf( cDynamicPage,"	var snmp_time_value_text = '%d/%02d/%02d %02d:%02d:%02d';", year(),month(),day()+1,hour(),minute(),tmsecond() );
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	
+	webHTML_netconn_write(pxNetCon,"var dataCount=0;\
+	function doDate(){\
+		var str;var now = new Date();\
+		str = now.getFullYear()+'/' +  (now.getMonth()+1)+'/'  +  now.getDate() + ' ' + now.getHours() +':' + now.getMinutes() + ':' + now.getSeconds();\
+		document.getElementById('system_time_value').innerHTML = str;\
+		dataCount++;\
+		if( dataCount*1000 >= autoLoadTime )dataCount =0;\
+		document.getElementById('status_bar').innerHTML =  dataCount;}\
+		setInterval(doDate, 1000);");
+	
+
+	sprintf(cDynamicPage,"function imageDivHide(){	if(  document.getElementById('imageDiv').style.display == 'block' ||    document.getElementById('imageDiv').style.display == '' ) {		document.getElementById('imageDiv').style.display = 'none';		document.getElementById('statusInfoDiv').style.display = 'block'	}}");
+	       	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	sprintf(cDynamicPage,"function imageDivShow(){	if(  document.getElementById('imageDiv').style.display == 'none'  ) {		document.getElementById('imageDiv').style.display = 'block';		document.getElementById('statusInfoDiv').style.display = 'none'	}};");
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+
+	data_ethernet_t ethernet_t;
+	int16_t ipaddress[6] ;
+
+	memset(ipaddress,0x00,sizeof(ipaddress));
+	flash_read__ethernetInfo(&ethernet_t);   // 기존의 값을 읽는다.
+	sprintf( cDynamicPage,"var agentIpAddress='%d.%d.%d.%d';",ethernet_t.Ethernet_Conf_IpAddr0,ethernet_t.Ethernet_Conf_IpAddr1,ethernet_t.Ethernet_Conf_IpAddr2,ethernet_t.Ethernet_Conf_IpAddr3);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	
+	sprintf( cDynamicPage,"var systemTime='%u'*1000- 2208965020*1000 ;var systemTime_1='%u';",snmp_systemTime,sssTime );
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	
+	
+	webHTML_netconn_write(pxNetCon,"</script>");
+	
+	{
+		log_t tlog;
+		int log_start_pos = getFirstLog(&tlog);
+		webHTML_netconn_write(pxNetCon,"<script> var Eventlog = [");
+		while(tlog.kind != 0xff)
+		{
+			sprintf( cDynamicPage,"{time:0x%04"X16_F"%04"X16_F",kind:%d,event:%d},",(u16_t) (tlog.systemTime>>16),(u16_t) (tlog.systemTime & 0x0000ffff),tlog.kind, tlog.event);
+			netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+			log_start_pos++;
+			if(log_start_pos >= MAX_LOG) break;
+			getNextLog(log_start_pos,&tlog);
+		}
+		webHTML_netconn_write(pxNetCon,"]; </script> ");
+	}
+	
+	webHTML_netconn_write(pxNetCon,webCanvasScript);
+	webHTML_netconn_write(pxNetCon,webHTML_websocket_script);
+	webHTML_netconn_write(pxNetCon,webHTML_default_script);
+	webHTML_netconn_write(pxNetCon,webHTML_CSS);
+	webHTML_netconn_write(pxNetCon,webHTML_menu);
+	webHTML_netconn_write(pxNetCon,webHTML_default_START_content);
+	webHTML_netconn_write(pxNetCon,webHTML_default_START_log);
+	webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
+*/
+

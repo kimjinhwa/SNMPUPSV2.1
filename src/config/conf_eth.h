@@ -87,8 +87,8 @@ to use an MII interface. */
 // 0x 3B까지 영신에 출고`
 // 0x 47까지 영신에 출고
 /*! The IP address being used. */
-#define IFTECH_ADDRESS
-//#define KEP_SEOUL_DIVSION
+//#define IFTECH_ADDRESS
+#define KEP_SEOUL_DIVSION
 
 #ifdef IFTECH_ADDRESS
 /*! The ipaddress being used. */

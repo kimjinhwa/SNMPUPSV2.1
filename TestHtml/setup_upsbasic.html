@@ -2,7 +2,19 @@
 <html>
     <head><meta charset='EUC-KR'/>
         <script>
-            var agentIpAddress = '192.168.0.57';
+            var agentIpAddress = document.location.host;
+        </script>
+        <script>
+            var userId = 'admin';
+            var passwd = 'admin';
+            if (idAns == null) {
+                do {
+                    var idAns = prompt('사용자 아이디를 입력하여 주십시요');
+                } while (idAns != userId);
+                do {
+                    var passAns = prompt('패스워드를 입력하여 주십시요');
+                } while (passAns != passwd);
+            };
         </script>
         <script>
             var receive_count = 0;
@@ -29,8 +41,8 @@
                     .getElementById(menuname)
                     .style
                     .display = 'block';
-                //if (menuname == 'content_UpsSetup') 
-                //    WebSocketToSnmp('SET_BASIC', '');
+                if (menuname == 'content_UpsSetup') 
+                    WebSocketToSnmp('SET_BASIC', '');
                 };
             function getParam(sname) {
                 var params = location
@@ -132,14 +144,17 @@
             function WebSocketToSnmp(sendParam, param) {
                 var ws = new WebSocket('ws://' + agentIpAddress + ':80/echo');
                 ws.onopen = function () {
-                    document.getElementById('status_bar').innerHTML = '데이타 요청중';
+                    document
+                        .getElementById('status_bar')
+                        .innerHTML = '데이타 요청중';
                     console.log(agentIpAddress + ' Connected OK!');
                     ws.send(sendParam + param);
                     console.log(' UPS Data Request....');
-                    document.getElementById('status_bar').innerHTML = agentIpAddress +'데이타 요청 완료';
                 };
                 ws.onmessage = function (evt) {
-                    document.getElementById('status_bar').innerHTML = '데이타 수신 완료';
+                    document
+                        .getElementById('status_bar')
+                        .innerHTML = '데이타 수신 완료';
                     receive_count++;
                     if (sendParam == 'UPS_EX_DATA') {
                         console.log(evt.data);
@@ -544,9 +559,6 @@
                             </li>
                             <li>
                                 <a href='../CHANGE_PASSWD.html'>비밀번호변경</a>
-                            </li>
-                            <li >
-                                <button onclick="WebSocketToSnmp('SET_BASIC', '')" >Get Data</button>
                             </li>
                         </ul>
                     </li>
