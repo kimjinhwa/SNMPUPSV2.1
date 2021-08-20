@@ -39,7 +39,7 @@ static void ups_set_upsIdent_value(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id;
 	//ups_info_t ups_info;
-	flash_read_ups_info(&ups_info);
+	//flash_read_ups_info(&ups_info);
 	LWIP_ASSERT("invalid len", len <= 0xff);
 	LWIP_ASSERT("invalid id", (od->id_inst_ptr[0] >= 0) && (od->id_inst_ptr[0] <= 0xff));
 	id = (u8_t)od->id_inst_ptr[0];
@@ -75,7 +75,7 @@ static void ups_get_upsIdent_object_def(u8_t ident_len, s32_t *ident, struct obj
 		LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("get_object_def system.%"U16_F".0\n",(u16_t)id));
 
 		//ups_info_t ups_info;
-		flash_read_ups_info(&ups_info);
+		//flash_read_ups_info(&ups_info);
 		setSystemInfoDefault();
 		switch (id)
 		{
@@ -137,7 +137,7 @@ static void ups_get_upsIdent_value(struct obj_def *od, u16_t len, void *value)
 	id = (u8_t)od->id_inst_ptr[0];
 
 	//ups_info_t ups_info;
-	flash_read_ups_info(&ups_info);
+	//flash_read_ups_info(&ups_info);
 	setSystemInfoDefault();
 	switch (id)
 	{
@@ -1543,13 +1543,13 @@ static void ups_get_upsConfig_value(struct obj_def *od, u16_t len, void *value)
 	u32_t *uint_ptr = (u32_t*)value;
 	u8_t id;
 	uint16_t * pData =(uint16_t *)&upsModeBusData ;
+	//flash_read_ups_info(&ups_info);
 	
 	id = (u8_t)od->id_inst_ptr[0];
-	flash_read_ups_info(&ups_info);
 
 	switch(id){
 		case 1: //nominal input voltage
-		*uint_ptr = ups_info.input_voltage;
+		*uint_ptr =(u32_t)ups_info.input_voltage;
 		break;
 		case 2: //input_frequency
 		*uint_ptr = ups_info.input_frequency;
@@ -1615,7 +1615,7 @@ static void ups_set_upsConfig_value(struct obj_def *od, u16_t len, void *value)
 	id = (u8_t)od->id_inst_ptr[0];
 	u32_t *uint_ptr = (u32_t*)value;
 	//ups_info_t ups_info;
-	flash_read_ups_info(&ups_info);
+	//flash_read_ups_info(&ups_info);
 	switch(id){
 		case 1: //nominal input voltage
 		ups_info.input_voltage=(u16_t)*uint_ptr;//
@@ -1706,7 +1706,7 @@ const struct mib_array_node rfc1628_upsObjects = {
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
-	9,  // 1°³
+	9,  // 9°³
 	rfc1628_upsObjects_ids,
 	rfc1628_upsObjects_nodes
 };
@@ -1789,9 +1789,23 @@ struct mib_node* const ups_nodes[61] = {
 	(struct mib_node*)&ups_scalar,
 };
 
+extern Bool bModebusSuccess;
 static void ups_get_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
   /* return to object name, adding index depth (1) */
+	int breakCount = 150;
+	while( isModebusRunning)
+	{
+		vTaskDelay(10); //if(lValue>500)break; //lValue++;
+		if( breakCount-- == 0){
+			od->instance = MIB_OBJECT_NONE;
+			return ;	
+		}
+	};
+	if(bModebusSuccess ==  false){
+		od->instance = MIB_OBJECT_NONE;
+		return ;	
+	}
   ident_len += 1;
   ident -= 1;
   if (ident_len == 2)
@@ -1872,12 +1886,6 @@ static void ups_get_value(struct obj_def *od, u16_t len, void *value)
   u8_t id=0;
   uint16_t * pData =(uint16_t *)&upsModeBusData ;	
  
-	while( isModebusRunning)
-	{
-		vTaskDelay(100);
-		if(id>20)break;
-		id++;
-	};
   
   LWIP_UNUSED_ARG(len);
   LWIP_ASSERT("invalid id", (od->id_inst_ptr[0] >= 0) && (od->id_inst_ptr[0] <= 0xff));
@@ -1944,7 +1952,7 @@ static u8_t ups_set_test(struct obj_def *od, u16_t len, void *value)
 	}
 	return set_ok;
 }
-
+//
 
 static void ups_set_value(struct obj_def *od, u16_t len, void *value)
 {
@@ -1957,7 +1965,7 @@ static void ups_set_value(struct obj_def *od, u16_t len, void *value)
 	u32_t *ptr = (u32_t*)value;
 	if (id >=1  && id <= 59)
 	{
-		flash_read_ups_info(&ups_info);
+		//flash_read_ups_info(&ups_info);
 		switch(id){
 			case 1:
 				if((u16_t)*ptr < 2999 ){

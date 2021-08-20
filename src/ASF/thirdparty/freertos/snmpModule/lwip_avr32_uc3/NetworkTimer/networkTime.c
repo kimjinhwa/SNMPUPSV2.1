@@ -88,9 +88,11 @@ static portTASK_FUNCTION( vWatchdog, pvParameters )
 
 			if( beforeNowSNMPServiceRunning == true) {  // snmp는 시간을 추가하여 준다.
 				wdt_clear();  
-				vParTestSetLED(2, pdTRUE); vTaskDelay( 500);
+				vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
 				vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
-				if(isNowSNMPServiceRunning==true)isReboot = true;  // 문제가 생긴 것이다.
+				vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
+				vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
+				//if(isNowSNMPServiceRunning==true)isReboot = true;  // 문제가 생긴 것이다.
 			}
 
 		}

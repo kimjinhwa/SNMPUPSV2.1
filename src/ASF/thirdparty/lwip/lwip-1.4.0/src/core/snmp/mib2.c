@@ -2213,7 +2213,7 @@ noleafs_set_value(struct obj_def *od, u16_t len, void *value)
 void setSystemInfoDefault()
 {
 	//ups_info_t ups_info;
-	flash_read_ups_info(&ups_info);
+	//flash_read_ups_info(&ups_info);
 	*sysdescr_len_ptr = sizeof(ups_info.upsIdentManufacturer) ;
 	sysdescr_ptr = (u8_t*)&ups_info.upsIdentManufacturer[0];
 
@@ -2245,7 +2245,7 @@ static void system_get_object_def(u8_t ident_len, s32_t *ident, struct obj_def *
     LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("get_object_def system.%"U16_F".0\n",(u16_t)id));
 
 	//ups_info_t ups_info;
-	flash_read_ups_info(&ups_info);
+	//flash_read_ups_info(&ups_info);
 	setSystemInfoDefault();
     switch (id)
     {
@@ -2336,7 +2336,7 @@ static void system_get_value(struct obj_def *od, u16_t len, void *value)
 
 	
   //ups_info_t ups_info;
-  flash_read_ups_info(&ups_info);
+  //flash_read_ups_info(&ups_info);
   setSystemInfoDefault();
   switch (id)
   {
@@ -2476,7 +2476,7 @@ system_set_value(struct obj_def *od, u16_t len, void *value)
 {
   u8_t id;
   //ups_info_t ups_info;
-  flash_read_ups_info(&ups_info);
+  //flash_read_ups_info(&ups_info);
   setSystemInfoDefault();
   LWIP_ASSERT("invalid len", len <= 0xff);
   LWIP_ASSERT("invalid id", (od->id_inst_ptr[0] >= 0) && (od->id_inst_ptr[0] <= 0xff));

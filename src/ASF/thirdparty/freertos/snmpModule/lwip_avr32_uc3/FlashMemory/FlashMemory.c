@@ -212,7 +212,7 @@ void flash_write_ups_info(ups_info_t *ups_info)
 void flash_read_ups_info(ups_info_t *ups_info)
 {
 	//memcpy( ups_info,(void *)&(nvram_ups_info),  sizeof(ups_info_t));
-	flashc_memcpy( ups_info,(void *)&(nvram_ups_info),  sizeof(ups_info_t),false);
+	flashc_memcpy( ups_info,(ups_info_t *)&(nvram_ups_info),  sizeof(ups_info_t),false);
 }
 
 void flash_write_smtp_info(smtp_info_t *smtp_info)

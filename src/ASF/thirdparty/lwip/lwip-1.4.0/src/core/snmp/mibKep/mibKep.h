@@ -88,7 +88,9 @@ const struct mib_array_node upsCompany_kep = {
 };
 
 const s32_t mib2_device_kep[1] ={ 12236 };
+//(struct mib_node*)&rfc1628_upsMIB,
 struct mib_node* const mib2_nodes_device_kep[1] = {(struct mib_node*)&upsCompany_kep};
+
 
 const struct mib_array_node upsMIB_kep = {
 	&noleafs_get_object_def,
@@ -144,147 +146,47 @@ static void ups_get_object_def_kep(u8_t ident_len, s32_t *ident, struct obj_def 
 		switch (id)
 		{
 			case 1:// Input_r_volt_rms
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 2: // Input_s_volt_rms
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 3: // Input_t_volt_rms
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 4:	//Output_r_volt_rms
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 5://Output_u_current_rms
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 6://Bat_volt_rms
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 7://Bat_current_rms
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
+				od->instance = MIB_OBJECT_SCALAR;
+				od->access = MIB_OBJECT_READ_ONLY;
+				od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+				od->v_len = sizeof(u32_t);
+				break;
 			case 8:// 부동충전 or 균등 충전 Converter Status
-
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_OC_STR);
-			if(charging_method == 0 ) od->v_len = 8;
-			else od->v_len = 10;
-
-			break;
+				od->instance = MIB_OBJECT_SCALAR;
+				od->access = MIB_OBJECT_READ_ONLY;
+				od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_OC_STR);
+				if(charging_method == 0 ) od->v_len = 8;
+				else od->v_len = 10;
+				break;
 			case 9://Output_frequency 10으로 나누어 준다
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 200:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 201:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 202:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 203:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 210:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 211:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
 			case 212:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 213:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
 			case 214:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 215:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 216:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 217:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 224:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
-			break;
 			case 225:
-			od->instance = MIB_OBJECT_SCALAR;
-			od->access = MIB_OBJECT_READ_ONLY;
-			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
-			od->v_len = sizeof(u32_t);
+				od->instance = MIB_OBJECT_SCALAR;
+				od->access = MIB_OBJECT_READ_ONLY;
+				od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+				od->v_len = sizeof(u32_t);
 			break;
 			default:
-			od->instance = MIB_OBJECT_NONE;
-			break;
+				od->instance = MIB_OBJECT_NONE;
+				break;
 		}
 	}
 	else
@@ -326,50 +228,76 @@ static void ups_get_value_kep(struct obj_def *od, u16_t len, void *value)
 	lValue=0;
 	switch (id){
 		case 1:// Input_r_volt_rms
-		*uint_ptr =(u32_t)( *(pData+16) );
-		break;
+			*uint_ptr =(u32_t)( *(pData+16) );
+			break;
 		case 2: // Input_s_volt_rms
-		*uint_ptr=(u32_t)(*(pData+4))==1 ?  0:(u32_t)( *(pData+17)) ;
-		break;  
+			*uint_ptr=(u32_t)(*(pData+4))==1 ?  0:(u32_t)( *(pData+17)) ;
+			break;  
 		case 3: // Input_t_volt_rms
-		*uint_ptr=(u32_t)(*(pData+4))==1 ?  0:(u32_t)( *(pData+18)) ;
-		break;
+			*uint_ptr=(u32_t)(*(pData+4))==1 ?  0:(u32_t)( *(pData+18)) ;
+			break;
 		case 4:	//Output_r_volt_rms
-		*uint_ptr =(u32_t)( *(pData+43));
-		break;
+			*uint_ptr =(u32_t)( *(pData+43));
+			break;
 		case 5://Output_u_current_rms
-		*uint_ptr =(u32_t)( *(pData+46))+(u32_t)( *(pData+47))+(u32_t)( *(pData+48));
-		break;
+			*uint_ptr =(u32_t)( *(pData+46))+(u32_t)( *(pData+47))+(u32_t)( *(pData+48));
+			break;
 		case 6://Bat_volt_rms
-		*uint_ptr =(u32_t)( *(pData+37));
-		break;
+			*uint_ptr =(u32_t)( *(pData+37));
+			break;
 		case 7://Bat_current_rms
-		*uint_ptr =(u32_t)( *(pData+38));
-		break;
+			*uint_ptr =(u32_t)( *(pData+38));
+			break;
 		case 8://부동충전 or 균등 충전 Converter Status  Floating or Equalizing
-		*uint_ptr =charging_method;//(u32_t)( (*(pData+12) & BIT(1)) >> 1  );
-		if(charging_method == 0 ) ocstrncpy((u8_t*)value,  "Floating  ", len);
-		else ocstrncpy((u8_t*)value, "Equalizing", len);
-		// 
-		//
-		break;
+			*uint_ptr =charging_method;//(u32_t)( (*(pData+12) & BIT(1)) >> 1  );
+			if(charging_method == 0 ) ocstrncpy((u8_t*)value,  "Floating  ", len);
+			else ocstrncpy((u8_t*)value, "Equalizing", len);
+			break;
 		case 9://Output_frequency 10으로 나누어 준다
-		*uint_ptr =((u32_t)( *(pData+49)))/10;
-		break;
-		case 200:*uint_ptr =(u32_t)( *(pData+12)); break;  //power module fail or bypass CONVERTER D12,INVERTER D13,D14
-		case 201:*uint_ptr =(u32_t)( *(pData+13)); ; break; // normal
-		case 202:*uint_ptr =(u32_t)( *(pData+14)); ; break; // 정전 또는 입력전원이상 CONVERTER OPERATION FAULT 0X2EE0
-		case 203:*uint_ptr =(u32_t)( *(pData+15)); ; break; // 정상
-		case 210:*uint_ptr =0; break; // MODULE#1 장애
-		case 211:*uint_ptr =0; break;
-		case 212:*uint_ptr =0; break;// MODULE#2장애
-		case 213:*uint_ptr =0; break;
-		case 214:*uint_ptr =0; break;// MODULE#3 장애
-		case 215:*uint_ptr =0; break;
-		case 216:*uint_ptr =0; break;// MODULE#4 장애
-		case 217:*uint_ptr =0; break;
-		case 224:*uint_ptr =0; break;//찬단기 켜짐
-		case 225:*uint_ptr =0; break;
+			*uint_ptr =((u32_t)( *(pData+49)))/10;
+			break;
+		case 200:
+			*uint_ptr =(u32_t)( *(pData+12)); 
+			break;  //power module fail or bypass CONVERTER D12,INVERTER D13,D14
+		case 201:
+			*uint_ptr =(u32_t)( *(pData+13)); 
+			break; // normal
+		case 202:
+			*uint_ptr =(u32_t)( *(pData+14));
+			 break; // 정전 또는 입력전원이상 CONVERTER OPERATION FAULT 0X2EE0
+		case 203:
+			*uint_ptr =(u32_t)( *(pData+15)) ; 
+			break; // 정상
+		case 210:
+			*uint_ptr =0; 
+			break; // MODULE#1 장애
+		case 211:
+			*uint_ptr =0; 
+			break;
+		case 212:
+			*uint_ptr =0; 
+			break;// MODULE#2장애
+		case 213:
+			*uint_ptr =0; 
+			break;
+		case 214:
+			*uint_ptr =0; 
+			break;// MODULE#3 장애
+		case 215:
+			*uint_ptr =0; 
+			break;
+		case 216:	
+			*uint_ptr =0; 
+			break;// MODULE#4 장애
+		case 217:
+			*uint_ptr =0; 
+			break;
+		case 224:
+			*uint_ptr =0; 
+			break;//찬단기 켜짐
+		case 225:
+			*uint_ptr =0; 
+			break;
 		default:
 		break;
 	}

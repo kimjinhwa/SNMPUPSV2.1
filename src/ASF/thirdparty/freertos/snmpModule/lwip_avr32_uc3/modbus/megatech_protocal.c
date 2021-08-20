@@ -784,7 +784,7 @@ void CancelTest_CT_megatec()
 }
 Bool requestUpsStatus_megatec()
 {
-	flash_read_ups_info(&ups_info);
+	//flash_read_ups_info(&ups_info);
 	Bool ret;
 	upsModeBusData.Bat_volt_rms=0;
 	if(ups_info.ups_type== 50 || ups_info.ups_type== 51)
