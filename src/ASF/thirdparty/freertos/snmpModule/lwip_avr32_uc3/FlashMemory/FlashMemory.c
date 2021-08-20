@@ -132,6 +132,8 @@ void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 		memcpy(ups_info.upsIdentManufacturer,"IFTECH UPS",sizeof("IFTECH UPS")) ;
 		memcpy(ups_info.upsIdentModel,"MODEL IF-M00K ",sizeof("MODEL IF-M00K ")) ;
 		memcpy(ups_info.upsIdentUPSSoftwareVersion,"V1.0.0",sizeof("V1.0.0")) ;//  max length is 11
+		memcpy(ups_info.batLastReplaceDate,"01/01/21",sizeof("01/01/21")) ;//  max length is 8  
+
 		//Software , H :support Hanggang , 
 		//2.2.13 : - bug fix for battery voltage while communication .
 		//         - .iso.org.dod.internet.mgmt.mib-2.upsMIB.upsObjects.upsIdent.upsIdentAgentSoftwareVersion.0 

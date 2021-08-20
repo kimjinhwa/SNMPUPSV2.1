@@ -80,6 +80,7 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters );
 ups_info_t ups_info;
 //struct ups_modbus_data upsModeBusData;
 ups_modbus_data_t upsModeBusData;
+xppc_data_t	xppc_data;
 
 uint16_t modebusPrcessCount=0;
 uint16_t isModebusRunning=0;

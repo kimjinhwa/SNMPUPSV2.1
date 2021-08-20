@@ -193,6 +193,7 @@ typedef struct {
 	uint8_t alarm_audible;		// keyvalue[12]  : SBB 한계용량(%)  100
 	uint8_t user_id[15];		
 	uint8_t passwd[15];		
+	uint8_t batLastReplaceDate[8];  // 
 }ups_info_t;   // total 138 byte
 	
 //void initial_flashMemory();

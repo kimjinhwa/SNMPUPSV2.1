@@ -21,6 +21,8 @@ err_t snmp_send_trap_ups_exp(s8_t generic_trap, s32_t specific_trap);
 //extern struct ups_modbus_data upsModeBusData;
 extern int udp_send_msg(char *msg,int len);
 extern ups_modbus_data_t upsModeBusData;
+extern xppc_data_t	xppc_data;
+
 extern ups_info_t ups_info;
 extern bool is_Converter_Operation_Fault_send_to_snmp;
 extern bool is_Converter_Operation_Fault_send_to_snmp_b7;
@@ -35,6 +37,7 @@ extern int16_t  before_Inverter_State;
 
 float upsRankedCurrent=0.0;
 int16_t charging_method;
+
 
 unsigned char strToInt(char *str )
 {
@@ -299,12 +302,13 @@ bool parseG1_megatec(char *str)
 	if (argv[0] == NULL) return false;
 	voltage= (int) atof(argv[0]);
 	upsModeBusData.Bat_volt_rms= voltage;
-
+	xppc_data.upsSmartBatteryVoltage = voltage;
 
 	//2 c ----------Battery Capacity percentage PPP
 	*argv = strtok(NULL," ");
 	if (argv[0] == NULL) return false;
 	voltage= (int) atof(argv[0]);
+	xppc_data.upsSmartBatteryCapacity = voltage;
 	//upsModeBusData.Input_r_volt_rms = voltage;
 
 	//3 d -----------Battery Time remainning...NNNN
@@ -312,18 +316,19 @@ bool parseG1_megatec(char *str)
 	if (argv[0] == NULL) return false;
 	voltage= (int) atof(argv[0]);
 	upsModeBusData.reserved_3_batteryTimeRemain= voltage;
-
+	xppc_data.upsSmartBatteryRunTimeRemaining = voltage;
 	// 4 e ----------Battery current in changing mode or discharging mode RRR.R
 	*argv = strtok(NULL," ");
 	if (argv[0] == NULL) return false;
 	voltage= (int) atof(argv[0]);
 	upsModeBusData.Bat_current_rms = voltage;
-
-	//5 f ------------Temperature
+	xppc_data.upsChargeOrDischargeBatteryCurrent=voltage;
+	//5 f ------------Temperature.
 	*argv = strtok(NULL," ");
 	if (argv[0] == NULL) return false;
 	voltage= (int) atof(argv[0]);
 	upsModeBusData.Battery_Room_Temper= voltage;
+	xppc_data.upsSmartBatteryTemperature=voltage;
 
 	//6 g -------------Input Frequency
 	*argv = strtok(NULL," ");

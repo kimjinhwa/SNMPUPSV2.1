@@ -65,10 +65,12 @@ static void ups_get_object_def_exp(u8_t ident_len, s32_t *ident, struct obj_def 
 			return ;	
 		}
 	};
+	/*
 	if(bModebusSuccess ==  false){
 		od->instance = MIB_OBJECT_NONE;
 		return ;	
 	}
+	*/
 	ident_len += 1;
 	ident -= 1;
 	if (ident_len == 2)

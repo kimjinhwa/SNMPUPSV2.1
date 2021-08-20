@@ -15,13 +15,18 @@ static void ups_get_upsIdent_value(struct obj_def *od, u16_t len, void *value);
 static u8_t ups_set_upsIdent_test(struct obj_def *od, u16_t len, void *value);
 static void ups_set_upsIdent_value(struct obj_def *od, u16_t len, void *value);
 
+static void ups_get_upsSmartIdent_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
+static void ups_get_upsSmartIdent_value(struct obj_def *od, u16_t len, void *value);
+static u8_t ups_set_upsSmartIdent_test(struct obj_def *od, u16_t len, void *value);
+static void ups_set_upsSmartIdent_value(struct obj_def *od, u16_t len, void *value);
+
 static u8_t ups_set_upsIdent_test(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id, set_ok;
 	LWIP_UNUSED_ARG(value);
 	set_ok = 0; id = 0;
 	id = (u8_t)od->id_inst_ptr[0];
-	LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
+	//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
 	switch (id)
 	{
 		case 5: /* sysContact */
@@ -29,6 +34,21 @@ static u8_t ups_set_upsIdent_test(struct obj_def *od, u16_t len, void *value)
 		break;
 		case 6: /* sysName */
 		set_ok = 1;
+		break;
+	};
+	return set_ok;
+}
+static u8_t ups_set_upsSmartIdent_test(struct obj_def *od, u16_t len, void *value)
+{
+	u8_t id, set_ok;
+	LWIP_UNUSED_ARG(value);
+	set_ok = 0; id = 0;
+	id = (u8_t)od->id_inst_ptr[0];
+	//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
+	switch (id)
+	{
+		case 1: case 2: case 3: case 4: 
+		set_ok = 0;
 		break;
 	};
 	return set_ok;
@@ -58,6 +78,10 @@ static void ups_set_upsIdent_value(struct obj_def *od, u16_t len, void *value)
 	}
 	
 }
+static void ups_set_upsSmartIdent_value(struct obj_def *od, u16_t len, void *value)
+{
+	return;	
+}
 
 static void ups_get_upsIdent_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
@@ -72,7 +96,7 @@ static void ups_get_upsIdent_object_def(u8_t ident_len, s32_t *ident, struct obj
 
 		LWIP_ASSERT("invalid id", (ident[0] >= 0) && (ident[0] <= 0xff));
 		id = (u8_t)ident[0];
-		LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("get_object_def system.%"U16_F".0\n",(u16_t)id));
+		//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("get_object_def system.%"U16_F".0\n",(u16_t)id));
 
 		//ups_info_t ups_info;
 		//flash_read_ups_info(&ups_info);
@@ -116,14 +140,72 @@ static void ups_get_upsIdent_object_def(u8_t ident_len, s32_t *ident, struct obj
 			od->v_len = sizeof(ups_info.upsIdentAttachedDevices) ;
 			break;
 			default:
-			LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("system_get_object_def: no such object\n"));
+			//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("system_get_object_def: no such object\n"));
 			od->instance = MIB_OBJECT_NONE;
 			break;
 		}
 	}
 	else
 	{
-		LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("system_get_object_def: no scalar\n"));
+		//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("system_get_object_def: no scalar\n"));
+		od->instance = MIB_OBJECT_NONE;
+	};
+	if(iCommErrorCount > 0 )
+	od->instance = MIB_OBJECT_NONE;
+}
+
+static void ups_get_upsSmartIdent_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
+{
+	u8_t id;
+	/* return to object name, adding index depth (1) */
+	ident_len += 1;
+	ident -= 1;
+	if (ident_len == 2)
+	{
+		od->id_inst_len = ident_len;
+		od->id_inst_ptr = ident;
+
+		LWIP_ASSERT("invalid id", (ident[0] >= 0) && (ident[0] <= 0xff));
+		id = (u8_t)ident[0];
+		//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("get_object_def system.%"U16_F".0\n",(u16_t)id));
+
+		//ups_info_t ups_info;
+		//flash_read_ups_info(&ups_info);
+		setSystemInfoDefault();
+		switch (id)
+		{
+			case 1: /* upsIdentUPSSoftwareVersion */
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_OC_STR);
+			od->v_len = sizeof(ups_info.upsIdentUPSSoftwareVersion) ;
+			break;
+			case 2: /* upsIdentManufacturer */
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_OC_STR);
+			od->v_len = sizeof(ups_info.upsIdentAgentSoftwareVersion) ;
+			break;
+			case 3: /* upsIdentName */
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_OC_STR);
+			od->v_len = sizeof(ups_info.upsIdentName) ;
+			break;
+			case 4: /* sysLocation */
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_OC_STR);
+			od->v_len = sizeof(ups_info.upsIdentAttachedDevices) ;
+			break;
+			default:
+				od->instance = MIB_OBJECT_NONE;
+				break;
+		}
+	}
+	else
+	{
+		//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("system_get_object_def: no scalar\n"));
 		od->instance = MIB_OBJECT_NONE;
 	};
 	if(iCommErrorCount > 0 )
@@ -162,6 +244,32 @@ static void ups_get_upsIdent_value(struct obj_def *od, u16_t len, void *value)
 	};
 }
 
+static void ups_get_upsSmartIdent_value(struct obj_def *od, u16_t len, void *value)
+{
+	u8_t id;
+
+	LWIP_ASSERT("invalid id", (od->id_inst_ptr[0] >= 0) && (od->id_inst_ptr[0] <= 0xff));
+	id = (u8_t)od->id_inst_ptr[0];
+
+	//ups_info_t ups_info;
+	//flash_read_ups_info(&ups_info);
+	setSystemInfoDefault();
+	switch (id)
+	{
+		case 1: /* upsIdentUPSSoftwareVersion */
+		ocstrncpy((u8_t*)value, (u8_t*)&ups_info.upsIdentUPSSoftwareVersion[0], len);
+		break;
+		case 2: /* upsIdentAgentSoftwareVersion */
+		ocstrncpy((u8_t*)value, (u8_t*)&ups_info.upsIdentAgentSoftwareVersion[0], len);
+		break;
+		case 3: /* upsIdentName */
+		ocstrncpy((u8_t*)value, (u8_t*)&ups_info.upsIdentName[0], len);
+		break;
+		case 4: /* upsIdentAttachedDevices */
+		ocstrncpy((u8_t*)value, (u8_t*)&ups_info.upsIdentAttachedDevices[0], len);
+		break;
+	};
+}
 
 const mib_scalar_node rfc1628_ups_scalar = {
 	&ups_get_object_def,
@@ -171,15 +279,6 @@ const mib_scalar_node rfc1628_ups_scalar = {
 	MIB_NODE_SC,
 	0
 };
-const mib_scalar_node rfc1628_upsIdent_scalar = {
-	&ups_get_upsIdent_object_def,
-	&ups_get_upsIdent_value,
-	&ups_set_upsIdent_test,
-	&ups_set_upsIdent_value,
-	MIB_NODE_SC,
-	0
-};
-
 
 // 하나씩 이 부분은 바꿔준다. 임시로 설정 되어 있다
 const s32_t rfc1628_ups_ids[4] = {
@@ -189,6 +288,8 @@ struct mib_node* const rfc1628_ups_nodes[4] = {
 	(struct mib_node*)&rfc1628_ups_scalar , (struct mib_node*)&rfc1628_ups_scalar,
 	(struct mib_node*)&rfc1628_ups_scalar, (struct mib_node*)&rfc1628_ups_scalar
 };
+
+//ups base indet scalar
 // 1: upsIdentManufacturer
 // 2:upsIdentModel
 // 3:upsIdentUPSSoftwareVersion
@@ -196,46 +297,126 @@ struct mib_node* const rfc1628_ups_nodes[4] = {
 // 5:upsIdentName
 // 6:upsIdentAttachedDevices
 //
-const s32_t rfc1628_upsIdent_ids[6] = {
-	1,  2,  3,  4  ,5 ,6
+const mib_scalar_node rfc1628_upsBaseIdent_scalar = {
+	&ups_get_upsIdent_object_def,
+	&ups_get_upsIdent_value,
+	&ups_set_upsIdent_test,
+	&ups_set_upsIdent_value,
+	MIB_NODE_SC,
+	0
 };
-struct mib_node* const rfc1628_upsIdent_nodes[6] = {
-	(struct mib_node*)&rfc1628_upsIdent_scalar ,
-	(struct mib_node*)&rfc1628_upsIdent_scalar ,
-	(struct mib_node*)&rfc1628_upsIdent_scalar ,
-	(struct mib_node*)&rfc1628_upsIdent_scalar ,
-	(struct mib_node*)&rfc1628_upsIdent_scalar ,
-	(struct mib_node*)&rfc1628_upsIdent_scalar
+//
+const mib_scalar_node rfc1628_upsSmartIdent_scalar = {
+	&ups_get_upsSmartIdent_object_def,
+	&ups_get_upsSmartIdent_value,
+	&ups_set_upsSmartIdent_test,
+	&ups_set_upsSmartIdent_value,
+	MIB_NODE_SC,
+	0
 };
 
-const struct mib_array_node  upsIdent = {
+const s32_t rfc1628_upsBaseIdent_ids[6] = {
+	1,  2,  3,  4  ,5 ,6
+};
+struct mib_node* const rfc1628_upsBaseIdent_nodes[6] = {
+	(struct mib_node*)&rfc1628_upsBaseIdent_scalar ,
+	(struct mib_node*)&rfc1628_upsBaseIdent_scalar ,
+	(struct mib_node*)&rfc1628_upsBaseIdent_scalar ,
+	(struct mib_node*)&rfc1628_upsBaseIdent_scalar ,
+	(struct mib_node*)&rfc1628_upsBaseIdent_scalar ,
+	(struct mib_node*)&rfc1628_upsBaseIdent_scalar
+};
+//.iso.org.dod.internet.private.enterprises.ppc.products.hardware.ups.upsBaseIdentp 
+const struct mib_array_node  upsBaseIdent = {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
 	6,
-	rfc1628_upsIdent_ids,
-	rfc1628_upsIdent_nodes
+	rfc1628_upsBaseIdent_ids,
+	rfc1628_upsBaseIdent_nodes
 };
 
-//  upsBattery get and set
-static void ups_get_upsBattery_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
-static void ups_get_upsBattery_value(struct obj_def *od, u16_t len, void *value);
-static u8_t ups_set_upsBattery_test(struct obj_def *od, u16_t len, void *value);
-static void ups_set_upsBattery_value(struct obj_def *od, u16_t len, void *value);
+const s32_t rfc1628_upsSmartIdent_ids[4] = {
+	1,  2,  3,  4  
+};
+struct mib_node* const rfc1628_upsSmartIdent_nodes[4] = {
+	(struct mib_node*)&rfc1628_upsSmartIdent_scalar ,
+	(struct mib_node*)&rfc1628_upsSmartIdent_scalar ,
+	(struct mib_node*)&rfc1628_upsSmartIdent_scalar ,
+	(struct mib_node*)&rfc1628_upsSmartIdent_scalar ,
+};
+//.iso.org.dod.internet.private.enterprises.ppc.products.hardware.ups.upsSmartIdentp 
+const struct mib_array_node  upsSmartIdent = {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	4,
+	rfc1628_upsSmartIdent_ids,
+	rfc1628_upsSmartIdent_nodes
+};
 
-const mib_scalar_node rfc1628_upsBattery_scalar = {
-	&ups_get_upsBattery_object_def,
-	&ups_get_upsBattery_value,
-	&ups_set_upsBattery_test,
-	&ups_set_upsBattery_value,
+
+//  upsBattery get and set
+static void ups_get_upsBaseBattery_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
+static void ups_get_upsBaseBattery_value(struct obj_def *od, u16_t len, void *value);
+static u8_t ups_set_upsBaseBattery_test(struct obj_def *od, u16_t len, void *value);
+static void ups_set_upsBaseBattery_value(struct obj_def *od, u16_t len, void *value);
+
+static void ups_get_upsSmartBattery_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
+static void ups_get_upsSmartBattery_value(struct obj_def *od, u16_t len, void *value);
+static u8_t ups_set_upsSmartBattery_test(struct obj_def *od, u16_t len, void *value);
+static void ups_set_upsSmartBattery_value(struct obj_def *od, u16_t len, void *value);
+
+const mib_scalar_node rfc1628_upsBaseBattery_scalar = {
+	&ups_get_upsBaseBattery_object_def,
+	&ups_get_upsBaseBattery_value,
+	&ups_set_upsBaseBattery_test,
+	&ups_set_upsBaseBattery_value,
+	MIB_NODE_SC,
+	0
+};
+const mib_scalar_node rfc1628_upsSmartBattery_scalar = {
+	&ups_get_upsSmartBattery_object_def,
+	&ups_get_upsSmartBattery_value,
+	&ups_set_upsSmartBattery_test,
+	&ups_set_upsSmartBattery_value,
 	MIB_NODE_SC,
 	0
 };
 
 
-static void ups_get_upsBattery_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
+static void ups_get_upsBaseBattery_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
+{
+	ident_len += 1; ident -= 1;
+	if (ident_len == 2)
+	{
+		u8_t id; od->id_inst_len = ident_len; od->id_inst_ptr = ident;
+		LWIP_ASSERT("invalid id", (ident[0] >= 0) && (ident[0] <= 0xff));
+		id = (u8_t)ident[0];
+		switch(id){
+			case 1: case 2: case 4: case 5: case 6: case 7:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 3:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_OC_STR);
+			od->v_len = sizeof(ups_info.batLastReplaceDate) ;
+			// ocstrncpy((u8_t*)value, (u8_t*)&ups_info.batLastReplaceDate[0], len);
+			default:
+			od->instance = MIB_OBJECT_NONE;
+			break;
+		}
+	}
+}
+static void ups_get_upsSmartBattery_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
 	ident_len += 1; ident -= 1;
 	if (ident_len == 2)
@@ -257,7 +438,8 @@ static void ups_get_upsBattery_object_def(u8_t ident_len, s32_t *ident, struct o
 	}
 }
 
-static void ups_get_upsBattery_value(struct obj_def *od, u16_t len, void *value)
+extern xppc_data_t	xppc_data;
+static void ups_get_upsBaseBattery_value(struct obj_def *od, u16_t len, void *value)
 {
 	u32_t *uint_ptr = (u32_t*)value;
 	u8_t id;
@@ -267,32 +449,26 @@ static void ups_get_upsBattery_value(struct obj_def *od, u16_t len, void *value)
 	id = (u8_t)od->id_inst_ptr[0];
 	u8_t istate;
 	switch(id){
-		case 1:// battery status    exp: 배터리 고갈 예상 시간
-		if(ups_info.ups_type  == 52 || ups_info.ups_type  == 51 ||ups_info.ups_type  == 50  ){
-			istate=*(pData+13);  // inverter state
-			istate = istate & BIT(6);
-			istate = istate >> 6;
-			*uint_ptr = istate;
-		}
-		else
-		*uint_ptr = 999;
+		case 1://unknown(1), batteryNormal(2), batteryLow(3) 
+			xppc_data.upsBaseBatteryStatus = 2;
+			*uint_ptr  = xppc_data.upsBaseBatteryStatus;
 		break;
-		case 2: // estimate seconds on battery  exp : 배터리 온도
-		*uint_ptr = 25;
+		case 2: 
+		*uint_ptr = 0;
 		break;
 		case 3: //upsEstimateMinute
+		ocstrncpy((u8_t*)value, (u8_t*)&ups_info.batLastReplaceDate[0], len);
+		break;
+		case 4:// 
 		*uint_ptr = 0;
 		break;
-		case 4:// charte remainning
-		*uint_ptr = 0;
-		break;
-		case 5: // ups_battery_voltage
+		case 5: //
 		*uint_ptr = *(pData+37);
 		break;
-		case 6: // current
+		case 6: //
 		*uint_ptr = *(pData+38);
 		break;
-		case 7: // ups battery temperature
+		case 7:
 		*uint_ptr = *(pData+58);
 		break;
 		default:
@@ -301,42 +477,143 @@ static void ups_get_upsBattery_value(struct obj_def *od, u16_t len, void *value)
 	}
 }
 
-static u8_t ups_set_upsBattery_test(struct obj_def *od, u16_t len, void *value)
+static void ups_get_upsSmartBattery_value(struct obj_def *od, u16_t len, void *value)
+{
+	u32_t *uint_ptr = (u32_t*)value;
+	u8_t id;
+	uint16_t * pData =(uint16_t *)&upsModeBusData ;
+
+	//uint16_t lValue=*(pData+id-1);
+	id = (u8_t)od->id_inst_ptr[0];
+	u8_t istate;
+	/*
+	upsSmartBatteryCapacity(1)  
+	upsSmartBatteryVoltage(2)  
+	upsSmartBatteryTemperature(3)  
+	upsSmartBatteryRunTimeRemaining(4)  
+	upsSmartBatteryReplaceIndicator(5)  
+	upsSmartBatteryFullChargeVoltage(6)  
+	upsSmartBatteryCurrent(7) 
+	*/
+	switch(id){
+		case 1:// 
+		// The remaining battery capacity expressed in percent of full capacity.
+			*uint_ptr = (u32_t)xppc_data.upsSmartBatteryCapacity;
+		break;
+		case 2: 
+			*uint_ptr = (u32_t)xppc_data.upsSmartBatteryVoltage;
+		break;
+		case 3: //upsEstimateMinute
+			*uint_ptr = (u32_t)xppc_data.upsSmartBatteryTemperature;
+		break;
+		case 4:// 
+			*uint_ptr = (u32_t)xppc_data.upsSmartBatteryRunTimeRemaining;
+		break;
+		case 5: // 
+		*uint_ptr =  1;
+		break;
+		case 6: // current
+			*uint_ptr = (u32_t)xppc_data.upsSmartBatteryFullChargeVoltage;
+		break;
+		case 7: // ups battery temperature
+			*uint_ptr = (u32_t)xppc_data.upsSmartBatteryCurrent;
+		break;
+		default:
+		*uint_ptr = 0;
+		break;
+	}
+}
+
+static u8_t ups_set_upsBaseBattery_test(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id, set_ok;
 	LWIP_UNUSED_ARG(value);
 	set_ok = 0; id = 0;
 	id = (u8_t)od->id_inst_ptr[0];
-	LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
+	//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
 	return set_ok;
 }
 
+static u8_t ups_set_upsSmartBattery_test(struct obj_def *od, u16_t len, void *value)
+{
+	u8_t id, set_ok;
+	LWIP_UNUSED_ARG(value);
+	set_ok = 0; id = 0;
+	id = (u8_t)od->id_inst_ptr[0];
+	//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
+	return set_ok;
+}
 
-static void ups_set_upsBattery_value(struct obj_def *od, u16_t len, void *value)
+static void ups_set_upsBaseBattery_value(struct obj_def *od, u16_t len, void *value)
+{
+	u8_t id;
+	id = (u8_t)od->id_inst_ptr[0];
+}
+static void ups_set_upsSmartBattery_value(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id;
 	id = (u8_t)od->id_inst_ptr[0];
 }
 
 
-const s32_t rfc1628_upsBattery_ids[7] = {
+const s32_t rfc1628_upsBaseBattery_ids[7] = {
 	1,  2,  3,  4  , 5, 6, 7
 };
-struct mib_node* const rfc1628_upsBattery_nodes[7] = {
-	(struct mib_node*)&rfc1628_upsBattery_scalar , (struct mib_node*)&rfc1628_upsBattery_scalar,
-	(struct mib_node*)&rfc1628_upsBattery_scalar, (struct mib_node*)&rfc1628_upsBattery_scalar,
-	(struct mib_node*)&rfc1628_upsBattery_scalar, (struct mib_node*)&rfc1628_upsBattery_scalar,
-	(struct mib_node*)&rfc1628_upsBattery_scalar
+struct mib_node* const rfc1628_upsBaseBattery_nodes[7] = {
+	(struct mib_node*)&rfc1628_upsBaseBattery_scalar , (struct mib_node*)&rfc1628_upsBaseBattery_scalar,
+	(struct mib_node*)&rfc1628_upsBaseBattery_scalar, (struct mib_node*)&rfc1628_upsBaseBattery_scalar,
+	(struct mib_node*)&rfc1628_upsBaseBattery_scalar, (struct mib_node*)&rfc1628_upsBaseBattery_scalar,
+	(struct mib_node*)&rfc1628_upsBaseBattery_scalar
 };
-const struct mib_array_node  upsBattery= {
+const struct mib_array_node  upsBaseBattery= {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
 	7,
-	rfc1628_upsBattery_ids,
-	rfc1628_upsBattery_nodes
+	rfc1628_upsBaseBattery_ids,
+	rfc1628_upsBaseBattery_nodes
+};
+const s32_t rfc1628_upsSmartBattery_ids[7] = {
+	1,  2,  3,  4  , 5, 6, 7
+};
+struct mib_node* const rfc1628_upsSmartBattery_nodes[7] = {
+	(struct mib_node*)&rfc1628_upsSmartBattery_scalar , (struct mib_node*)&rfc1628_upsSmartBattery_scalar,
+	(struct mib_node*)&rfc1628_upsSmartBattery_scalar, (struct mib_node*)&rfc1628_upsSmartBattery_scalar,
+	(struct mib_node*)&rfc1628_upsSmartBattery_scalar, (struct mib_node*)&rfc1628_upsSmartBattery_scalar,
+	(struct mib_node*)&rfc1628_upsSmartBattery_scalar
+};
+const struct mib_array_node  upsSmartBattery= {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	7,
+	rfc1628_upsSmartBattery_ids,
+	rfc1628_upsSmartBattery_nodes
+};
+
+
+
+const s32_t rfc1628_upsBatteryp_ids[2] = {
+	1,  2
+};
+struct mib_node* const rfc1628_upsBatteryp_nodes[2] = {
+	(struct mib_node*)&upsBaseBattery, (struct mib_node*)&upsSmartBattery
+};
+
+
+const struct mib_array_node  upsBatteryp= {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	2,
+	rfc1628_upsBatteryp_ids,
+	rfc1628_upsBatteryp_nodes
 };
 //--------------------upsInputEntry
 static void ups_get_upsInputTable_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
@@ -1050,7 +1327,7 @@ static u8_t ups_set_upsWellKnownAlarms_test(struct obj_def *od, u16_t len, void 
 	LWIP_UNUSED_ARG(value);
 	set_ok = 0; id = 0;
 	id = (u8_t)od->id_inst_ptr[0];
-	LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
+	//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
 	return set_ok;
 }
 
@@ -1688,10 +1965,30 @@ const struct mib_array_node  upsConfig= {
 
 
 //(struct mib_node*)&upsAlarm,
-const s32_t rfc1628_upsObjects_ids[9] = { 1,2,3,4,5,6,7,8,9};
-struct mib_node* const rfc1628_upsObjects_nodes[9] = {
-	(struct mib_node*)&upsIdent,
-	(struct mib_node*)&upsBattery,
+const s32_t rfc1628_upsIdent_ids[2] = { 1,2};
+struct mib_node* const rfc1628_upsIdent_nodes[2] = {
+	(struct mib_node*)&upsBaseIdent,
+	(struct mib_node*)&upsSmartIdent,
+};
+
+const struct mib_array_node rfc1628_upsIdents = {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	2,  // 9개
+	rfc1628_upsIdent_ids,
+	rfc1628_upsIdent_nodes
+};
+
+
+/* .1.3.6.1.2.1.34.1 */
+const s32_t rfc1628_upsMIB_ids[9] = { 1,2,3,4,5,6,7,8,9};//{ 1};
+struct mib_node* const rfc1628_upsMIB_nodes[9] = {
+	//(struct mib_node*)&rfc1628_upsObjects
+	(struct mib_node*)&rfc1628_upsIdents,
+	(struct mib_node*)&upsBatteryp,
 	(struct mib_node*)&upsInput,
 	(struct mib_node*)&upsOutput,
 	(struct mib_node*)&upsBypass,
@@ -1700,23 +1997,6 @@ struct mib_node* const rfc1628_upsObjects_nodes[9] = {
 	(struct mib_node*)&upsControl,
 	(struct mib_node*)&upsConfig
 };
-const struct mib_array_node rfc1628_upsObjects = {
-	&noleafs_get_object_def,
-	&noleafs_get_value,
-	&noleafs_set_test,
-	&noleafs_set_value,
-	MIB_NODE_AR,
-	9,  // 9개
-	rfc1628_upsObjects_ids,
-	rfc1628_upsObjects_nodes
-};
-
-
-/* .1.3.6.1.2.1.34.1 */
-const s32_t rfc1628_upsMIB_ids[1] = { 1};
-struct mib_node* const rfc1628_upsMIB_nodes[1] = {
-	(struct mib_node*)&rfc1628_upsObjects
-};
 
 const struct mib_array_node rfc1628_upsMIB = {
 	&noleafs_get_object_def,
@@ -1724,7 +2004,7 @@ const struct mib_array_node rfc1628_upsMIB = {
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
-	1,  // 1개
+	9,  // 1개
 	rfc1628_upsMIB_ids,
 	rfc1628_upsMIB_nodes
 };
@@ -1802,10 +2082,12 @@ static void ups_get_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
 			return ;	
 		}
 	};
+	/*
 	if(bModebusSuccess ==  false){
 		od->instance = MIB_OBJECT_NONE;
 		return ;	
 	}
+	*/
   ident_len += 1;
   ident -= 1;
   if (ident_len == 2)
@@ -1869,7 +2151,7 @@ static void ups_get_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
   }
   else
   {
-    LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("snmp_get_object_def: no scalar\n"));
+    //LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("snmp_get_object_def: no scalar\n"));
     od->instance = MIB_OBJECT_NONE;
   }
 }
@@ -1925,7 +2207,7 @@ static u8_t ups_set_test(struct obj_def *od, u16_t len, void *value)
 	set_ok = 0;
 	LWIP_ASSERT("invalid id", (od->id_inst_ptr[0] >= 0) && (od->id_inst_ptr[0] <= 0xff));
 	id = (u8_t)od->id_inst_ptr[0];
-    LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
+    //LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("od->id_inst_ptr[0]=%d \n",id));
 	if (id>=1 && id <= 61)
 	{
 		/* snmpEnableAuthenTraps */

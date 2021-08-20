@@ -92,7 +92,7 @@ static portTASK_FUNCTION( vWatchdog, pvParameters )
 				vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
 				vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
 				vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
-				//if(isNowSNMPServiceRunning==true)isReboot = true;  // 문제가 생긴 것이다.
+				if(isNowSNMPServiceRunning==true)isReboot = true;  // 문제가 생긴 것이다.
 			}
 
 		}

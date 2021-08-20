@@ -54,12 +54,12 @@ const struct mib_array_node upsSpecial_Value_kep = {
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
-	23,  // 8개
+	23,  // 23개
 	mib2_upsSpecial_kep,
 	mib2_nodes_upsSpecial_kep
 };
 
-const s32_t mib2_companyCode_kep[1] ={ 12082 };
+const s32_t mib2_companyCode_kep[1] ={12082 };
 struct mib_node* const mib2_nodes_companyCode_kep[1] = {(struct mib_node*)&upsSpecial_Value_kep};
 const struct mib_array_node upsSpecial_kep = {
 	&noleafs_get_object_def,
@@ -67,7 +67,7 @@ const struct mib_array_node upsSpecial_kep = {
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
-	1,  // 8개
+	1,  // 2개
 	mib2_companyCode_kep,
 	mib2_nodes_companyCode_kep
 };
@@ -86,10 +86,51 @@ const struct mib_array_node upsCompany_kep = {
 	mib2_company_kep,
 	mib2_nodes_company_kep
 };
+//----------------------------------------
 
-const s32_t mib2_device_kep[1] ={ 12236 };
+
+const s32_t mib2_ups_xppc[1] ={ 1 };
+struct mib_node* const mib2_nodes_ups_xppc[1] = {(struct mib_node*)&rfc1628_upsMIB};
+const struct mib_array_node ups_xppc = {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	1,  // 1개
+	mib2_ups_xppc,
+	mib2_nodes_ups_xppc
+};
+
+const s32_t mib2_hardware_xppc[1] ={ 1 };
+struct mib_node* const mib2_nodes_hardware_xppc[1] = {(struct mib_node*)&ups_xppc};
+const struct mib_array_node hardware_xppc = {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	1,  // 1개
+	mib2_hardware_xppc,
+	mib2_nodes_hardware_xppc
+};
+
+const s32_t mib2_product_xppc[1] ={ 1 };
+struct mib_node* const mib2_nodes_product_xppc[1] = {(struct mib_node*)&hardware_xppc,};
+const struct mib_array_node product_xppc = {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	1,  // 1개
+	mib2_product_xppc,
+	mib2_nodes_product_xppc
+};
+//----------------------
+const s32_t mib2_device_kep[2] ={ 935,12236 };
 //(struct mib_node*)&rfc1628_upsMIB,
-struct mib_node* const mib2_nodes_device_kep[1] = {(struct mib_node*)&upsCompany_kep};
+struct mib_node* const mib2_nodes_device_kep[2] = {(struct mib_node*)&product_xppc,(struct mib_node*)&upsCompany_kep};
 
 
 const struct mib_array_node upsMIB_kep = {
@@ -98,7 +139,7 @@ const struct mib_array_node upsMIB_kep = {
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
-	1,  // 8개
+	2,  // 2개
 	mib2_device_kep,
 	mib2_nodes_device_kep
 };
@@ -128,10 +169,12 @@ static void ups_get_object_def_kep(u8_t ident_len, s32_t *ident, struct obj_def 
 			return ;	
 		}
 	};
+	/*
 	if(bModebusSuccess ==  false){
 		od->instance = MIB_OBJECT_NONE;
 		return ;	
 	}
+	*/
 	ident_len += 1;
 	ident -= 1;
 	if (ident_len == 2)
