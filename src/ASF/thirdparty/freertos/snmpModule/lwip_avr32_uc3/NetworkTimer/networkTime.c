@@ -69,32 +69,36 @@ static portTASK_FUNCTION( vWatchdog, pvParameters )
 			beforeNowWebServiceRunningCount = isNowWebServiceRunningCount;
 
 			if(isNowSNMPServiceRunning )
-				beforeNowSNMPServiceRunning = isNowSNMPServiceRunning ;
+			beforeNowSNMPServiceRunning = isNowSNMPServiceRunning ;
 			else beforeNowSNMPServiceRunning = false;
 
 			wdt_clear();
-			vParTestSetLED(2, pdTRUE); vTaskDelay( 500);
+			vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
 			vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
 			wdt_clear();
-			vParTestSetLED(2, pdTRUE); vTaskDelay( 500);
+			vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
 			vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
 			wdt_clear();
-			vParTestSetLED(2, pdTRUE); vTaskDelay( 500);
-			vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
 
-			if(isModbusAlive == modebusPrcessCount) isReboot = true;
+			//시리얼통신이 죽을 일은 없다.
+			//if(isModbusAlive == modebusPrcessCount) isReboot = true;
+
 			//웹서비스가 실행 중이라면 이제는 반드시 끝이 났어야 한다
 			if(beforeNowWebServiceRunningCount == isNowWebServiceRunningCount) isReboot = true;
 
 			if( beforeNowSNMPServiceRunning == true) {  // snmp는 시간을 추가하여 준다.
-				wdt_clear();  
+				wdt_clear();
 				vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
 				vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
 				vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
 				vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
 				if(isNowSNMPServiceRunning==true)isReboot = true;  // 문제가 생긴 것이다.
 			}
-
+		}
+		else{
+			vParTestSetLED(1, pdTRUE); vParTestSetLED(2, pdTRUE);
+			vParTestSetLED(3, pdTRUE); vParTestSetLED(4, pdTRUE);
+			while(1);
 		}
 	}
 }

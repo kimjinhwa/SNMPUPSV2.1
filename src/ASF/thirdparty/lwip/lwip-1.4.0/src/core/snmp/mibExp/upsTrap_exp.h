@@ -56,21 +56,7 @@ const mib_scalar_node ups_scalar_exp = {
 static void ups_get_object_def_exp(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
 	/* return to object name, adding index depth (1) */
-	int breakCount = 150;
-	while( isModebusRunning)
-	{
-		vTaskDelay(10); //if(lValue>500)break; //lValue++;
-		if( breakCount-- == 0){
-			od->instance = MIB_OBJECT_NONE;
-			return ;	
-		}
-	};
-	/*
-	if(bModebusSuccess ==  false){
-		od->instance = MIB_OBJECT_NONE;
-		return ;	
-	}
-	*/
+
 	ident_len += 1;
 	ident -= 1;
 	if (ident_len == 2)
@@ -130,18 +116,6 @@ static void ups_get_value_exp(struct obj_def *od, u16_t len, void *value)
 	// 아이디와 UPS-MIB를 맞추어 준다..나중에
 	//id = id+1;
 	uint16_t lValue=0;
-	stopModebusGet = true;
-	/*
-	*/
-	//portENTER_CRITICAL();
-	//if(upsModeBusData.Bat_volt_rms == 0 ){
-	//		while(getDataFromSerial());
-		 //return;
-	//}
-	//if(upsModeBusData.Bat_volt_rms == 0 ){
-		//portEXIT_CRITICAL();
-	//	return;
-	//}
 	lValue=0;
 	switch (id){
 		case 1:// Input_r_volt_rms
@@ -181,8 +155,6 @@ static void ups_get_value_exp(struct obj_def *od, u16_t len, void *value)
 		default:
 			break;
 	}
-	stopModebusGet = false;
-	//portEXIT_CRITICAL();
 }
 
 static u8_t ups_set_test_exp(struct obj_def *od, u16_t len, void *value)

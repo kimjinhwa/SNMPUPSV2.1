@@ -172,7 +172,6 @@ bool requestUpsData_22_32_33()
 	if((upsModeBusData.Input_Phase == 1) )
 	{
 		//단상의 Converter State(12) 는 삼상의 Input_r_volt_rms에 맵핑되어 있다.
-		//flash_read_ups_info(&ups_info);
 		upsModeBusData.BMS_1_2_STATE =0;
 		upsModeBusData.Inverter_State =0;
 		upsModeBusData.Inverter_Operation_Fault=0;

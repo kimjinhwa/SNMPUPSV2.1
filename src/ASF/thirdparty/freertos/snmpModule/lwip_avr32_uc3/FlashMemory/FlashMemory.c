@@ -178,7 +178,6 @@ void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 		uint8_t reLoadTime = 10;
 		flash_write_reLoadTime( &reLoadTime);
 	}
-	//flash_read_ups_info(&ups_info);
 	
 	ethernet_t->Ethernet_Conf_EthAddr0 = nvram_data->Ethernet_Conf_EthAddr0;
 	ethernet_t->Ethernet_Conf_EthAddr1 = nvram_data->Ethernet_Conf_EthAddr1;
@@ -214,7 +213,10 @@ void flash_write_ups_info(ups_info_t *ups_info)
 void flash_read_ups_info(ups_info_t *ups_info)
 {
 	//memcpy( ups_info,(void *)&(nvram_ups_info),  sizeof(ups_info_t));
+
+	portENTER_CRITICAL();
 	flashc_memcpy( ups_info,(ups_info_t *)&(nvram_ups_info),  sizeof(ups_info_t),false);
+	portEXIT_CRITICAL();
 }
 
 void flash_write_smtp_info(smtp_info_t *smtp_info)

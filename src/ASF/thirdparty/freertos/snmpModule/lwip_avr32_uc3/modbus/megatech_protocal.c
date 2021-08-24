@@ -606,8 +606,6 @@ Bool parse_I_megatec(char *str)
 		temp[10]=0x00;
 		memcpy(ups_info.upsIdentUPSSoftwareVersion,temp,10) ;
 		
-		flash_write_ups_info(&ups_info);
-
 		return true;
 }
 
@@ -698,7 +696,6 @@ Bool parse_GF_megatec(char *str)
 	upsModeBusData.Ups_Capacitor= ups_info.capacity;
 	//str= (str+14+2);  // space¸¦ °Ç³Ê ¶Ú´Ù.
 
-	flash_write_ups_info(&ups_info);
 	return true;
 
 }
@@ -751,7 +748,6 @@ Bool parse_F_megatec(char *str)
 	ups_info.output_frequency = (int)( atof(argv[0])*10);  
 	//upsModeBusData.Inverter_Frequency= (int) atof(argv[0]); 
 
-	flash_write_ups_info(&ups_info);
 	return true;
 
 }
@@ -789,39 +785,19 @@ void CancelTest_CT_megatec()
 }
 Bool requestUpsStatus_megatec()
 {
-	//flash_read_ups_info(&ups_info);
 	Bool ret;
 	upsModeBusData.Bat_volt_rms=0;
 	if(ups_info.ups_type== 50 || ups_info.ups_type== 51)
 	{
-		// I/P Voltage -> G3.b
-		// I/P fault voltage,
-		// O/P Voltage ->G3.d
-		// O/P current
-		// I/P frequency   --> G1.g support
-		// Battery Voltage ->G1.b
-		// SS.S or S.SS,Temperature,UPS status
-
-			ret = requestUpsStatus_Q1_megatec() ;
-			if( ret == false ) return  false;
-			//Battery voltage, Battery Capacity,Battery Remaining, Battery current, Temperature,I/P freq,Freq bypss,o/p freq,
-			ret = requestUps_G1_megatec() ;
-			if( ret == false ) return  false;
-			ret = requestUps_G2_megatec();
-			if( ret == false ) return  false;
-
-			ret = requestUps_G3_megatec();
-			if( ret == false ) return  false;
-		/*
-		// ups status
-		// I/P Vol, RST , Bypass RST  , O/P Vol RST Load Persend RST,
-		else return true;
-		*/
-		return true;
+			while(!requestUpsStatus_Q1_megatec());
+			while(!requestUps_G1_megatec()) ;
+			while(!requestUps_G2_megatec());
+			while(!requestUps_G3_megatec());
 	}
 	else{
-		return requestUpsStatus_Q1_megatec();
+		while(!requestUpsStatus_Q1_megatec());
 	}
+	return true;
 }
 void checkTrap_2phase_megatec()
 {

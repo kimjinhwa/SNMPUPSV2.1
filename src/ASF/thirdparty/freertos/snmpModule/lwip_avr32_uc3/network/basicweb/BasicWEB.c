@@ -153,7 +153,14 @@ int webFunction(int port)
 				stopModebusGet=true;
 				//portENTER_CRITICAL();
 				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accepted! ") );
-				prvweb_ParseHTMLRequest(pxNewConnection);
+				if(processRequestCheckAndWaitTimeout(1000)==0)
+				{
+					if(addTo_QueueTask(eWEB))
+					{
+						prvweb_ParseHTMLRequest(pxNewConnection);
+						receiveFrom_QueueTask(eWEB);
+					}
+				}
 				//portEXIT_CRITICAL();
 			}
 		}
@@ -603,7 +610,6 @@ int webSocket_Function_SET_MAILID(struct netconn *pxNetCon ,portCHAR *pcRxString
 }
 
 int webSocket_Function_S_PASSWD(struct netconn *pxNetCon ,portCHAR *pcRxString){
-	flash_read_ups_info(&ups_info);
 
 	KeyAndValue keyvalue[3];
 	memset(keyvalue,0x00,sizeof(KeyAndValue)*3);
@@ -628,7 +634,6 @@ int webSocket_Function_S_PASSWD(struct netconn *pxNetCon ,portCHAR *pcRxString){
 int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 {
 	//ups_info_t ups_info;
-	flash_read_ups_info(&ups_info);
 
 	KeyAndValue *keyvalue;
 	keyvalue = (KeyAndValue  *)mem_malloc(sizeof(KeyAndValue)*16);// 15개르 사용하고 있다.
@@ -852,11 +857,11 @@ int webSocket_Function_UPS_EX_DATA(struct netconn *pxNetCon ,portCHAR *pcRxStrin
 	uint16_t dataLen=0;
 
 	//ups_info_t ups_info;
-	flash_read_ups_info(&ups_info);
+
 	memset(cDynamicPage,0x00,sizeof(cDynamicPage));
 	pData =(int16_t *)&upsModeBusData ;
 	//만일 시리얼 포트를 사용중이면 대기한다. 
-	if(getDataFromSerial()==false) return;
+	//if(getDataFromSerial()==false) return;
 
 	//if(upsModeBusData.Bat_volt_rms != 245){
 	//		LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nupsModeBusData.Bat_volt_rms=%d",upsModeBusData.Bat_volt_rms) );
@@ -979,6 +984,7 @@ int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 		else break;
 	}while( err != ERR_OK );
 	
+
 	if( pxRxBuffer != NULL )
 	{
 		netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
@@ -990,7 +996,9 @@ int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 			int request_command=0;
 			
 			if( strncmp(  "UPS_DATA",pcRxString,8)  == 0)			request_command =1  ;
-			else if( strncmp("UPS_EX_DATA",pcRxString,11)== 0)	webSocket_Function_UPS_EX_DATA(pxNetCon ,pcRxString,"UPS_EX_DATA?");
+			else if( strncmp("UPS_EX_DATA",pcRxString,11)== 0){
+					webSocket_Function_UPS_EX_DATA(pxNetCon ,pcRxString,"UPS_EX_DATA?");
+			}
 			else if( strncmp("UPS_LOG",pcRxString,7)  == 0)		request_command =2  ;
 			else if( strncmp("SET_TIME",pcRxString,8)  == 0)	request_command =3  ;
 			else if( strncmp("SET_IPAD",pcRxString,8)  == 0)	request_command =4  ;
@@ -1089,8 +1097,6 @@ void inline setUpsInfoToweb(struct netconn *pxNetCon, KeyAndValue *keyvalue,int 
 {
 	//uint16_t sendCount=0;
 	//ups_info_t ups_info;
-	flash_read_ups_info(&ups_info);
-
 	memcpy(keyvalue[0].id, commandString, strlen( commandString) );
 	memset(keyvalue[0].value, 0x00, sizeof(keyvalue[0].value) );
 	
@@ -1576,7 +1582,6 @@ void html_SETUP_UPS(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *pa
 void html_default(struct netconn *pxNetCon,Bool bLogview)
 {
 	ups_info_t ups_info;
-	flash_read_ups_info(&ups_info);
 	webHTML_netconn_write(pxNetCon,indexHtml_1);
 	sprintf( cDynamicPage,"<script>var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
 	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
@@ -1659,8 +1664,9 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 		}
 	}
 	
-	if( pxRxBuffer != NULL )
-	netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
+	if( pxRxBuffer != NULL ) netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
+
+
 	if( pxRxBuffer != NULL )
 	{
 		*(pcRxString+pxRxBuffer->ptr->len) = '\0';

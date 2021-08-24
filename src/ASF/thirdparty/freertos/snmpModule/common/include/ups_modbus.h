@@ -31,6 +31,22 @@ void vStartUPSModeBus( unsigned portBASE_TYPE uxPriority );
 //bool requestUpsData();
 Bool (*requestUpsData)();
 void  write_log_event();
+typedef enum
+{
+	eMODBUS,
+	eSNMP,
+	eWEB
+}DataSource_t;
+typedef struct
+{
+	uint8_t ucValue;
+	DataSource_t eDatasource;
+}Data_t;
+
+signed portBASE_TYPE  addTo_QueueTask(DataSource_t eTask);
+signed portBASE_TYPE   receiveFrom_QueueTask(DataSource_t eTask);
+int16_t processRequestCheckAndWaitTimeout(int processTimeOut);
+
 typedef struct {
 	uint16_t upsBaseBatteryStatus  ;
 	uint16_t upsBaseBatteryTimeOnBattery  ;

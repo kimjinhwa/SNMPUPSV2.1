@@ -151,7 +151,11 @@ signed portBASE_TYPE xQueueIsQueueEmptyFromISR( const xQueueHandle pxQueue ) PRI
 signed portBASE_TYPE xQueueIsQueueFullFromISR( const xQueueHandle pxQueue ) PRIVILEGED_FUNCTION;
 unsigned portBASE_TYPE uxQueueMessagesWaitingFromISR( const xQueueHandle pxQueue ) PRIVILEGED_FUNCTION;
 void vQueueWaitForMessageRestricted( xQueueHandle pxQueue, portTickType xTicksToWait ) PRIVILEGED_FUNCTION;
+unsigned portBASE_TYPE getQueueRemainCount( xQueueHandle xQueue );
 
+unsigned portBASE_TYPE getQueueRemainCount( xQueueHandle xQueue ){
+	return xQueue->uxMessagesWaiting;
+}
 /*
  * Co-routine queue functions differ from task queue functions.  Co-routines are
  * an optional component.

@@ -83,7 +83,7 @@ ups_modbus_data_t upsModeBusData;
 xppc_data_t	xppc_data;
 
 uint16_t modebusPrcessCount=0;
-uint16_t isModebusRunning=0;
+uint16_t processRequest=0;
 
 //Installed_Battery_Cells	10	NEP 33
 //				11	NEP 32
@@ -91,7 +91,6 @@ uint16_t isModebusRunning=0;
 
 
 //extern wdt_opt_t opt;
-extern Bool stopModebusGet;
 uint32_t  snmp_get_everyMinute();
 void  snmp_set_everyMinute(uint16_t value);
 int wait_command() ;
@@ -108,6 +107,45 @@ bool is_Converter_Operation_Fault_send_to_snmp_b0=false;
 
 bool is_Inverter_Operation_Fault_send_to_snmp=false;
 bool is_maintanence_NFB_send_snmp=false; 
+
+
+//-----------------------------------
+/* moved to Header file
+typedef enum
+{
+	eSNMP,
+	eWEB
+}DataSource_t;
+*/
+
+
+
+xQueueHandle xQueue;
+
+static const Data_t xStructsToSend[2] =
+{
+	{100,eSNMP},
+	{200,eWEB}
+};
+
+
+signed portBASE_TYPE  addTo_QueueTask(DataSource_t eTask)
+{
+	signed portBASE_TYPE sStatus;
+	if(eTask == eSNMP) {
+		return xQueueSendToBack(xQueue,&xStructsToSend[0],1000);
+		}
+		
+	else if(eTask == eWEB){
+		 return xQueueSendToBack(xQueue,&xStructsToSend[1],1000);
+	}
+}
+
+signed portBASE_TYPE  receiveFrom_QueueTask(DataSource_t eTask){
+	Data_t xStructsReceive;	
+	return xQueueReceive(xQueue,&xStructsReceive,0);
+}
+////////////////////////////
 
 void vStartUPSModeBus( unsigned portBASE_TYPE uxPriority )
 {
@@ -349,6 +387,9 @@ Bool bModebusSuccess=false;
 static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 {
 	//portTickType xFlashRate, xLastFlashTime;
+
+	xQueue = xQueueCreate(3,sizeof(Data_t));
+
 	portTickType xTimeBefore, xTotalTimeSuspended;
 	unsigned portBASE_TYPE uxLED;
 	//Bool (*requestUpsData)();
@@ -381,24 +422,9 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 	
 	( void ) pvParameters;
 
-	/*
-	portENTER_CRITICAL();
-	{
-		uxLED = uxFlashTaskNumber;
-		uxFlashTaskNumber++;
-	}
-	portEXIT_CRITICAL();
-	*/
 	// UDP 네트웍이 UP 되는 시간을 기다려 준다.
 	vTaskDelay( 4000);
 	snmp_coldstart_trap();
-	/*
-	xFlashRate = ledFLASH_RATE_BASE + ( ledFLASH_RATE_BASE * ( portTickType ) uxLED );
-	xFlashRate /= portTICK_RATE_MS;
-	
-	xFlashRate /= ( portTickType ) 2;
-	xLastFlashTime = xTaskGetTickCount();
-	*/
 	int rx_char;
 	int wait_count=0;
 	wdt_clear();
@@ -447,69 +473,56 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 	}
 	for(;;)
 	{
+		processRequestCheckAndWaitTimeout(1000); //프로세스가 돌고 있다면 기다린다.
+		addTo_QueueTask(eMODBUS);//모드버스를 시작한다. 
 		vParTestSetLED(3, pdTRUE);
 		modebusPrcessCount++;
-		//잠시 중단
-		//if( stopModebusGet==false && isNowSNMPServiceRunning == false) 
-		if( stopModebusGet==false )
-		{
-			//통신에 문제가 있으면 한번더 수행하라.
-			//한전에서 축전지 전압에 문제가 가끔씩 생긴다고 하여 루틴을 추가 한다.
-			//for( int i = 0 ; i < 2; i++ )
-			{
-				vParTestSetLED(1, pdFALSE);
-				//xTimeBefore = xTaskGetTickCount();
-				//taskENTER_CRITICAL() ;
-				isModebusRunning=true;
+		vParTestSetLED(1, pdFALSE);
+		portENTER_CRITICAL();
+		bModebusSuccess= requestUpsData();   // 173 ms taken
+		portEXIT_CRITICAL();
 
-
-
-
-				bModebusSuccess= requestUpsData();   // 173 ms taken
-
-
-
-
-				//에러가 생기면 한번만 더 해 본다.
-				//if(!bRet)requestUpsData();   // 173 ms taken
-				isModebusRunning=false;
-				//taskEXIT_CRITICAL();
-				//xTotalTimeSuspended = xTaskGetTickCount()-xTimeBefore ;
-				//if(bRet == true) break;       // 한번 더 수행하라..
-				//else{
-			    //		vTaskDelay( 1);
-				//}
-				//if(i>=3){ break; }
-			}
-			vParTestSetLED(1, !bModebusSuccess);
-		}
-		vParTestSetLED(3, pdFALSE);
+		receiveFrom_QueueTask(eMODBUS);
+		vParTestSetLED(1, !bModebusSuccess); vParTestSetLED(3, pdFALSE);
 		//portEXIT_CRITICAL();
 		if(bModebusSuccess ) // 데이타를 받아 오면 그때 데이타 검사를 수행한다.
 		{
 			write_log_event();
 		}
 		else{
-			vParTestSetLED(1,0);
-			vTaskDelay( 100);
-			vParTestSetLED(1,1);
-			vTaskDelay( 100);
-			vParTestSetLED(1,0);
-			vTaskDelay( 100);
-			vParTestSetLED(1,1);
-			vTaskDelay( 100);
+			vParTestSetLED(1,0); vTaskDelay( 100); vParTestSetLED(1,1); vTaskDelay( 100); vParTestSetLED(1,0); vTaskDelay( 100); vParTestSetLED(1,1); vTaskDelay( 100);
 		}
+			
 		vTaskDelay( 1500);
 	}
 }
 
-Bool getDataFromSerial(){
-	
-	int reTraycount=12;
-	while(isModebusRunning == true)
-	{
-			vTaskDelay(100);
-			if(reTraycount-- ==0 )return false;
+
+unsigned portBASE_TYPE getQueueRemainCount( xQueueHandle xQueue );
+int16_t processRequestCheckAndWaitTimeout(int processTimeOut)
+{
+	int8_t number;
+	number = getQueueRemainCount(xQueue);
+	if( number != 0    ){  // 데이타를 요청하고 있는 것이니 허가해 준다.
+		while(1){ // SNMP나 WEB에서 데이타를 요청하고 나서 종료 하는데 까지 걸리는 시간을 기다려 줘야 한다.
+			// 너무 시간이 많이 걸리면 WatchDog이 발생할 수 있으니, Waiting하는 동안 만큼은 여기서 워치독을 클리어 시켜 준다.
+			vParTestSetLED(1, pdTRUE);
+			vTaskDelay(50);
+			//if(( processTimeOut % 1000)  == 0 )  	wdt_clear();
+			 number =  getQueueRemainCount(xQueue);
+			if(number == 0 ) {
+					return 0;
+			}
+			vParTestSetLED(1, pdFALSE);
+			vTaskDelay(50);
+		}
+		return -1;
 	}
-	return true;
+	return 0;
 }
+
+
+
+
+
+
