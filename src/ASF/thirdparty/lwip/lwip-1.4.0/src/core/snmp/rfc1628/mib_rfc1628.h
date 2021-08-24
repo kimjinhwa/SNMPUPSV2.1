@@ -98,7 +98,6 @@ static void ups_get_upsIdent_object_def(u8_t ident_len, s32_t *ident, struct obj
 		//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("get_object_def system.%"U16_F".0\n",(u16_t)id));
 
 		//ups_info_t ups_info;
-		setSystemInfoDefault();
 		switch (id)
 		{
 			case 1: /* upsIdentManufacturer */
@@ -168,7 +167,6 @@ static void ups_get_upsSmartIdent_object_def(u8_t ident_len, s32_t *ident, struc
 		//LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("get_object_def system.%"U16_F".0\n",(u16_t)id));
 
 		//ups_info_t ups_info;
-		setSystemInfoDefault();
 		switch (id)
 		{
 			case 1: /* upsIdentUPSSoftwareVersion */
@@ -216,7 +214,6 @@ static void ups_get_upsIdent_value(struct obj_def *od, u16_t len, void *value)
 	id = (u8_t)od->id_inst_ptr[0];
 
 	//ups_info_t ups_info;
-	setSystemInfoDefault();
 	switch (id)
 	{
 		case 1: /* upsIdentManufacturer */
@@ -248,7 +245,6 @@ static void ups_get_upsSmartIdent_value(struct obj_def *od, u16_t len, void *val
 	id = (u8_t)od->id_inst_ptr[0];
 
 	//ups_info_t ups_info;
-	setSystemInfoDefault();
 	switch (id)
 	{
 		case 1: /* upsIdentUPSSoftwareVersion */
@@ -392,8 +388,9 @@ static void ups_get_upsBaseBattery_object_def(u8_t ident_len, s32_t *ident, stru
 		u8_t id; od->id_inst_len = ident_len; od->id_inst_ptr = ident;
 		LWIP_ASSERT("invalid id", (ident[0] >= 0) && (ident[0] <= 0xff));
 		id = (u8_t)ident[0];
-		switch(id){
-			case 1: case 2: case 4: case 5: case 6: case 7:
+		switch(id)
+		{
+			case 1: case 2: 
 			od->instance = MIB_OBJECT_SCALAR;
 			od->access = MIB_OBJECT_READ_ONLY;
 			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
@@ -405,6 +402,13 @@ static void ups_get_upsBaseBattery_object_def(u8_t ident_len, s32_t *ident, stru
 			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_OC_STR);
 			od->v_len = sizeof(ups_info.batLastReplaceDate) ;
 			// ocstrncpy((u8_t*)value, (u8_t*)&ups_info.batLastReplaceDate[0], len);
+			case 4: case 5: case 6: case 7:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+
 			default:
 			od->instance = MIB_OBJECT_NONE;
 			break;
@@ -610,21 +614,28 @@ const struct mib_array_node  upsBatteryp= {
 	rfc1628_upsBatteryp_ids,
 	rfc1628_upsBatteryp_nodes
 };
-//--------------------upsInputEntry
-static void ups_get_upsInputTable_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
-static void ups_get_upsInputTable_value(struct obj_def *od, u16_t len, void *value);
-static u8_t ups_set_upsInputTable_test(struct obj_def *od, u16_t len, void *value);
-static void ups_set_upsInputTable_value(struct obj_def *od, u16_t len, void *value);
 
-const mib_scalar_node rfc1628_upsInputTable_scalar = {
-	&ups_get_upsInputTable_object_def,
-	&ups_get_upsInputTable_value,
-	&ups_set_upsInputTable_test,
-	&ups_set_upsInputTable_value,
+//----upsBaseInput------------------
+//--------------------upsBaseInputEntry
+static void ups_get_upsBaseInputTable_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
+static void ups_get_upsBaseInputTable_value(struct obj_def *od, u16_t len, void *value);
+static u8_t ups_set_upsBaseInputTable_test(struct obj_def *od, u16_t len, void *value);
+static void ups_set_upsBaseInputTable_value(struct obj_def *od, u16_t len, void *value);
+//  upsInput get and set
+static void ups_get_upsBaseInput_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
+static void ups_get_upsBaseInput_value(struct obj_def *od, u16_t len, void *value);
+static u8_t ups_set_upsBaseInput_test(struct obj_def *od, u16_t len, void *value);
+static void ups_set_upsBaseInput_value(struct obj_def *od, u16_t len, void *value);
+
+const mib_scalar_node rfc1628_upsBaseInputTable_scalar = {
+	&ups_get_upsBaseInputTable_object_def,
+	&ups_get_upsBaseInputTable_value,
+	&ups_set_upsBaseInputTable_test,
+	&ups_set_upsBaseInputTable_value,
 	MIB_NODE_SC,
 	0
 };
-static void ups_get_upsInputTable_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
+static void ups_get_upsBaseInputTable_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
 	ident_len += 1; ident -= 1;
 	if (ident_len == 2)
@@ -646,7 +657,7 @@ static void ups_get_upsInputTable_object_def(u8_t ident_len, s32_t *ident, struc
 	}
 }
 
-static void ups_get_upsInputTable_value(struct obj_def *od, u16_t len, void *value)
+static void ups_get_upsBaseInputTable_value(struct obj_def *od, u16_t len, void *value)
 {
 	u32_t *uint_ptr = (u32_t*)value;
 	u8_t id;
@@ -683,32 +694,23 @@ static void ups_get_upsInputTable_value(struct obj_def *od, u16_t len, void *val
 	}
 }
 
-static u8_t ups_set_upsInputTable_test(struct obj_def *od, u16_t len, void *value)
+static u8_t ups_set_upsBaseInputTable_test(struct obj_def *od, u16_t len, void *value)
 {return 0;};
-static void ups_set_upsInputTable_value(struct obj_def *od, u16_t len, void *value)
+static void ups_set_upsBaseInputTable_value(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id;
 	id = (u8_t)od->id_inst_ptr[0];
 };
 
-
-
-
-//  upsInput get and set
-static void ups_get_upsInput_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
-static void ups_get_upsInput_value(struct obj_def *od, u16_t len, void *value);
-static u8_t ups_set_upsInput_test(struct obj_def *od, u16_t len, void *value);
-static void ups_set_upsInput_value(struct obj_def *od, u16_t len, void *value);
-
-const mib_scalar_node rfc1628_upsInput_scalar = {
-	&ups_get_upsInput_object_def,
-	&ups_get_upsInput_value,
-	&ups_set_upsInput_test,
-	&ups_set_upsInput_value,
+const mib_scalar_node rfc1628_upsBaseInput_scalar = {
+	&ups_get_upsBaseInput_object_def,
+	&ups_get_upsBaseInput_value,
+	&ups_set_upsBaseInput_test,
+	&ups_set_upsBaseInput_value,
 	MIB_NODE_SC,
 	0
 };
-static void ups_get_upsInput_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
+static void ups_get_upsBaseInput_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
 	ident_len += 1; ident -= 1;
 	if (ident_len == 2)
@@ -729,7 +731,7 @@ static void ups_get_upsInput_object_def(u8_t ident_len, s32_t *ident, struct obj
 		}
 	}
 }
-static void ups_get_upsInput_value(struct obj_def *od, u16_t len, void *value)
+static void ups_get_upsBaseInput_value(struct obj_def *od, u16_t len, void *value)
 {
 
 	u32_t *uint_ptr = (u32_t*)value;
@@ -739,7 +741,7 @@ static void ups_get_upsInput_value(struct obj_def *od, u16_t len, void *value)
 	id = (u8_t)od->id_inst_ptr[0];
 	switch(id){
 		case 1:// utility line fail count
-		*uint_ptr = 0;
+		*uint_ptr = upsModeBusData.Input_Phase;
 		break;
 		case 2: // input phase
 		*uint_ptr = *(pData+4);
@@ -750,9 +752,9 @@ static void ups_get_upsInput_value(struct obj_def *od, u16_t len, void *value)
 	}
 }
 
-static u8_t ups_set_upsInput_test(struct obj_def *od, u16_t len, void *value)
+static u8_t ups_set_upsBaseInput_test(struct obj_def *od, u16_t len, void *value)
 {return 0;};
-static void ups_set_upsInput_value(struct obj_def *od, u16_t len, void *value)
+static void ups_set_upsBaseInput_value(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id;
 	id = (u8_t)od->id_inst_ptr[0];
@@ -760,57 +762,177 @@ static void ups_set_upsInput_value(struct obj_def *od, u16_t len, void *value)
 
 
 
-const s32_t rfc1628_upsInputEntry_ids[5] = {
+const s32_t rfc1628_upsBaseInputEntry_ids[5] = {
 	1,  2,  3, 4, 5
 };
-struct mib_node* const rfc1628_upsInputEntry_nodes[5] = {
-	(struct mib_node*)&rfc1628_upsInputTable_scalar , (struct mib_node*)&rfc1628_upsInputTable_scalar,
-	(struct mib_node*)&rfc1628_upsInputTable_scalar , (struct mib_node*)&rfc1628_upsInputTable_scalar,
-	(struct mib_node*)&rfc1628_upsInputTable_scalar
+struct mib_node* const rfc1628_upsBaseInputEntry_nodes[5] = {
+	(struct mib_node*)&rfc1628_upsBaseInputTable_scalar , (struct mib_node*)&rfc1628_upsBaseInputTable_scalar,
+	(struct mib_node*)&rfc1628_upsBaseInputTable_scalar , (struct mib_node*)&rfc1628_upsBaseInputTable_scalar,
+	(struct mib_node*)&rfc1628_upsBaseInputTable_scalar
 };
-const struct mib_array_node  upsInputEntry= {
+const struct mib_array_node  upsBaseInputEntry= {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
 	5,
-	rfc1628_upsInputEntry_ids,
-	rfc1628_upsInputEntry_nodes
+	rfc1628_upsBaseInputEntry_ids,
+	rfc1628_upsBaseInputEntry_nodes
 };
-const s32_t rfc1628_upsInputTable_ids = 1;
-struct mib_node* const rfc1628_upsInputTable_nodes =
-(struct mib_node*)&upsInputEntry;
+const s32_t rfc1628_upsBaseInputTable_ids = 1;
+struct mib_node* const rfc1628_upsBaseInputTable_nodes =
+(struct mib_node*)&upsBaseInputEntry;
 
-const struct mib_array_node  upsInputTable= {
+const struct mib_array_node  upsBaseInputTable= {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_RA,
 	1,
-	&rfc1628_upsInputTable_ids,
-	&rfc1628_upsInputTable_nodes
+	&rfc1628_upsBaseInputTable_ids,
+	&rfc1628_upsBaseInputTable_nodes
 };
 
-const s32_t rfc1628_upsInput_ids[3] = {
+const s32_t rfc1628_upsBaseInput_ids[3] = {
 	1,  2,  3
 };
-struct mib_node* const rfc1628_upsInput_nodes[3] = {
-	(struct mib_node*)&rfc1628_upsInput_scalar , (struct mib_node*)&rfc1628_upsInput_scalar,
-	(struct mib_node*)&upsInputTable
+struct mib_node* const rfc1628_upsBaseInput_nodes[3] = {
+	(struct mib_node*)&rfc1628_upsBaseInput_scalar , (struct mib_node*)&rfc1628_upsBaseInput_scalar,
+	(struct mib_node*)&upsBaseInputTable
 };
 
-const struct mib_array_node  upsInput= {
+const struct mib_array_node  upsBaseInput= {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
 	3,
-	rfc1628_upsInput_ids,
-	rfc1628_upsInput_nodes
+	rfc1628_upsBaseInput_ids,
+	rfc1628_upsBaseInput_nodes
 };
+//----upsBaseInput------------------
+
+//----upsSmartInput------------------
+//  upsSmartInput get and set
+static void ups_get_upsSmartInput_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
+static void ups_get_upsSmartInput_value(struct obj_def *od, u16_t len, void *value);
+static u8_t ups_set_upsSmartInput_test(struct obj_def *od, u16_t len, void *value);
+static void ups_set_upsSmartInput_value(struct obj_def *od, u16_t len, void *value);
+
+
+const mib_scalar_node rfc1628_upsSmartInput_scalar = {
+	&ups_get_upsSmartInput_object_def,
+	&ups_get_upsSmartInput_value,
+	&ups_set_upsSmartInput_test,
+	&ups_set_upsSmartInput_value,
+	MIB_NODE_SC,
+	0
+};
+static void ups_get_upsSmartInput_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
+{
+	ident_len += 1; ident -= 1;
+	if (ident_len == 2)
+	{
+		u8_t id; od->id_inst_len = ident_len; od->id_inst_ptr = ident;
+		LWIP_ASSERT("invalid id", (ident[0] >= 0) && (ident[0] <= 0xff));
+		id = (u8_t)ident[0];
+		switch(id){
+			case 1: case 2: case 3: case 4: case 5: 
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
+			od->v_len = sizeof(u32_t);
+			break;
+			default:
+			od->instance = MIB_OBJECT_NONE;
+			break;
+		}
+	}
+}
+static void ups_get_upsSmartInput_value(struct obj_def *od, u16_t len, void *value)
+{
+	u32_t *uint_ptr = (u32_t*)value;
+	u8_t id;
+	uint16_t * pData =(uint16_t *)&upsModeBusData ;
+	//uint16_t lValue=*(pData+id-1);
+	id = (u8_t)od->id_inst_ptr[0];
+	switch(id){
+		case 1://upsSmartInputLineVoltage(1)  
+		*uint_ptr = upsModeBusData.Input_r_volt_rms;
+		break;
+		case 2: // upsSmartInputMaxLineVoltage
+		*uint_ptr = upsModeBusData.Input_r_volt_rms;
+		break;
+		case 3: // upsSmartInputMinLineVoltage
+		*uint_ptr = upsModeBusData.Input_r_volt_rms;
+		break;
+		case 4: // upsSmartInputFrequency
+		*uint_ptr = upsModeBusData.Input_frequency;
+		break;
+		case 5: // upsSmartInputLineFailCause
+		*uint_ptr = upsModeBusData.Converter_State;
+		break;
+		default:
+		*uint_ptr = 0;
+		break;
+	}
+}
+
+static u8_t ups_set_upsSmartInput_test(struct obj_def *od, u16_t len, void *value)
+{return 0;};
+static void ups_set_upsSmartInput_value(struct obj_def *od, u16_t len, void *value)
+{
+	u8_t id;
+	id = (u8_t)od->id_inst_ptr[0];
+};
+
+
+const s32_t rfc1628_upsSmartInput_ids[5] = {
+	1,  2,  3,4,5
+};
+struct mib_node* const rfc1628_upsSmartInput_nodes[5] = {
+	(struct mib_node*)&rfc1628_upsSmartInput_scalar , (struct mib_node*)&rfc1628_upsSmartInput_scalar,
+	(struct mib_node*)&rfc1628_upsSmartInput_scalar , (struct mib_node*)&rfc1628_upsSmartInput_scalar,
+	(struct mib_node*)&rfc1628_upsSmartInput_scalar 
+};
+
+const struct mib_array_node  upsSmartInput= {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	5,
+	rfc1628_upsSmartInput_ids,
+	rfc1628_upsSmartInput_nodes
+};
+//----upsSmartInput------------------
+
+const s32_t rfc1628_upsInputp_ids[2] = {
+	1,  2  
+};
+
+
+struct mib_node* const rfc1628_upsInputp_nodes[] = {
+	(struct mib_node*)&upsBaseInput,
+	(struct mib_node*)&upsSmartInput
+};
+const struct mib_array_node  upsInputp= {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	2,
+	rfc1628_upsInputp_ids,
+	rfc1628_upsInputp_nodes
+};
+
+
+
 //--------------------upsOutputEntry .1.3.6.1.33.1.4.4.1.1~5
 //--------------------upsOutputEntry
 static void ups_get_upsOutputTable_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
@@ -1982,7 +2104,7 @@ struct mib_node* const rfc1628_upsMIB_nodes[9] = {
 	//(struct mib_node*)&rfc1628_upsObjects
 	(struct mib_node*)&rfc1628_upsIdents,
 	(struct mib_node*)&upsBatteryp,
-	(struct mib_node*)&upsInput,
+	(struct mib_node*)&upsInputp,
 	(struct mib_node*)&upsOutput,
 	(struct mib_node*)&upsBypass,
 	(struct mib_node*)&upsTest,

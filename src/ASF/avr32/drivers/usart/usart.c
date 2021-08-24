@@ -949,20 +949,6 @@ int checkUsartData(volatile avr32_usart_t *usart,int timeout){
 		}
 	};
 	return 1;	
-	/*
-	while( iCount < timeout)
-	{
-	  if(usart_test_hit(usart) 	== 0 )
-	  {
-			vTaskDelay(1);
-		    iCount++;
-	  }
-	  else {
-		  return 1;
-	  }
-	}
-	return 0;	
-	*/
 }
 
 int usart_get_count_data(volatile avr32_usart_t *usart,char *readBuf , int *receiveLength,int timeout)

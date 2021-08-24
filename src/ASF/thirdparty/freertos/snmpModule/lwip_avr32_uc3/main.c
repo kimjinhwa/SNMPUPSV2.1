@@ -338,6 +338,8 @@ extern ups_info_t ups_info;
 
 xQueueHandle modbusQueue = 0;
 
+void setSystemInfoDefault();
+
 int main( void )
 {
 	sysclk_init();
@@ -345,7 +347,6 @@ int main( void )
 	FlashInit();
 	printSystemInfo() ;
 	flash_read_ups_info(&ups_info);
-
 	modbusQueue = xQueueCreate( 5, sizeof(Byte) );
 
 	if(ups_info.ups_type== 31 || ups_info.ups_type== 32 || ups_info.ups_type== 33  ) //아이에프텍
@@ -368,8 +369,7 @@ int main( void )
 	vStartSoftTimer(watchdog_TASK_PRIORITY );
 	// 6) Start FreeRTOS.
 
-
-
+	setSystemInfoDefault();
 
 	vTaskStartScheduler();
 	/* Will only reach here if there was insufficient memory to create the idle task. */

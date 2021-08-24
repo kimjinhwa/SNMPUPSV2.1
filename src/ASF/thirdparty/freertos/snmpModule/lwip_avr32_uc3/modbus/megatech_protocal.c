@@ -89,12 +89,6 @@ bool requestUpsStatus_Q1_megatec()
 	if(receivedCount > 0) 
 	{
 
-		//upsModeBusData.Input_r_volt_rms = 0;
-		//upsModeBusData.Output_r_volt_rms = 0;
-		//upsModeBusData.Output_u_current_rms=0;
-		//upsModeBusData.Output_frequency=0;
-		//upsModeBusData.Battery_Room_Temper=0;
-		//upsModeBusData.Inverter_State=0;
 		parseQ1_megatec(buffer+1);
 		free(buffer);
 		return true;
@@ -271,7 +265,6 @@ bool requestUps_G1_megatec()
 		//변경 Q1 데이타 보다틑 G1데이타가 가장 정확한 데이타로 본다.
 		//따라서 만일 G1 command 에서 배터리데이타가 없어도 
 		//G1에서 얻은 데이타를 사용한다.
-		upsModeBusData.Bat_volt_rms=0;
 		if(parseG1_megatec(buffer+1))
 		{
 			free(buffer);
@@ -455,19 +448,6 @@ bool requestUps_G3_megatec()
 	int receivedCount = megatec_command_CR("G3\r",3,'!',500,buffer); // (는 빼고 넘긴다.
 	if(receivedCount > 0) 
 	{
-		//memset(&upsModeBusData,NULL,sizeof(upsModeBusData));
-		upsModeBusData.Input_r_volt_rms = 0;
-		upsModeBusData.Input_s_volt_rms = 0;
-		upsModeBusData.Input_t_volt_rms = 0;
-		upsModeBusData.Bypass_r_volt_rms= 0;
-		upsModeBusData.Bypass_s_volt_rms= 0;
-		upsModeBusData.Bypass_t_volt_rms= 0;
-		upsModeBusData.Output_r_volt_rms = 0;
-		//upsModeBusData.Output_s_volt_rms = 0;
-		//upsModeBusData.Output_t_volt_rms = 0;
-		upsModeBusData.Output_R_Load= 0;
-		upsModeBusData.Output_S_Load= 0;
-		upsModeBusData.Output_T_Load= 0;
 		if(parseG3_megatec(buffer+1))
 		{
 			free(buffer);
@@ -783,10 +763,10 @@ void CancelTest_CT_megatec()
 	megatec_command_CR("CT\r",3,'#',500,buffer); 
 	free(buffer);
 }
+
 Bool requestUpsStatus_megatec()
 {
 	Bool ret;
-	upsModeBusData.Bat_volt_rms=0;
 	if(ups_info.ups_type== 50 || ups_info.ups_type== 51)
 	{
 			while(!requestUpsStatus_Q1_megatec());

@@ -46,6 +46,7 @@
 #include "lwip/udp.h"
 #include "lwip/stats.h"
 
+#include "task.h"
 #include "wdt.h"
 #include "ups_modbus.h"
 
@@ -838,19 +839,22 @@ snmp_msg_event(u8_t request_id)
 
 
 Bool isNowSNMPServiceRunning = false;
+static uint16_t modebusProcessRunning;
 /* lwIP UDP receive callback function */
 static void
 snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
 {
-	isNowSNMPServiceRunning = true;
-	processRequestCheckAndWaitTimeout(1000);
-	addTo_QueueTask(eSNMP);
+
 	struct snmp_msg_pstat *msg_ps;
 	u8_t req_idx;
 	err_t err_ret;
 	u16_t payload_len = p->tot_len;
 	u16_t payload_ofs = 0;
 	u16_t varbind_ofs = 0;
+
+	isNowSNMPServiceRunning = true;
+	processRequestCheckAndWaitTimeout(1000);
+	addTo_QueueTask(eSNMP);
 	
 	vParTestSetLED(0, pdTRUE);
 	/* suppress unused argument warning */

@@ -2244,7 +2244,6 @@ static void system_get_object_def(u8_t ident_len, s32_t *ident, struct obj_def *
     LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("get_object_def system.%"U16_F".0\n",(u16_t)id));
 
 	//ups_info_t ups_info;
-	setSystemInfoDefault();
     switch (id)
     {
       case 1: /* sysDescr */
@@ -2334,7 +2333,6 @@ static void system_get_value(struct obj_def *od, u16_t len, void *value)
 
 	
   //ups_info_t ups_info;
-  setSystemInfoDefault();
   switch (id)
   {
     case 1: /* sysDescr */
@@ -2473,7 +2471,6 @@ system_set_value(struct obj_def *od, u16_t len, void *value)
 {
   u8_t id;
   //ups_info_t ups_info;
-  setSystemInfoDefault();
   LWIP_ASSERT("invalid len", len <= 0xff);
   LWIP_ASSERT("invalid id", (od->id_inst_ptr[0] >= 0) && (od->id_inst_ptr[0] <= 0xff));
   id = (u8_t)od->id_inst_ptr[0];

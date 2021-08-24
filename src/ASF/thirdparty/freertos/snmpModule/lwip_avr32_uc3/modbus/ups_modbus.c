@@ -83,7 +83,7 @@ ups_modbus_data_t upsModeBusData;
 xppc_data_t	xppc_data;
 
 uint16_t modebusPrcessCount=0;
-uint16_t processRequest=0;
+static uint16_t modebusProcessRunning=0;
 
 //Installed_Battery_Cells	10	NEP 33
 //				11	NEP 32
@@ -122,28 +122,40 @@ typedef enum
 
 xQueueHandle xQueue;
 
-static const Data_t xStructsToSend[2] =
+static const Data_t xStructsToSend[3] =
 {
-	{100,eSNMP},
-	{200,eWEB}
+	{100,eMODBUS},
+	{200,eSNMP},
+	{300,eWEB}
 };
 
 
 signed portBASE_TYPE  addTo_QueueTask(DataSource_t eTask)
 {
 	signed portBASE_TYPE sStatus;
-	if(eTask == eSNMP) {
-		return xQueueSendToBack(xQueue,&xStructsToSend[0],1000);
+	if(eTask == eMODBUS) {
+		    sStatus	=  xQueueSendToBack(xQueue,&xStructsToSend[0],1000);
+			vTaskDelay(10);		
+			return sStatus; 
 		}
 		
+	else if(eTask == eSNMP){
+		    sStatus	=  xQueueSendToBack(xQueue,&xStructsToSend[1],1000);
+			vTaskDelay(10);		
+			return sStatus; 
+	}
 	else if(eTask == eWEB){
-		 return xQueueSendToBack(xQueue,&xStructsToSend[1],1000);
+		    sStatus	=  xQueueSendToBack(xQueue,&xStructsToSend[2],1000);
+			vTaskDelay(10);		
+			return sStatus; 
 	}
 }
 
 signed portBASE_TYPE  receiveFrom_QueueTask(DataSource_t eTask){
 	Data_t xStructsReceive;	
-	return xQueueReceive(xQueue,&xStructsReceive,0);
+	xQueueReceive(xQueue,&xStructsReceive,0);
+	//LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n Queue is %d",xStructsReceive.eDatasource) );
+	return  xStructsReceive.eDatasource;
 }
 ////////////////////////////
 
@@ -477,14 +489,16 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 		addTo_QueueTask(eMODBUS);//모드버스를 시작한다. 
 		vParTestSetLED(3, pdTRUE);
 		modebusPrcessCount++;
+		modebusProcessRunning = 1;
 		vParTestSetLED(1, pdFALSE);
 		portENTER_CRITICAL();
 		bModebusSuccess= requestUpsData();   // 173 ms taken
+		modebusProcessRunning = 0;
 		portEXIT_CRITICAL();
 
 		receiveFrom_QueueTask(eMODBUS);
 		vParTestSetLED(1, !bModebusSuccess); vParTestSetLED(3, pdFALSE);
-		//portEXIT_CRITICAL();
+		portEXIT_CRITICAL();
 		if(bModebusSuccess ) // 데이타를 받아 오면 그때 데이타 검사를 수행한다.
 		{
 			write_log_event();
@@ -492,8 +506,8 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 		else{
 			vParTestSetLED(1,0); vTaskDelay( 100); vParTestSetLED(1,1); vTaskDelay( 100); vParTestSetLED(1,0); vTaskDelay( 100); vParTestSetLED(1,1); vTaskDelay( 100);
 		}
-			
-		vTaskDelay( 1500);
+		vTaskDelay( 2000);
+		wdt_clear();	
 	}
 }
 
@@ -511,6 +525,7 @@ int16_t processRequestCheckAndWaitTimeout(int processTimeOut)
 			//if(( processTimeOut % 1000)  == 0 )  	wdt_clear();
 			 number =  getQueueRemainCount(xQueue);
 			if(number == 0 ) {
+					wdt_clear();	
 					return 0;
 			}
 			vParTestSetLED(1, pdFALSE);

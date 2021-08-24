@@ -31,7 +31,6 @@ static void ups_get_upsIdent_object_def_exp(u8_t ident_len, s32_t *ident, struct
 		LWIP_DEBUGF_UDP(SNMP_MIB_DEBUG,("get_object_def system.%"U16_F".0\n",(u16_t)id));
 
 		//ups_info_t ups_info;
-		setSystemInfoDefault();
 		switch (id)
 		{
 			case 1: /* 모델번호, 소프트웨어 버전 */
@@ -68,7 +67,6 @@ static void ups_get_upsIdent_value_exp(struct obj_def *od, u16_t len, void *valu
 	id = (u8_t)od->id_inst_ptr[0];
 
 	//ups_info_t ups_info;
-	setSystemInfoDefault();
 	switch (id)
 	{
 		case 1: /* upsIdentManufacturer */
