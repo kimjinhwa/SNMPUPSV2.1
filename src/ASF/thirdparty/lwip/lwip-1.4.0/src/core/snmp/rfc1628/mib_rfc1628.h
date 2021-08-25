@@ -719,7 +719,7 @@ static void ups_get_upsBaseInput_object_def(u8_t ident_len, s32_t *ident, struct
 		LWIP_ASSERT("invalid id", (ident[0] >= 0) && (ident[0] <= 0xff));
 		id = (u8_t)ident[0];
 		switch(id){
-			case 1: case 2:
+			case 1: case 2:case 3:
 			od->instance = MIB_OBJECT_SCALAR;
 			od->access = MIB_OBJECT_READ_ONLY;
 			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
@@ -744,6 +744,9 @@ static void ups_get_upsBaseInput_value(struct obj_def *od, u16_t len, void *valu
 		*uint_ptr = upsModeBusData.Input_Phase;
 		break;
 		case 2: // input phase
+		*uint_ptr = *(pData+4);
+		break;
+		case 3: // input phase
 		*uint_ptr = *(pData+4);
 		break;
 		default:
@@ -799,10 +802,11 @@ const s32_t rfc1628_upsBaseInput_ids[3] = {
 	1,  2,  3
 };
 struct mib_node* const rfc1628_upsBaseInput_nodes[3] = {
-	(struct mib_node*)&rfc1628_upsBaseInput_scalar , (struct mib_node*)&rfc1628_upsBaseInput_scalar,
-	(struct mib_node*)&upsBaseInputTable
+	(struct mib_node*)&rfc1628_upsBaseInput_scalar , 
+	(struct mib_node*)&rfc1628_upsBaseInput_scalar,
+	(struct mib_node*)&rfc1628_upsBaseInput_scalar
 };
-
+//(struct mib_node*)&upsBaseInputTable
 const struct mib_array_node  upsBaseInput= {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
@@ -1076,7 +1080,7 @@ static void ups_get_upsBaseOutput_object_def(u8_t ident_len, s32_t *ident, struc
 		LWIP_ASSERT("invalid id", (ident[0] >= 0) && (ident[0] <= 0xff));
 		id = (u8_t)ident[0];
 		switch(id){
-			case 1: case 2: case 3:
+			case 1: case 2: case 3:case 4:
 			od->instance = MIB_OBJECT_SCALAR;
 			od->access = MIB_OBJECT_READ_ONLY;
 			od->asn_type = (SNMP_ASN1_APPLIC | SNMP_ASN1_PRIMIT | SNMP_ASN1_COUNTER);
@@ -1105,6 +1109,9 @@ static void ups_get_upsBaseOutput_value(struct obj_def *od, u16_t len, void *val
 		case 3: //output phase
 		*uint_ptr = *(pData+6);
 		break;
+		case 4: //output phase
+		*uint_ptr = *(pData+6);
+		break;
 		default:
 		*uint_ptr = 0;
 		break;
@@ -1127,7 +1134,7 @@ struct mib_node* const rfc1628_upsBaseOutput_nodes[4] = {
 	(struct mib_node*)&rfc1628_upsBaseOutput_scalar,
 	(struct mib_node*)&rfc1628_upsBaseOutput_scalar,
 	(struct mib_node*)&rfc1628_upsBaseOutput_scalar,
-	(struct mib_node*)&upsOutputTable
+	(struct mib_node*)&rfc1628_upsBaseOutput_scalar
 };
 const struct mib_array_node  upsBaseOutput= {
 	&noleafs_get_object_def,
@@ -1894,6 +1901,7 @@ static u8_t ups_set_upsControl_test(struct obj_def *od, u16_t len, void *value)
 	u8_t id, set_ok;
 	LWIP_UNUSED_ARG(len);
 	set_ok = 0;
+	id = (u8_t)od->id_inst_ptr[0];
 	LWIP_ASSERT("invalid id", (od->id_inst_ptr[0] >= 0) && (od->id_inst_ptr[0] <= 0xff));
 	switch(id){
 		case 1:

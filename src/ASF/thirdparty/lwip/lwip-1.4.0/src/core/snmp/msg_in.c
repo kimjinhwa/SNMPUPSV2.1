@@ -839,7 +839,6 @@ snmp_msg_event(u8_t request_id)
 
 
 Bool isNowSNMPServiceRunning = false;
-static uint16_t modebusProcessRunning;
 /* lwIP UDP receive callback function */
 static void
 snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
@@ -854,7 +853,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 
 	isNowSNMPServiceRunning = true;
 	processRequestCheckAndWaitTimeout(1000);
-	addTo_QueueTask(eSNMP);
+	//addTo_QueueTask(eSNMP);
 	
 	vParTestSetLED(0, pdTRUE);
 	/* suppress unused argument warning */
@@ -880,7 +879,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 		pbuf_free(p);
 		vParTestSetLED(0, pdFALSE);
 		isNowSNMPServiceRunning = false;
-		receiveFrom_QueueTask(eSNMP);
+		//receiveFrom_QueueTask(eSNMP);
 		return;
 	}
 
@@ -912,7 +911,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 		LWIP_DEBUGF(SNMP_MSG_DEBUG, ("snmp_pdu_header_check() failed\n"));
 		vParTestSetLED(0, pdFALSE);
 		isNowSNMPServiceRunning = false;
-		receiveFrom_QueueTask(eSNMP);
+		//receiveFrom_QueueTask(eSNMP);
 		return;
 	}
 	LWIP_DEBUGF(SNMP_MSG_DEBUG, ("snmp_recv ok, community %s\n", msg_ps->community));
@@ -931,7 +930,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 		LWIP_DEBUGF(SNMP_MSG_DEBUG, ("snmp_pdu_dec_varbindlist() failed\n"));
 		vParTestSetLED(0, pdFALSE);
 		isNowSNMPServiceRunning = false;
-		receiveFrom_QueueTask(eSNMP);
+		//receiveFrom_QueueTask(eSNMP);
 		return;
 	}
 
@@ -948,7 +947,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 	snmp_msg_event(req_idx);// req_idx´Â 0ÀÌ´Ù.
 	vParTestSetLED(0, pdFALSE);
 	isNowSNMPServiceRunning = false;
-	receiveFrom_QueueTask(eSNMP);
+	//receiveFrom_QueueTask(eSNMP);
 	return;
 }
 

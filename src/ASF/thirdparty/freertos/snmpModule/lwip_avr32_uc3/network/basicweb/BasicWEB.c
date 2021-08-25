@@ -153,13 +153,9 @@ int webFunction(int port)
 				stopModebusGet=true;
 				//portENTER_CRITICAL();
 				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accepted! ") );
-				//if(processRequestCheckAndWaitTimeout(1000)==0)
+				if(processRequestCheckAndWaitTimeout(1000)==0)
 				{
-					//if(addTo_QueueTask(eWEB))
-					{
-						prvweb_ParseHTMLRequest(pxNewConnection);
-						//receiveFrom_QueueTask(eWEB);
-					}
+					prvweb_ParseHTMLRequest(pxNewConnection);
 				}
 				//portEXIT_CRITICAL();
 			}

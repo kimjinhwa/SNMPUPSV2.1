@@ -106,13 +106,10 @@
 #  define EXAMPLE_PDCA_CLOCK_PB         AVR32_PDCA_CLK_PBA
 
 /* Priority definitions for most of the tasks in the demo application. */
-//#define mainLED_TASK_PRIORITY       ( tskIDLE_PRIORITY + 1 )
 //우선순위를 변경한다.
-#define mainETH_TASK_PRIORITY       ( tskIDLE_PRIORITY + 2 )
-//#define display_TASK_PRIORITY       ( tskIDLE_PRIORITY + 1 )
-#define modbusups_TASK_PRIORITY     ( tskIDLE_PRIORITY + 3 )
-
-#define watchdog_TASK_PRIORITY     ( tskIDLE_PRIORITY + 4 )
+#define watchdog_TASK_PRIORITY     ( tskIDLE_PRIORITY + 1 )
+#define modbusups_TASK_PRIORITY     ( tskIDLE_PRIORITY + 2 )
+#define mainETH_TASK_PRIORITY       ( tskIDLE_PRIORITY + 3 )
 
 /* Baud rate used by the serial port tasks. */
 #define mainCOM_BAUD_RATE      ( ( unsigned portLONG ) 9600 )
@@ -320,14 +317,12 @@ void printSystemInfo(){
 	//flash_read__ethernetInfo(&ethernet_t);
 	//usart_write_line(&AVR32_USART0,"Good To See You first line\r\n");
 	// LED 테스크도 사용하지 않는다.
-	//vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
 	
 	// 5) Start the ethernet tasks.
 	//vStartEthernetTaskLauncher( configMAX_PRIORITIES );
 	
 
 	//e_mail task..임시적으로 사용하지 않는다.
-	//vEmail_Start(display_TASK_PRIORITY);
 	//시리얼...read Test
     //modbusups_TASK_PRIORITY
     
@@ -404,7 +399,6 @@ int main( void )
 	// 2) Setup the GPIO in output for the board's LED.
 	
 		// 3) Start Display task.
-		//vDisplay_Start(display_TASK_PRIORITY);
 
 		// 4) Start the LED flash tasks just to provide visual feedback that the
 		// demo is executing.

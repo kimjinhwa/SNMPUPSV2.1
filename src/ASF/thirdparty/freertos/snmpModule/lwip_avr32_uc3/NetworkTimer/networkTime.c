@@ -97,7 +97,7 @@ static portTASK_FUNCTION( vWatchdog, pvParameters )
 		}
 		else{
 			vParTestSetLED(1, pdTRUE); vParTestSetLED(2, pdTRUE);
-			vParTestSetLED(3, pdTRUE); vParTestSetLED(4, pdTRUE);
+			vParTestSetLED(3, pdTRUE); vParTestSetLED(0, pdTRUE);
 			while(1);
 		}
 	}

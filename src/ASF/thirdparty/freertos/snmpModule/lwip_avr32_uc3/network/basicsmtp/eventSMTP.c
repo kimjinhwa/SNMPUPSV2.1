@@ -369,7 +369,7 @@ void sendEventMail(char *mess)
                   }while (lRetval <= 0);
                   if (strncmp(cTempBuffer, SMTP_END_OF_TRANSMISSION_STRING, sizeof(cTempBuffer)) >= 0)
                   {
-                    vParTestSetLED( 3 , pdTRUE );
+                    vParTestSetLED(3 , pdTRUE );
                   }
                 }
               }

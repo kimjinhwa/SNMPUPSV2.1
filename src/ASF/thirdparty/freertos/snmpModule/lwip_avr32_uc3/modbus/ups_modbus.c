@@ -83,7 +83,7 @@ ups_modbus_data_t upsModeBusData;
 xppc_data_t	xppc_data;
 
 uint16_t modebusPrcessCount=0;
-static uint16_t modebusProcessRunning=0;
+uint16_t modebusProcessRunning=0;
 
 //Installed_Battery_Cells	10	NEP 33
 //				11	NEP 32
@@ -487,26 +487,21 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 	}
 	for(;;)
 	{
-		processRequestCheckAndWaitTimeout(1000); //프로세스가 돌고 있다면 기다린다.
-		addTo_QueueTask(eMODBUS);//모드버스를 시작한다. 
+		//processRequestCheckAndWaitTimeout(1000); //프로세스가 돌고 있다면 기다린다.
 		vParTestSetLED(3, pdTRUE);
 		modebusPrcessCount++;
 		modebusProcessRunning = 1;
-		vParTestSetLED(1, pdFALSE);
+		addTo_QueueTask(eMODBUS);//모드버스를 시작한다. 
 		portENTER_CRITICAL();
 		bModebusSuccess= requestUpsData();   // 173 ms taken
 		modebusProcessRunning = 0;
 		portEXIT_CRITICAL();
-
 		receiveFrom_QueueTask(eMODBUS);
-		vParTestSetLED(1, !bModebusSuccess); vParTestSetLED(3, pdFALSE);
+		vParTestSetLED(3, pdFALSE);
 		portEXIT_CRITICAL();
 		if(bModebusSuccess ) // 데이타를 받아 오면 그때 데이타 검사를 수행한다.
 		{
 			write_log_event();
-		}
-		else{
-			vParTestSetLED(1,0); vTaskDelay( 100); vParTestSetLED(1,1); vTaskDelay( 100); vParTestSetLED(1,0); vTaskDelay( 100); vParTestSetLED(1,1); vTaskDelay( 100);
 		}
 		vTaskDelay( 2000);
 		wdt_clear();	
@@ -519,7 +514,8 @@ int16_t processRequestCheckAndWaitTimeout(int processTimeOut)
 {
 	int8_t number;
 	number = getQueueRemainCount(xQueue);
-	if( number != 0    ){  // 데이타를 요청하고 있는 것이니 허가해 준다.
+	if( number != 0    )
+	{  // 데이타를 요청하고 있는 것이니 허가해 준다.
 		while(1){ // SNMP나 WEB에서 데이타를 요청하고 나서 종료 하는데 까지 걸리는 시간을 기다려 줘야 한다.
 			// 너무 시간이 많이 걸리면 WatchDog이 발생할 수 있으니, Waiting하는 동안 만큼은 여기서 워치독을 클리어 시켜 준다.
 			vParTestSetLED(1, pdTRUE);
@@ -527,12 +523,14 @@ int16_t processRequestCheckAndWaitTimeout(int processTimeOut)
 			//if(( processTimeOut % 1000)  == 0 )  	wdt_clear();
 			 number =  getQueueRemainCount(xQueue);
 			if(number == 0 ) {
+					vParTestSetLED(1, pdFALSE);
 					wdt_clear();	
 					return 0;
 			}
 			vParTestSetLED(1, pdFALSE);
 			vTaskDelay(50);
 		}
+		vParTestSetLED(1, pdFALSE);
 		return -1;
 	}
 	return 0;

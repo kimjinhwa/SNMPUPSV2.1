@@ -276,7 +276,6 @@ tftpd_write_file(struct tftphdr *hdr,
                     // End of file
                     closed = pdTRUE;
                     ok = pdFALSE;
-                    vParTestSetLED( 0 , 0 );
 
                     if (tftpd_close_data_file(fd) == -1) {
                         tftpd_send_error(s,reply,TFTP_EACCESS,
@@ -443,7 +442,6 @@ portTASK_FUNCTION( vBasicTFTPServer, pvParameters )
         lFromLen = sizeof(sFromAddr);
         lDataLen = recvfrom(lSocket, sHdr, lRecvLen, 0,
                             (struct sockaddr *)&sFromAddr, &lFromLen);
-        vParTestSetLED( TFTP_LED , pdTRUE );
         close(lSocket); // so that other servers can bind to the TFTP socket
 
         if ( lDataLen < 0) {
@@ -452,16 +450,13 @@ portTASK_FUNCTION( vBasicTFTPServer, pvParameters )
             switch (ntohs(sHdr->th_opcode)) {
             case WRQ:
                 tftpd_write_file(sHdr, &sFromAddr, lFromLen);
-                vParTestSetLED( TFTP_LED , pdFALSE );
                 break;
             case RRQ:
                 tftpd_read_file(sHdr, &sFromAddr, lFromLen);
-                vParTestSetLED( TFTP_LED , pdFALSE );
                 break;
             case ACK:
             case DATA:
             case ERROR:
-                vParTestSetLED( TFTP_LED , pdFALSE );
                 // Ignore
                 break;
             default:

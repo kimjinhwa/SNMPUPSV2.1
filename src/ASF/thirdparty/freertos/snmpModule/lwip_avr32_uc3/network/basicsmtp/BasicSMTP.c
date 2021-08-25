@@ -164,7 +164,7 @@ portTASK_FUNCTION( vBasicSMTPClient, pvParameters )
     // Enable all interrupts
     vPortExitCritical();
     // clear the LED
-    vParTestSetLED( 3 , pdFALSE );
+    vParTestSetLED(3,pdFALSE );
     // Set up port
     memset(&stServeurSockAddr, 0, sizeof(stServeurSockAddr));
     stServeurSockAddr.sin_len = sizeof(stServeurSockAddr);
@@ -269,7 +269,7 @@ portTASK_FUNCTION( vBasicSMTPClient, pvParameters )
                   }while (lRetval <= 0);
                   if (strncmp(cTempBuffer, SMTP_END_OF_TRANSMISSION_STRING, sizeof(cTempBuffer)) >= 0)
                   {
-                    vParTestSetLED( 3 , pdTRUE );
+                    vParTestSetLED(3 , pdTRUE );
                   }
                 }
               }
