@@ -9,18 +9,17 @@
 #ifndef MIB_RFC1268_H_
 #define MIB_RFC1268_H_
 
-
-static void ups_get_upsIdent_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
-static void ups_get_upsIdent_value(struct obj_def *od, u16_t len, void *value);
-static u8_t ups_set_upsIdent_test(struct obj_def *od, u16_t len, void *value);
-static void ups_set_upsIdent_value(struct obj_def *od, u16_t len, void *value);
+static void ups_get_upsBaseIdent_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
+static void ups_get_upsBaseIdent_value(struct obj_def *od, u16_t len, void *value);
+static u8_t ups_set_upsBaseIdent_test(struct obj_def *od, u16_t len, void *value);
+static void ups_set_upsBaseIdent_value(struct obj_def *od, u16_t len, void *value);
 
 static void ups_get_upsSmartIdent_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
 static void ups_get_upsSmartIdent_value(struct obj_def *od, u16_t len, void *value);
 static u8_t ups_set_upsSmartIdent_test(struct obj_def *od, u16_t len, void *value);
 static void ups_set_upsSmartIdent_value(struct obj_def *od, u16_t len, void *value);
 
-static u8_t ups_set_upsIdent_test(struct obj_def *od, u16_t len, void *value)
+static u8_t ups_set_upsBaseIdent_test(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id, set_ok;
 	LWIP_UNUSED_ARG(value);
@@ -55,7 +54,7 @@ static u8_t ups_set_upsSmartIdent_test(struct obj_def *od, u16_t len, void *valu
 }
 
 
-static void ups_set_upsIdent_value(struct obj_def *od, u16_t len, void *value)
+static void ups_set_upsBaseIdent_value(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id;
 	//ups_info_t ups_info;
@@ -82,7 +81,7 @@ static void ups_set_upsSmartIdent_value(struct obj_def *od, u16_t len, void *val
 	return;	
 }
 
-static void ups_get_upsIdent_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
+static void ups_get_upsBaseIdent_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
 	u8_t id;
 	/* return to object name, adding index depth (1) */
@@ -206,7 +205,7 @@ static void ups_get_upsSmartIdent_object_def(u8_t ident_len, s32_t *ident, struc
 	if(iCommErrorCount > 0 )
 	od->instance = MIB_OBJECT_NONE;
 }
-static void ups_get_upsIdent_value(struct obj_def *od, u16_t len, void *value)
+static void ups_get_upsBaseIdent_value(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id;
 
@@ -289,10 +288,10 @@ struct mib_node* const rfc1628_ups_nodes[4] = {
 // 6:upsIdentAttachedDevices
 //
 const mib_scalar_node rfc1628_upsBaseIdent_scalar = {
-	&ups_get_upsIdent_object_def,
-	&ups_get_upsIdent_value,
-	&ups_set_upsIdent_test,
-	&ups_set_upsIdent_value,
+	&ups_get_upsBaseIdent_object_def,
+	&ups_get_upsBaseIdent_value,
+	&ups_set_upsBaseIdent_test,
+	&ups_set_upsBaseIdent_value,
 	MIB_NODE_SC,
 	0
 };
@@ -2439,21 +2438,21 @@ const struct mib_array_node  upsConfigp= {
 // upsConfigp
 
 //(struct mib_node*)&upsAlarm,
-const s32_t rfc1628_upsIdent_ids[2] = { 1,2};
-struct mib_node* const rfc1628_upsIdent_nodes[2] = {
+const s32_t upsIdentp_ids[2] = { 1,2};
+struct mib_node* const upsIdentp_nodes[2] = {
 	(struct mib_node*)&upsBaseIdent,
 	(struct mib_node*)&upsSmartIdent,
 };
 
-const struct mib_array_node rfc1628_upsIdents = {
+const struct mib_array_node upsIdentp = {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
 	2,  // 9°³
-	rfc1628_upsIdent_ids,
-	rfc1628_upsIdent_nodes
+	upsIdentp_ids,
+	upsIdentp_nodes
 };
 
 
@@ -2461,7 +2460,7 @@ const struct mib_array_node rfc1628_upsIdents = {
 const s32_t rfc1628_upsMIB_ids[9] = { 1,2,3,4,5,6,7,8,9};//{ 1};
 struct mib_node* const rfc1628_upsMIB_nodes[9] = {
 	//(struct mib_node*)&rfc1628_upsObjects
-	(struct mib_node*)&rfc1628_upsIdents,
+	(struct mib_node*)&upsIdentp,
 	(struct mib_node*)&upsBatteryp,
 	(struct mib_node*)&upsInputp,
 	(struct mib_node*)&upsOutputp,

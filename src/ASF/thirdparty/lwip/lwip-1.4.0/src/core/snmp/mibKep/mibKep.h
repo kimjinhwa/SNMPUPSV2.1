@@ -88,7 +88,9 @@ const struct mib_array_node upsCompany_kep = {
 
 
 const s32_t mib2_ups_xppc[1] ={ 1 };
-struct mib_node* const mib2_nodes_ups_xppc[1] = {(struct mib_node*)&rfc1628_upsMIB};
+struct mib_node* const mib2_nodes_ups_xppc[1] = {
+	(struct mib_node*)&rfc1628_upsMIB
+};
 const struct mib_array_node ups_xppc = {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
@@ -101,7 +103,9 @@ const struct mib_array_node ups_xppc = {
 };
 
 const s32_t mib2_hardware_xppc[1] ={ 1 };
-struct mib_node* const mib2_nodes_hardware_xppc[1] = {(struct mib_node*)&ups_xppc};
+struct mib_node* const mib2_nodes_hardware_xppc[1] = {
+	(struct mib_node*)&ups_xppc
+};
 const struct mib_array_node hardware_xppc = {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
@@ -114,7 +118,9 @@ const struct mib_array_node hardware_xppc = {
 };
 
 const s32_t mib2_product_xppc[1] ={ 1 };
-struct mib_node* const mib2_nodes_product_xppc[1] = {(struct mib_node*)&hardware_xppc,};
+struct mib_node* const mib2_nodes_product_xppc[1] = {
+	(struct mib_node*)&hardware_xppc
+	};
 const struct mib_array_node product_xppc = {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
@@ -128,7 +134,9 @@ const struct mib_array_node product_xppc = {
 //----------------------
 const s32_t mib2_device_kep[2] ={ 935,12236 };
 //(struct mib_node*)&rfc1628_upsMIB,
-struct mib_node* const mib2_nodes_device_kep[2] = {(struct mib_node*)&product_xppc,(struct mib_node*)&upsCompany_kep};
+struct mib_node* const mib2_nodes_device_kep[2] = {
+	(struct mib_node*)&product_xppc,(struct mib_node*)&upsCompany_kep
+};
 
 
 const struct mib_array_node upsMIB_kep = {
