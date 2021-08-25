@@ -455,6 +455,8 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 			}
             if(rx_char)break;
 			vParTestSetLED(1, pdFALSE);
+			//여기서 계속 부팅은 안되게 하지만 커넥션은 기다려 준다.
+			wdt_clear();
 			vTaskDelay( 1000);
 		};
 		if(ups_info.ups_type== 50 ) { upsModeBusData.Input_Phase = 3; upsModeBusData.Output_Phase= 3; }

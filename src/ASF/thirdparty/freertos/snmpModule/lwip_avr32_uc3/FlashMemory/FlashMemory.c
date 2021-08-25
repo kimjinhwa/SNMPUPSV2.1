@@ -36,8 +36,6 @@ __attribute__((__section__(".flash_nvram")))  static const uint8_t nvram_reloadT
 //__attribute__((__section__(".flash_nvram")))
 //static nvram_data_t flash_nvram_data;
 
-
-
 __attribute__((__section__(".userpage")))
 static nvram_data_ethernet_t nvram_data_ethernet;  /* 20 byte */
 
@@ -61,6 +59,7 @@ uint8_t getLogPoslast_log_position(nvram_log_pos_t *nvram_data) ;
  */
 
 
+extern ups_info_t ups_info;
 
 uint8_t flash_write_reLoadTime(uint8_t *reloadTime){
 	flashc_memset8((void *)&(nvram_reloadTime), *reloadTime, sizeof(uint8_t), true);
@@ -127,7 +126,7 @@ void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 		for(int i=0;i<10;i++)
 		flash_write_email_list(i,&emailAddress);
 		
-		ups_info_t ups_info;
+		//ups_info_t ups_info;
 		memset((char *)&ups_info,0x00,sizeof(ups_info_t));
 		memcpy(ups_info.upsIdentManufacturer,"IFTECH UPS",sizeof("IFTECH UPS")) ;
 		memcpy(ups_info.upsIdentModel,"MODEL IF-M00K ",sizeof("MODEL IF-M00K ")) ;
@@ -206,16 +205,16 @@ void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 	//return 0;
 }
 
-void flash_write_ups_info(ups_info_t *ups_info)
+void flash_write_ups_info(ups_info_t *upsinfo)
 {
-	flashc_memcpy((void *)&(nvram_ups_info) , ups_info , sizeof(ups_info_t),   true);
+	flashc_memcpy((void *)&(nvram_ups_info) , upsinfo , sizeof(ups_info_t),   true);
 }
-void flash_read_ups_info(ups_info_t *ups_info)
+void flash_read_ups_info(ups_info_t *upsinfo)
 {
 	//memcpy( ups_info,(void *)&(nvram_ups_info),  sizeof(ups_info_t));
 
 	portENTER_CRITICAL();
-	flashc_memcpy( ups_info,(ups_info_t *)&(nvram_ups_info),  sizeof(ups_info_t),false);
+	flashc_memcpy( upsinfo,(ups_info_t *)&(nvram_ups_info),  sizeof(ups_info_t),false);
 	portEXIT_CRITICAL();
 }
 

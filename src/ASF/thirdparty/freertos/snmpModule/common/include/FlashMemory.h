@@ -230,8 +230,8 @@ void flash_write_email_list(int pos,nvram_send_event_mail_t *emailAddress);
 void flash_read_email_list(int pos, nvram_send_event_mail_t *emailAddress);
 void flash_write_smtp_info(smtp_info_t *smtp_info);
 void flash_read_smtp_info(smtp_info_t *smtp_info);
-void flash_write_ups_info(ups_info_t *ups_info);
-void flash_read_ups_info(ups_info_t *ups_info);
+void flash_write_ups_info(ups_info_t *upsinfo);
+void flash_read_ups_info(ups_info_t *upsinfo);
 //__attribute__((__section__(".flash_nvram")))
 //extern  nvram_log_pos_t	nvram_log_pos;
 

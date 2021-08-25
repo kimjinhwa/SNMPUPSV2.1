@@ -153,12 +153,12 @@ int webFunction(int port)
 				stopModebusGet=true;
 				//portENTER_CRITICAL();
 				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accepted! ") );
-				if(processRequestCheckAndWaitTimeout(1000)==0)
+				//if(processRequestCheckAndWaitTimeout(1000)==0)
 				{
-					if(addTo_QueueTask(eWEB))
+					//if(addTo_QueueTask(eWEB))
 					{
 						prvweb_ParseHTMLRequest(pxNewConnection);
-						receiveFrom_QueueTask(eWEB);
+						//receiveFrom_QueueTask(eWEB);
 					}
 				}
 				//portEXIT_CRITICAL();
@@ -633,7 +633,6 @@ int webSocket_Function_S_PASSWD(struct netconn *pxNetCon ,portCHAR *pcRxString){
 }
 int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 {
-	//ups_info_t ups_info;
 
 	KeyAndValue *keyvalue;
 	keyvalue = (KeyAndValue  *)mem_malloc(sizeof(KeyAndValue)*16);// 15개르 사용하고 있다.
@@ -856,7 +855,6 @@ int webSocket_Function_UPS_EX_DATA(struct netconn *pxNetCon ,portCHAR *pcRxStrin
 	uint16_t *pData ;//=(int *)&upsModeBusData ;//
 	uint16_t dataLen=0;
 
-	//ups_info_t ups_info;
 
 	memset(cDynamicPage,0x00,sizeof(cDynamicPage));
 	pData =(int16_t *)&upsModeBusData ;
@@ -1096,7 +1094,6 @@ int socket_netconn_write(struct netconn *pxNetCon,int dataLen)
 void inline setUpsInfoToweb(struct netconn *pxNetCon, KeyAndValue *keyvalue,int  keycount,portCHAR *send_buf,char *commandString)
 {
 	//uint16_t sendCount=0;
-	//ups_info_t ups_info;
 	memcpy(keyvalue[0].id, commandString, strlen( commandString) );
 	memset(keyvalue[0].value, 0x00, sizeof(keyvalue[0].value) );
 	
@@ -1581,7 +1578,7 @@ void html_SETUP_UPS(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *pa
 }
 void html_default(struct netconn *pxNetCon,Bool bLogview)
 {
-	ups_info_t ups_info;
+	//ups_info_t ups_info;
 	webHTML_netconn_write(pxNetCon,indexHtml_1);
 	sprintf( cDynamicPage,"<script>var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
 	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );

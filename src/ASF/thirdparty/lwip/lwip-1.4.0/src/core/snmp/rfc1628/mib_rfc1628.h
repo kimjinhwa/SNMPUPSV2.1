@@ -1951,21 +1951,21 @@ const struct mib_array_node  upsControl= {
 };
 
 //--------------------upsConfig .1.3.6.1.33.1.9.1~5
-//  upsConfig get and set
-static void ups_get_upsConfig_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
-static void ups_get_upsConfig_value(struct obj_def *od, u16_t len, void *value);
-static u8_t ups_set_upsConfig_test(struct obj_def *od, u16_t len, void *value);
-static void ups_set_upsConfig_value(struct obj_def *od, u16_t len, void *value);
+//  upsBaseConfig get and set
+static void ups_get_upsBaseConfig_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
+static void ups_get_upsBaseConfig_value(struct obj_def *od, u16_t len, void *value);
+static u8_t ups_set_upsBaseConfig_test(struct obj_def *od, u16_t len, void *value);
+static void ups_set_upsBaseConfig_value(struct obj_def *od, u16_t len, void *value);
 
-const mib_scalar_node rfc1628_upsConfig_scalar = {
-	&ups_get_upsConfig_object_def,
-	&ups_get_upsConfig_value,
-	&ups_set_upsConfig_test,
-	&ups_set_upsConfig_value,
+const mib_scalar_node rfc1628_upsBaseConfig_scalar = {
+	&ups_get_upsBaseConfig_object_def,
+	&ups_get_upsBaseConfig_value,
+	&ups_set_upsBaseConfig_test,
+	&ups_set_upsBaseConfig_value,
 	MIB_NODE_SC,
 	0
 };
-static void ups_get_upsConfig_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
+static void ups_get_upsBaseConfig_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
 	ident_len += 1; ident -= 1;
 	if (ident_len == 2)
@@ -2040,7 +2040,7 @@ static void ups_get_upsConfig_object_def(u8_t ident_len, s32_t *ident, struct ob
 		}
 	}
 }
-static void ups_get_upsConfig_value(struct obj_def *od, u16_t len, void *value)
+static void ups_get_upsBaseConfig_value(struct obj_def *od, u16_t len, void *value)
 {
 
 	u32_t *uint_ptr = (u32_t*)value;
@@ -2086,7 +2086,7 @@ static void ups_get_upsConfig_value(struct obj_def *od, u16_t len, void *value)
 	}
 }
 
-static u8_t ups_set_upsConfig_test(struct obj_def *od, u16_t len, void *value)
+static u8_t ups_set_upsBaseConfig_test(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id, set_ok;
 	LWIP_UNUSED_ARG(len);
@@ -2094,16 +2094,7 @@ static u8_t ups_set_upsConfig_test(struct obj_def *od, u16_t len, void *value)
 	id = (u8_t)od->id_inst_ptr[0];
 	LWIP_ASSERT("invalid id", (od->id_inst_ptr[0] >= 0) && (od->id_inst_ptr[0] <= 0xff));
 	switch(id){
-		case 1:
-		case 2:
-		case 3:
-		case 4:
-		case 5:
-		case 6:
-		case 7:
-		case 8:
-		case 9:
-		case 10:
+		case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10:
 		set_ok = 1;
 		break;
 		default:
@@ -2111,7 +2102,211 @@ static u8_t ups_set_upsConfig_test(struct obj_def *od, u16_t len, void *value)
 	}
 	return set_ok ;
 };
-static void ups_set_upsConfig_value(struct obj_def *od, u16_t len, void *value)
+static void ups_set_upsBaseConfig_value(struct obj_def *od, u16_t len, void *value)
+{
+	u8_t id;
+	id = (u8_t)od->id_inst_ptr[0];
+	u32_t *uint_ptr = (u32_t*)value;
+	//ups_info_t ups_info;
+	switch(id){
+		case 1: //nominal input voltage
+		ups_info.input_voltage=(u16_t)*uint_ptr;//
+		flash_write_ups_info(&ups_info);
+		break;
+		case 2: //input_frequency
+		ups_info.input_frequency=(u16_t)*uint_ptr;//(u16_t*)value;
+		flash_write_ups_info(&ups_info);
+		break;
+		case 3: //output voltage
+		ups_info.out_voltage=(u16_t)*uint_ptr;//(u16_t*)value;
+		flash_write_ups_info(&ups_info);
+		break;
+		case 4://output_frequency
+		ups_info.output_frequency=(u16_t)*uint_ptr;//(u16_t*)value;
+		flash_write_ups_info(&ups_info);
+		break;
+		case 5:// capacity
+		ups_info.capacity=(u16_t)*uint_ptr;//(u16_t*)value;
+		flash_write_ups_info(&ups_info);
+		break;
+		case 6: // watt
+		ups_info.capacity=(u16_t)*uint_ptr;//(u16_t*)value;
+		flash_write_ups_info(&ups_info);
+		break;
+		case 7:
+		//ups_info.capacity=(u16_t)*uint_ptr;//(u16_t*)value;
+		//flash_write_ups_info(&ups_info);
+		break;
+		case 8: // alarm audible
+		ups_info.alarm_audible=(u16_t)*uint_ptr;//value;
+		flash_write_ups_info(&ups_info);
+		break;
+		case 9:// minimum input voltage
+		ups_info.inputMin_voltage=(u16_t)*uint_ptr;//(u16_t*)value;
+		flash_write_ups_info(&ups_info);
+		break;
+		case 10://maximum input voltage
+		ups_info.inputMax_voltage=(u16_t)*uint_ptr;//(u16_t*)value;
+		flash_write_ups_info(&ups_info);
+		break;
+		default:
+		break;
+
+	}
+};
+
+//  upsSmartConfig get and set
+static void ups_get_upsSmartConfig_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
+static void ups_get_upsSmartConfig_value(struct obj_def *od, u16_t len, void *value);
+static u8_t ups_set_upsSmartConfig_test(struct obj_def *od, u16_t len, void *value);
+static void ups_set_upsSmartConfig_value(struct obj_def *od, u16_t len, void *value);
+
+const mib_scalar_node rfc1628_upsSmartConfig_scalar = {
+	&ups_get_upsSmartConfig_object_def,
+	&ups_get_upsSmartConfig_value,
+	&ups_set_upsSmartConfig_test,
+	&ups_set_upsSmartConfig_value,
+	MIB_NODE_SC,
+	0
+};
+static void ups_get_upsSmartConfig_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
+{
+	ident_len += 1; ident -= 1;
+	if (ident_len == 2)
+	{
+		u8_t id; od->id_inst_len = ident_len; od->id_inst_ptr = ident;
+		LWIP_ASSERT("invalid id", (ident[0] >= 0) && (ident[0] <= 0xff));
+		id = (u8_t)ident[0];
+		switch(id){
+			case 1:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 2:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 3:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 4:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 5:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 6:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_ONLY;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 7:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 8:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 9:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			case 10:
+			od->instance = MIB_OBJECT_SCALAR;
+			od->access = MIB_OBJECT_READ_WRITE;
+			od->asn_type = (SNMP_ASN1_UNIV | SNMP_ASN1_PRIMIT | SNMP_ASN1_INTEG);
+			od->v_len = sizeof(u32_t);
+			break;
+			default:
+			od->instance = MIB_OBJECT_NONE;
+			break;
+		}
+	}
+}
+static void ups_get_upsSmartConfig_value(struct obj_def *od, u16_t len, void *value)
+{
+
+	u32_t *uint_ptr = (u32_t*)value;
+	u8_t id;
+	uint16_t * pData =(uint16_t *)&upsModeBusData ;
+	
+	id = (u8_t)od->id_inst_ptr[0];
+
+	switch(id){
+		case 1: //nominal input voltage
+		*uint_ptr =(u32_t)ups_info.input_voltage;
+		break;
+		case 2: //input_frequency
+		*uint_ptr = ups_info.input_frequency;
+		break;
+		case 3: //output voltage
+		*uint_ptr = ups_info.out_voltage;
+		break;
+		case 4://output_frequency
+		*uint_ptr = ups_info.output_frequency;
+		break;
+		case 5:// capacity
+		*uint_ptr = ups_info.capacity;
+		break;
+		case 6: // watt
+		*uint_ptr = ups_info.capacity;
+		break;
+		case 7:
+		//ups_info.capacity=(u16_t*)value;
+		break;
+		case 8: // alarm audible
+		*uint_ptr = ups_info.alarm_audible;
+		break;
+		case 9:// minimum input voltage
+		*uint_ptr = ups_info.inputMin_voltage;
+		break;
+		case 10://maximum input voltage
+		*uint_ptr = ups_info.inputMax_voltage;
+		break;
+		default:
+		*uint_ptr = 0;
+		break;
+	}
+}
+
+static u8_t ups_set_upsSmartConfig_test(struct obj_def *od, u16_t len, void *value)
+{
+	u8_t id, set_ok;
+	LWIP_UNUSED_ARG(len);
+	set_ok = 0;
+	id = (u8_t)od->id_inst_ptr[0];
+	LWIP_ASSERT("invalid id", (od->id_inst_ptr[0] >= 0) && (od->id_inst_ptr[0] <= 0xff));
+	switch(id){
+		case 1: case 2: case 3: case 4: case 5: case 6: case 7: case 8: case 9: case 10:
+		set_ok = 1;
+		break;
+		default:
+		break;
+	}
+	return set_ok ;
+};
+static void ups_set_upsSmartConfig_value(struct obj_def *od, u16_t len, void *value)
 {
 	u8_t id;
 	id = (u8_t)od->id_inst_ptr[0];
@@ -2165,28 +2360,75 @@ static void ups_set_upsConfig_value(struct obj_def *od, u16_t len, void *value)
 };
 
 
-const s32_t rfc1628_upsConfig_ids[10] = {
+// upsBaseConfigp
+const s32_t rfc1628_upsBaseConfig_ids[10] = {
 	1,  2,  3 ,4,5,6,7,8,9,10
 };
-struct mib_node* const rfc1628_upsConfig_nodes[10] = {
-	(struct mib_node*)&rfc1628_upsConfig_scalar, (struct mib_node*)&rfc1628_upsConfig_scalar,
-	(struct mib_node*)&rfc1628_upsConfig_scalar, (struct mib_node*)&rfc1628_upsConfig_scalar,
-	(struct mib_node*)&rfc1628_upsConfig_scalar, (struct mib_node*)&rfc1628_upsConfig_scalar,
-	(struct mib_node*)&rfc1628_upsConfig_scalar, (struct mib_node*)&rfc1628_upsConfig_scalar,
-	(struct mib_node*)&rfc1628_upsConfig_scalar, (struct mib_node*)&rfc1628_upsConfig_scalar
+struct mib_node* const rfc1628_upsBaseConfig_nodes[10] = {
+	(struct mib_node*)&rfc1628_upsBaseConfig_scalar, (struct mib_node*)&rfc1628_upsBaseConfig_scalar,
+	(struct mib_node*)&rfc1628_upsBaseConfig_scalar, (struct mib_node*)&rfc1628_upsBaseConfig_scalar,
+	(struct mib_node*)&rfc1628_upsBaseConfig_scalar, (struct mib_node*)&rfc1628_upsBaseConfig_scalar,
+	(struct mib_node*)&rfc1628_upsBaseConfig_scalar, (struct mib_node*)&rfc1628_upsBaseConfig_scalar,
+	(struct mib_node*)&rfc1628_upsBaseConfig_scalar, (struct mib_node*)&rfc1628_upsBaseConfig_scalar
 };
 
-const struct mib_array_node  upsConfig= {
+const struct mib_array_node  upsBaseConfig= {
 	&noleafs_get_object_def,
 	&noleafs_get_value,
 	&noleafs_set_test,
 	&noleafs_set_value,
 	MIB_NODE_AR,
 	10,
-	rfc1628_upsConfig_ids,
-	rfc1628_upsConfig_nodes
+	rfc1628_upsBaseConfig_ids,
+	rfc1628_upsBaseConfig_nodes
 };
 
+// upsBaseConfigp
+// upsSmartConfigp
+const s32_t rfc1628_upsSmartConfig_ids[10] = {
+	1,  2,  3 ,4,5,6,7,8,9,10
+};
+struct mib_node* const rfc1628_upsSmartConfig_nodes[10] = {
+	(struct mib_node*)&rfc1628_upsSmartConfig_scalar, (struct mib_node*)&rfc1628_upsSmartConfig_scalar,
+	(struct mib_node*)&rfc1628_upsSmartConfig_scalar, (struct mib_node*)&rfc1628_upsSmartConfig_scalar,
+	(struct mib_node*)&rfc1628_upsSmartConfig_scalar, (struct mib_node*)&rfc1628_upsSmartConfig_scalar,
+	(struct mib_node*)&rfc1628_upsSmartConfig_scalar, (struct mib_node*)&rfc1628_upsSmartConfig_scalar,
+	(struct mib_node*)&rfc1628_upsSmartConfig_scalar, (struct mib_node*)&rfc1628_upsSmartConfig_scalar
+};
+
+const struct mib_array_node  upsSmartConfig= {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	10,
+	rfc1628_upsSmartConfig_ids,
+	rfc1628_upsSmartConfig_nodes
+};
+
+// upsSmartConfigp
+
+// upsConfigp
+
+const s32_t rfc1628_upsConfigp_ids[2] = {
+	1,  2
+};
+struct mib_node* const rfc1628_upsConfigp_nodes[2] = {
+	(struct mib_node*)&upsBaseConfig, 
+	(struct mib_node*)&upsSmartConfig, 
+};
+const struct mib_array_node  upsConfigp= {
+	&noleafs_get_object_def,
+	&noleafs_get_value,
+	&noleafs_set_test,
+	&noleafs_set_value,
+	MIB_NODE_AR,
+	2,
+	rfc1628_upsConfigp_ids,
+	rfc1628_upsConfigp_nodes
+};
+// upsConfigp
 
 //(struct mib_node*)&upsAlarm,
 const s32_t rfc1628_upsIdent_ids[2] = { 1,2};
@@ -2215,11 +2457,11 @@ struct mib_node* const rfc1628_upsMIB_nodes[9] = {
 	(struct mib_node*)&upsBatteryp,
 	(struct mib_node*)&upsInputp,
 	(struct mib_node*)&upsOutputp,
-	(struct mib_node*)&upsBypass,
+	(struct mib_node*)&upsConfigp,
 	(struct mib_node*)&upsTest,
 	(struct mib_node*)&upsTest,
 	(struct mib_node*)&upsControl,
-	(struct mib_node*)&upsConfig
+	(struct mib_node*)&upsBypass
 };
 
 const struct mib_array_node rfc1628_upsMIB = {
