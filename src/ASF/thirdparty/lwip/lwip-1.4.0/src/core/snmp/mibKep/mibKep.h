@@ -89,7 +89,7 @@ const struct mib_array_node upsCompany_kep = {
 
 const s32_t mib2_ups_xppc[1] ={ 1 };
 struct mib_node* const mib2_nodes_ups_xppc[1] = {
-	(struct mib_node*)&rfc1628_upsMIB
+	(struct mib_node*)&xppc_upsMIB
 };
 const struct mib_array_node ups_xppc = {
 	&noleafs_get_object_def,

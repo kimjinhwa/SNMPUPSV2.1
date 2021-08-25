@@ -9,6 +9,9 @@
 #ifndef MIB_RFC1628_32_H_
 #define MIB_RFC1628_32_H_
 
+
+
+
 const struct mib_array_node ups = {
 	&noleafs_get_object_def,
 	&noleafs_get_value,

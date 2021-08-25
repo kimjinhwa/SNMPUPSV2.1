@@ -3,7 +3,6 @@ aslfkajsl;
 #ifndef MIB_RFC1268_H_
 #define MIB_RFC1268_H_
 
-/*
 static void ups_get_upsIdent_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od);
 static void ups_get_upsIdent_value(struct obj_def *od, u16_t len, void *value);
 static u8_t ups_set_upsIdent_test(struct obj_def *od, u16_t len, void *value);
@@ -1783,23 +1782,8 @@ struct mib_node* const ups_nodes[61] = {
 	(struct mib_node*)&ups_scalar,
 };
 
-extern Bool bModebusSuccess;
 static void ups_get_object_def(u8_t ident_len, s32_t *ident, struct obj_def *od)
 {
-  // return to object name, adding index depth (1) 
-	int breakCount = 150;
-	while( isModebusRunning)
-	{
-		vTaskDelay(10); //if(lValue>500)break; //lValue++;
-		if( breakCount-- == 0){
-			od->instance = MIB_OBJECT_NONE;
-			return ;	
-		}
-	};
-	if(bModebusSuccess ==  false){
-		od->instance = MIB_OBJECT_NONE;
-		return ;	
-	}
   ident_len += 1;
   ident -= 1;
   if (ident_len == 2)
@@ -1975,5 +1959,5 @@ static void ups_set_value(struct obj_def *od, u16_t len, void *value)
 		}
 	}
 }
-*/
+
 #endif // MIB_RFC1268_H_ */

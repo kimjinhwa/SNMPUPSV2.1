@@ -130,7 +130,7 @@ typedef u32_t mem_ptr_t;
 //#define LWIP_PLATFORM_ASSERT(x) do {char tmpbuf[256];sprintf(tmpbuf,"Assertion \"%s\" failed at line %d in %s\n", x, __LINE__, __FILE__); \
                                       print_dbg(tmpbuf); /* abort(); */} while(0)
 									  
-#define LWIP_PLATFORM_ASSERT(x) do {char tmpbuf[256]; \
+#define LWIP_PLATFORM_ASSERT(x) do {/*char tmpbuf[256]; */\
 	/*sprintf(tmpbuf,(char *)"\nAssertion failed at line \n"); */  \
 	print_dbg(("\nAssertion failed at line %s\n",x )); /* abort(); */ } while(0)
 
