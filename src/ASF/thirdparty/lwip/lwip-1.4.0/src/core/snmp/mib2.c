@@ -302,8 +302,12 @@ static u32_t snmpinpkts = 0,
 //  upsIdent get and set
 extern uint16_t processRequest;
 
-#include "rfc1628/mib_rfc1628.h"  // code 33을 지원 한다.
-#include "rfc1628/mib_rfc1628_32.h"  // code 32을 지원 한다.
+// code 935을 지원 한다.
+#include "rfc1628/xppc.h"  
+ // code 33을 지원 한다.
+#include "rfc1628/mib_rfc1628.h" 
+// code 32을 지원 한다.
+#include "rfc1628/mib_rfc1628_32.h"  
 
 
 /* snmp .1.3.6.1.2.1.11 */

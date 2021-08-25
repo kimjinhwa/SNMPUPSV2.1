@@ -1448,6 +1448,9 @@
     <Compile Include="src\ASF\thirdparty\lwip\lwip-1.4.0\src\core\snmp\rfc1628\mib_rfc1628_32.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\ASF\thirdparty\lwip\lwip-1.4.0\src\core\snmp\rfc1628\xppc.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="src\ASF\thirdparty\lwip\lwip-1.4.0\src\core\stats.c">
       <SubType>compile</SubType>
     </Compile>
