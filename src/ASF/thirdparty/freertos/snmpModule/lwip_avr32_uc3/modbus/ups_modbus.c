@@ -409,7 +409,7 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 	
 	// 처음 프로세서를 가동할 때 프로토콜을 결정 한다.
 	flash_read_ups_info(&ups_info);
-	if(ups_info.ups_type== 31 || ups_info.ups_type== 32 || ups_info.ups_type== 33  ) //아이에프텍
+	if(ups_info.ups_type== 11 || ups_info.ups_type== 32 || ups_info.ups_type== 33  ) //아이에프텍
 	{
 		requestUpsData = requestUpsData_22_32_33;
 		write_log_event = write_log_event_iftech_22_32_33;
@@ -485,6 +485,20 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 
 		upsModeBusData.Company_code_And_upstype = ups_info.ups_type;
 	}
+	else{
+		int revCount;	
+		int ret;
+		char buffer[RECEIVE_BUFFER_SIZE];
+		int receivedCount;
+	
+		while(requestUpsData() != USART_SUCCESS)
+		{
+			wdt_clear();
+			vTaskDelay(2000)	;
+		}
+	}
+
+
 	for(;;)
 	{
 		//processRequestCheckAndWaitTimeout(1000); //프로세스가 돌고 있다면 기다린다.

@@ -101,11 +101,8 @@ bool requestUpsData_22_32_33()
 	buffer[8] = 0x00;
 	
 	usart_reset_status(&AVR32_USART0);  // 우선 수신 버퍼를 리셋한다.
-	
 	while( usart_read_char(&AVR32_USART0, &revCount) != USART_RX_EMPTY );	//버퍼에 데이타가 있다면 비운다.
-	
 	usart_write_byteArray(&AVR32_USART0,(const char *)buffer,8);			// 명령어를 송신한다.
-	
 	int receivedCount=3;
 	//읽은 갯수는 receivedCount에 기록한다.
 	//USART_SUCCESS USART_FAILURE USART_READ_TIMEOUT의 리턴값을 갖는다.
