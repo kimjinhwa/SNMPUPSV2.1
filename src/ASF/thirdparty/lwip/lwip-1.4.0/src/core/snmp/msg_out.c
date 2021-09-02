@@ -251,6 +251,36 @@ void snmp_coldstart_trap(void)
 	snmp_send_trap(SNMP_GENTRAP_COLDSTART,&eoid , 0,NULL);
 }
 
+void snmp_trap_userOid(char *uOid,s8_t generic_trap, s32_t specific_trap)
+{
+	int count=0;
+	char *oidValue;
+	static struct snmp_obj_id eoid = {0,{1,3,6,1,6,3,1,1,5,1}};
+	// .을 찾아서 시작점을 찾는다.
+	oidValue++; uOid++;
+
+	while(*uOid != NULL){
+		oidValue=uOid;
+		for(;;){   //이제 oidValue를 얻었다
+			
+			if( *uOid == '.' || *uOid == NULL )
+			{
+				if( *uOid == '.'){	*uOid=0x00; uOid++;}
+				else if( *uOid == NULL){}// 널이면 증가 시키지 않는다.
+				eoid.id[count++] = atoi(oidValue);
+				eoid.len = count;
+				break;
+			}
+			
+			else uOid++;
+		}
+	}
+	
+	trap_msg.outvb.head = NULL;
+	trap_msg.outvb.tail = NULL;
+	trap_msg.outvb.count = 0;
+	snmp_send_trap(generic_trap, &eoid, specific_trap,NULL);
+}
 err_t snmp_send_trap_ups(s8_t generic_trap, s32_t specific_trap)
 {
 	snmp_send_trap_ups_exp(generic_trap,specific_trap);
@@ -457,6 +487,7 @@ snmp_send_trap(s8_t generic_trap, struct snmp_obj_id *eoid, s32_t specific_trap,
 	}
 	return ERR_OK;
 }
+
 void snmp_authfail_trap(void)
 {
   //u8_t enable;

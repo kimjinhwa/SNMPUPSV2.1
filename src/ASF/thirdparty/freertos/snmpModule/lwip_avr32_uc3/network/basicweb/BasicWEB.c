@@ -152,7 +152,7 @@ int webFunction(int port)
 			{
 				stopModebusGet=true;
 				//portENTER_CRITICAL();
-				LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accepted! ") );
+				//LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accepted! ") );
 				if(processRequestCheckAndWaitTimeout(1000)==0)
 				{
 					prvweb_ParseHTMLRequest(pxNewConnection);
@@ -180,32 +180,32 @@ int webFunction(int port)
 
 void	set_web_port(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Message_Digest)
 {
-	char *temp;
-	//char macAddress[6] ;
-	temp = Message_Digest;  // 이미 있는 버퍼를 활용한다.
+	// 이미 있는 버퍼를 활용한다.
+	memset(Message_Digest,0x00,21);
 
-	//char *request_string ="WEB_PORT";
 	data_ethernet_t ethernet_t;
-	//int pos =0;
-	if( strstr(pcRxString,(const char*)"WEB_PORT=") != NULL && strlen(pcRxString) >9 )
-	{
-		strcpy(pcRxString,pcRxString+9); // SET_IPAD= 이후의 데이타를 카피한다.  
-		int port = atoi(pcRxString);
-		flash_read__ethernetInfo(&ethernet_t);
-		ethernet_t.port =port;
-		flash_write__ethernetInfo(&ethernet_t);
-		
-		memset(cDynamicPage,0x00,sizeof(cDynamicPage));
 
-		sprintf(pcRxString,"WEB_PORT=%d",ethernet_t.port );
-
-		cDynamicPage[0]= 0x81;
-		cDynamicPage[1]= strlen(pcRxString);
-		cDynamicPage[2]= NULL;
-
-		strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	portCHAR *LocalpcRxString = pcRxString;
+	for(;;){
+		if( *(LocalpcRxString) == '='){
+			LocalpcRxString = LocalpcRxString+1;
+			break;
+		}
+		else LocalpcRxString = LocalpcRxString+1;
+		if( *(LocalpcRxString) == NULL) return;
+	};
+	int port =0;
+	while(*LocalpcRxString != NULL){
+		*(Message_Digest + port++) = *LocalpcRxString;
+		LocalpcRxString++;
 	}
+	port = atoi(Message_Digest);
+	flash_read__ethernetInfo(&ethernet_t);
+	ethernet_t.port =port;
+	flash_write__ethernetInfo(&ethernet_t);
+	
+	sprintf(cDynamicPage,"WEB_PORT=%d",ethernet_t.port );
+	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
 }
  void	set_mac_sAddress(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Message_Digest)
  {
@@ -272,7 +272,7 @@ void	set_web_port(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Messag
 
 	 }
 	 flash_read__ethernetInfo(&ethernet_t);
-	 sprintf(pcRxString,"SET_MACA=%d.%d.%d.%d.%d.%d",
+	 sprintf(cDynamicPage,"SET_MACA=%x.%x.%x.%x.%x.%x",
 	 ethernet_t.Ethernet_Conf_EthAddr0,
 	 ethernet_t.Ethernet_Conf_EthAddr1,
 	 ethernet_t.Ethernet_Conf_EthAddr2,
@@ -281,61 +281,59 @@ void	set_web_port(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Messag
 	 ethernet_t.Ethernet_Conf_EthAddr5
 	 );
 	 
-	 memset(cDynamicPage,0x00,sizeof(cDynamicPage));
-	 cDynamicPage[0]= 0x81;
-	 cDynamicPage[1]= strlen(pcRxString);
-	 cDynamicPage[2]= NULL;
-	 strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-	 netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
  }
  void	set_time_serverIpAddress(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Message_Digest)
  {
 	 char *temp;
 	 char ipAddress_code[4] ;
 	 temp = Message_Digest;  // 이미 있는 버퍼를 활용한다.
-	 char *request_string ="SET_TSV1";
 	 int pos = 0;  //SET_TSV1이거나 2이다.
 	 int timeServerPos;
-	 if(strstr(pcRxString,(const char*)"SET_TSV1=") != NULL ){
-		 *request_string ="SET_TSV1";
-		 timeServerPos = 0;
-	 }
-	 else 	{
-		 *request_string ="SET_TSV2";
-		 timeServerPos=1;
-	 }
+	 if(strstr(pcRxString,(const char*)"SET_TSV1") != NULL ) timeServerPos = 0;
+	 else 	timeServerPos=1;
 
-	 strcpy(pcRxString,pcRxString+9); // SET_IPAD= 이후의 데이타를 카피한다.
-	 for(pos=0; pos< strlen(pcRxString); pos++ )if( *(pcRxString + pos) == '.' )	break;
+	portCHAR *LocalpcRxString = pcRxString;
+	for(;;){
+		if( *(LocalpcRxString) == '='){
+			LocalpcRxString = LocalpcRxString+1;
+			break;
+		}
+		else LocalpcRxString = LocalpcRxString+1;
+		if( *(LocalpcRxString) == NULL) return;
+	};
+
+	 //strcpy(pcRxString,pcRxString+9); // SET_IPAD= 이후의 데이타를 카피한다.
+	 for(pos=0; pos< strlen(LocalpcRxString); pos++ )if( *(LocalpcRxString + pos) == '.' )	break;
 
 	 if( pos == NULL) return;
 	 //LWIP_DEBUGF_UDP(WEB_DEBUG, ("pos = %d ",pos ) );
-	 strncpy(temp,pcRxString,pos);  // 이제 192를 얻었다.
+	 strncpy(temp,LocalpcRxString,pos);  // 이제 192를 얻었다.
 	 temp[pos]= NULL;
 	 ipAddress_code [0] = atoi(temp);	   // 이제 192.을 날리자.
 	 
-	 strcpy(pcRxString,pcRxString+pos+1); // SET_IPAD= 이후의 데이타를 카피한다.
-	 for(pos=0; pos< strlen(pcRxString); pos++ )if( *(pcRxString + pos) == '.' )	break;
+	 strcpy(LocalpcRxString,LocalpcRxString+pos+1); // SET_IPAD= 이후의 데이타를 카피한다.
+	 for(pos=0; pos< strlen(LocalpcRxString); pos++ )if( *(LocalpcRxString + pos) == '.' )	break;
 	 if( pos == NULL) return;
 	 //LWIP_DEBUGF_UDP(WEB_DEBUG, ("pos = %d ",pos ) );
-	 strncpy(temp,pcRxString,pos);  // 이제 168를 얻었다.
+	 strncpy(temp,LocalpcRxString,pos);  // 이제 168를 얻었다.
 	 temp[pos]= NULL;
 	 ipAddress_code [1] = atoi(temp);	   // 이제 168.을 날리자.
 	 
-	 strcpy(pcRxString,pcRxString+pos+1); // SET_IPAD= 이후의 데이타를 카피한다.
-	 for(pos=0; pos< strlen(pcRxString); pos++ )
+	 strcpy(LocalpcRxString,LocalpcRxString+pos+1); // SET_IPAD= 이후의 데이타를 카피한다.
+	 for(pos=0; pos< strlen(LocalpcRxString); pos++ )
 	 {
-		 if( *(pcRxString + pos) == '.' )	break;
+		 if( *(LocalpcRxString + pos) == '.' )	break;
 	 }
 	 if( pos == NULL) return;
 	 //LWIP_DEBUGF_UDP(WEB_DEBUG, ("pos = %d ",pos ) );
-	 strncpy(temp,pcRxString,pos);  // 이제 0를 얻었다.
+	 strncpy(temp,LocalpcRxString,pos);  // 이제 0를 얻었다.
 	 temp[pos]= NULL;
 	 ipAddress_code [2] = atoi(temp);	   // 이제 0.을 날리자.
 	 
-	 strcpy(pcRxString,pcRxString+pos+1); // SET_IPAD= 이후의 데이타를 카피한다.
+	 strcpy(LocalpcRxString,LocalpcRxString+pos+1); // SET_IPAD= 이후의 데이타를 카피한다.
 	 
-	 strcpy(temp,pcRxString);  // 이제 55를 얻었다.
+	 strcpy(temp,LocalpcRxString);  // 이제 55를 얻었다.
 	 ipAddress_code [3] = atoi(temp);
 
 	 timerserver_address_t time_server_a;
@@ -349,19 +347,13 @@ void	set_web_port(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Messag
 	 TimeServerIpAddressWrite(timeServerPos,&time_server_a);  //쓰고
 
 	 TimeServerIpAddressRead(timeServerPos,&time_server_a);   // 다시 읽고
-	 sprintf(pcRxString,"SET_IPAD=%d.%d.%d.%d",
+	 sprintf(cDynamicPage,"SET_TSVx=%d.%d.%d.%d",
 	 time_server_a.Ethernet_Conf_IpAddr0,
 	 time_server_a.Ethernet_Conf_IpAddr1,
 	 time_server_a.Ethernet_Conf_IpAddr2,
 	 time_server_a.Ethernet_Conf_IpAddr3);
 
-	 //for(int i =0 ; i<  webMAX_PAGE_SIZE ;i++) cDynamicPage[i] = NULL;
-	 memset(cDynamicPage,0x00,sizeof(cDynamicPage));
-	 cDynamicPage[0]= 0x81;
-	 cDynamicPage[1]= strlen(pcRxString);
-	 cDynamicPage[2]= NULL;
-	 strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-	 netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	 socket_netconn_write( pxNetCon, strlen(cDynamicPage));
  }
  void	send_log_to_web(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Message_Digest)
 {
@@ -378,13 +370,9 @@ void	set_web_port(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Messag
 	do
 	{
 		
-		sprintf(pcRxString,"log_pos%d:%u:%d:%d:",log_pos,tlog->systemTime,tlog->kind,tlog->event);
-		memset(cDynamicPage,0x00,sizeof(cDynamicPage));
-		cDynamicPage[0]= 0x81;
-		cDynamicPage[1]= strlen(pcRxString);
-		cDynamicPage[2]= NULL;
-		strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+		sprintf(cDynamicPage,"log_pos%d:%u:%d:%d:",log_pos,tlog->systemTime,tlog->kind,tlog->event);
+		socket_netconn_write( pxNetCon, strlen(cDynamicPage));
+
 		log_count++;
 		log_pos++;
 		log_pos = log_pos % MAX_LOG  ;
@@ -618,13 +606,9 @@ int webSocket_Function_S_PASSWD(struct netconn *pxNetCon ,portCHAR *pcRxString){
 	strcpy(ups_info.user_id,keyvalue[2].value);
 	flash_write_ups_info(&ups_info);
 
-	sprintf(pcRxString,"change_ok");
-	memset(cDynamicPage,0x00,sizeof(cDynamicPage));
-	cDynamicPage[0]= 0x81;
-	cDynamicPage[1]= strlen(pcRxString);
-	cDynamicPage[2]= NULL;
-	strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	sprintf(cDynamicPage,"change_ok");
+	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
+
 	return 1;
 }
 int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
@@ -744,11 +728,12 @@ int webSocket_Function_SET_TIME(struct netconn *pxNetCon ,portCHAR *pcRxString)
 	write_set_time(keyvalue[1].value );
 
 	memset(cDynamicPage,0x00,sizeof(cDynamicPage));
-	cDynamicPage[0]= 0x81;
-	cDynamicPage[1]= strlen(pcRxString);
-	cDynamicPage[2]= NULL;
-	strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	//cDynamicPage[0]= 0x81;
+	//cDynamicPage[1]= strlen(pcRxString);
+	//cDynamicPage[2]= NULL;
+	strncpy(cDynamicPage,pcRxString,strlen(pcRxString));
+	//netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
 }
 int webSocket_Function_SET_TRAPADDR(struct netconn *pxNetCon ,portCHAR *pcRxString)
 {
@@ -757,11 +742,24 @@ int webSocket_Function_SET_TRAPADDR(struct netconn *pxNetCon ,portCHAR *pcRxStri
 	if( strstr(pcRxString,(const char*)"SET_TR") == NULL) {netbuf_delete( pcRxString ); return  -99;};
 
 	temp[0]= pcRxString[6];temp[1]= pcRxString[7];temp[2]= NULL;
-	uint8_t trap_pos =  atoi(temp);
+	uint8_t trap_pos = 0 ;
 
-	strcpy(pcRxString,pcRxString+sizeof(9)); // SET_IPAD= 이후의 데이타를 카피한다.
+	portCHAR *LocalpcRxString = pcRxString;
+	for(;;){
+		if( *(LocalpcRxString) == '='){
+			LocalpcRxString = LocalpcRxString+1;
+			break;
+		}
+		else LocalpcRxString = LocalpcRxString+1;
+		if( *(LocalpcRxString) == NULL) return;
+	};
+
+	//strcpy(pcRxString,pcRxString+sizeof(9)); // SET_IPAD= 이후의 데이타를 카피한다.
+	trap_pos = *(LocalpcRxString-2);//두칸 앞에가 인덱스이며 0~9까지이다;
+	trap_pos -= 0x30;		
+	if(trap_pos>9)trap_pos = 0;
 	ip_addr_t val;
-	val.addr = ipaddr_addr(pcRxString) ;
+	val.addr = ipaddr_addr(LocalpcRxString) ;
 	trap_address_t trap_address;
 	trapIpAddressRead(trap_pos,&trap_address) ;
 
@@ -778,25 +776,132 @@ int webSocket_Function_SET_TRAPADDR(struct netconn *pxNetCon ,portCHAR *pcRxStri
 	trap_address.Ethernet_Conf_IpAddr2,
 	trap_address.Ethernet_Conf_IpAddr3);
 	memset(cDynamicPage,0x00,sizeof(cDynamicPage));
-	cDynamicPage[0]= 0x81;
-	cDynamicPage[1]= strlen(pcRxString);
-	cDynamicPage[2]= NULL;
-	strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	//cDynamicPage[0]= 0x81;
+	//cDynamicPage[1]= strlen(pcRxString);
+	//cDynamicPage[2]= NULL;
+	strncpy(cDynamicPage,pcRxString,strlen(pcRxString));
+	//netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
+}
+
+
+//err_t snmp_send_trap(s8_t generic_trap, struct snmp_obj_id *eoid, s32_t specific_trap,const char* strMessage);
+
+void snmp_trap_userOid(char *uOid,s8_t generic_trap, s32_t specific_trap);
+
+int webSocket_Function_SET_TRAPTEST(struct netconn *pxNetCon ,portCHAR *pcRxString)
+{
+	uint8_t *testIp;
+	uint8_t *trapCode;
+	if( strstr(pcRxString,(const char*)"TRAPTEST") == NULL) {netbuf_delete( pcRxString ); return  -99;};
+	portCHAR *LocalpcRxString = pcRxString;
+
+	for(;;){  //&의 위치를 찾고 testIp를 위치시킨다,.
+		if( *(LocalpcRxString) == '&'){
+			//*LocalpcRxString = 0x00; //현재 위치는 널을 넣고, 포인터는 한칸 움직인다.
+			LocalpcRxString++;
+			break;
+		}
+		else LocalpcRxString = LocalpcRxString+1;
+		if( *(LocalpcRxString) == NULL) return;
+	};
+
+	testIp = LocalpcRxString;
+	for(;;){  //&의 위치를 찾고 testIp를 위치시킨다,.
+		if( *(LocalpcRxString) == '='){
+			*LocalpcRxString = 0x00; //현재 위치는 널을 넣고, 포인터는 한칸 움직인다.
+			LocalpcRxString++;
+			break;
+		}
+		else LocalpcRxString = LocalpcRxString+1;
+		if( *(LocalpcRxString) == NULL) return;
+	};
+	trapCode = LocalpcRxString;
+	//strcpy(pcRxString,pcRxString+sizeof(9)); // SET_IPAD= 이후의 데이타를 카피한다.
+	ip_addr_t val;
+	val.addr = ipaddr_addr(testIp) ;
+	trap_address_t trap_address;
+
+	trap_address.Ethernet_Conf_IpAddr0 =(val.addr & 0xFF000000) >> 24 ;// hash_code [0] ;
+	trap_address.Ethernet_Conf_IpAddr1 =(val.addr & 0x00FF0000) >> 16 ;// hash_code [1] ;
+	trap_address.Ethernet_Conf_IpAddr2 =(val.addr & 0x0000FF00) >> 8 ;// hash_code [2] ;
+	trap_address.Ethernet_Conf_IpAddr3 =(val.addr & 0x000000FF) >> 0 ;// hash_code [3] ;
+
+
+	//struct snmp_obj_id eoid = {10,{1,3,6,1,4,1,12236,1,1,11}};
+	//snmp_send_trap(SNMP_GENTRAP_ENTERPRISESPC, struct snmp_obj_id *eoid, 200 ,"HELLOW TRAP");
+
+	sprintf(cDynamicPage,"SEND_TRAP=%s, %s ",testIp, trapCode);
+	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
+
+	
+	snmp_trap_userOid(trapCode,SNMP_GENTRAP_ENTERPRISESPC,200);
+}
+
+int webSocket_Function_GET_ALLIP(struct netconn *pxNetCon ,portCHAR *pcRxString)
+{
+	ip_addr_t val;
+	data_ethernet_t ethernet_t;
+	memset(cDynamicPage,0x00,sizeof(cDynamicPage));
+	flash_read__ethernetInfo(&ethernet_t);   
+	sprintf(cDynamicPage,"%d.%d.%d.%d", ethernet_t.Ethernet_Conf_IpAddr0, ethernet_t.Ethernet_Conf_IpAddr1, ethernet_t.Ethernet_Conf_IpAddr2, ethernet_t.Ethernet_Conf_IpAddr3);
+
+	sprintf(pcRxString,"&%d.%d.%d.%d", ethernet_t.Ethernet_Conf_Gateway_Addr0, ethernet_t.Ethernet_Conf_Gateway_Addr1, ethernet_t.Ethernet_Conf_Gateway_Addr2, ethernet_t.Ethernet_Conf_Gateway_Addr3);
+	strcat(cDynamicPage,pcRxString );
+
+	sprintf(pcRxString,"&%d.%d.%d.%d", ethernet_t.Ethernet_Conf_Net_Mask0, ethernet_t.Ethernet_Conf_Net_Mask1, ethernet_t.Ethernet_Conf_Net_Mask2, ethernet_t.Ethernet_Conf_Net_Mask3);
+	strcat(cDynamicPage,pcRxString );
+	
+	sprintf(pcRxString,"&%x.%x.%x.%x.%x.%x", ethernet_t.Ethernet_Conf_EthAddr0, ethernet_t.Ethernet_Conf_EthAddr1, ethernet_t.Ethernet_Conf_EthAddr2, ethernet_t.Ethernet_Conf_EthAddr3, ethernet_t.Ethernet_Conf_EthAddr4, ethernet_t.Ethernet_Conf_EthAddr5 );
+	strcat(cDynamicPage,pcRxString );
+
+	sprintf(pcRxString ,"&%d",ethernet_t.port );
+	strcat(cDynamicPage,pcRxString );
+
+
+	uint8_t trap_pos = 0 ;
+	trap_address_t trap_address;
+	for(trap_pos=0;trap_pos<10;trap_pos++){
+		trapIpAddressRead(trap_pos,&trap_address) ;
+		sprintf(pcRxString,"&%d.%d.%d.%d",trap_address.Ethernet_Conf_IpAddr0, trap_address.Ethernet_Conf_IpAddr1, trap_address.Ethernet_Conf_IpAddr2, trap_address.Ethernet_Conf_IpAddr3);
+		strcat(cDynamicPage,pcRxString );
+	}
+
+	timerserver_address_t time_server_a;
+	TimeServerIpAddressRead(0,&time_server_a);   // 다시 읽고
+	sprintf(pcRxString,"&%d.%d.%d.%d", time_server_a.Ethernet_Conf_IpAddr0, time_server_a.Ethernet_Conf_IpAddr1, time_server_a.Ethernet_Conf_IpAddr2, time_server_a.Ethernet_Conf_IpAddr3);
+	strcat(cDynamicPage,pcRxString );
+	TimeServerIpAddressRead(1,&time_server_a);   // 다시 읽고
+	sprintf(pcRxString,"&%d.%d.%d.%d", time_server_a.Ethernet_Conf_IpAddr0, time_server_a.Ethernet_Conf_IpAddr1, time_server_a.Ethernet_Conf_IpAddr2, time_server_a.Ethernet_Conf_IpAddr3);
+	strcat(cDynamicPage,pcRxString );
+
+	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
+	//
+	//socket_netconn_write( pxNetCon, strlen(cDynamicPage));
+
 }
 int webSocket_Function_SET_IPADDR(struct netconn *pxNetCon ,portCHAR *pcRxString,char *req)
 {
 	strcpy(pcRxString,pcRxString+sizeof(req)); // SET_IPAD= 이후의 데이타를 카피한다.
+	portCHAR *LocalpcRxString = pcRxString;
+	for(;;){
+		if( *(LocalpcRxString) == '='){
+			LocalpcRxString = LocalpcRxString+1;
+			break;
+		}
+		else LocalpcRxString = LocalpcRxString+1;
+		if( *(LocalpcRxString) == NULL) return;
+	};
 	ip_addr_t val;
-	val.addr = ipaddr_addr(pcRxString) ;
+	val.addr = ipaddr_addr(LocalpcRxString) ;
 	data_ethernet_t ethernet_t;
 	flash_read__ethernetInfo(&ethernet_t);   // 읽고
-	if( strcmp("SET_IP",req)==0){
+	if( strcmp("SET_IPAD",req)==0){
 		ethernet_t.Ethernet_Conf_IpAddr0 = (val.addr & 0xFF000000) >> 24 ; //hash_code [0] ;
 		ethernet_t.Ethernet_Conf_IpAddr1 = (val.addr & 0x00FF0000) >> 16 ;//hash_code [1] ;
 		ethernet_t.Ethernet_Conf_IpAddr2 = (val.addr & 0x0000FF00) >> 8 ;//hash_code [2] ;
 		ethernet_t.Ethernet_Conf_IpAddr3 = (val.addr & 0x000000FF) >> 0 ;//hash_code [3] ;
-		sprintf(pcRxString,"SET_IPAD=%d.%d.%d.%d",
+		sprintf(cDynamicPage,"SET_IPAD=%d.%d.%d.%d",
 		ethernet_t.Ethernet_Conf_IpAddr0,
 		ethernet_t.Ethernet_Conf_IpAddr1,
 		ethernet_t.Ethernet_Conf_IpAddr2,
@@ -807,7 +912,7 @@ int webSocket_Function_SET_IPADDR(struct netconn *pxNetCon ,portCHAR *pcRxString
 		ethernet_t.Ethernet_Conf_Gateway_Addr1 = (val.addr & 0x00FF0000) >> 16 ;//hash_code [1] ;
 		ethernet_t.Ethernet_Conf_Gateway_Addr2 = (val.addr & 0x0000FF00) >> 8 ;//hash_code [2] ;
 		ethernet_t.Ethernet_Conf_Gateway_Addr3 = (val.addr & 0x000000FF) >> 0 ;//hash_code [3] ;
-		sprintf(pcRxString,"SET_GATE=%d.%d.%d.%d",
+		sprintf(cDynamicPage,"SET_GATE=%d.%d.%d.%d",
 		ethernet_t.Ethernet_Conf_Gateway_Addr0,
 		ethernet_t.Ethernet_Conf_Gateway_Addr1,
 		ethernet_t.Ethernet_Conf_Gateway_Addr2,
@@ -818,7 +923,7 @@ int webSocket_Function_SET_IPADDR(struct netconn *pxNetCon ,portCHAR *pcRxString
 		ethernet_t.Ethernet_Conf_Net_Mask1 = (val.addr & 0x00FF0000) >> 16 ;//hash_code [1] ;
 		ethernet_t.Ethernet_Conf_Net_Mask2 = (val.addr & 0x0000FF00) >> 8 ;//hash_code [2] ;
 		ethernet_t.Ethernet_Conf_Net_Mask3 = (val.addr & 0x000000FF) >> 0 ;//hash_code [3] ;
-		sprintf(pcRxString,"SET_SUBM=%d.%d.%d.%d",
+		sprintf(cDynamicPage,"SET_SUBM=%d.%d.%d.%d",
 		ethernet_t.Ethernet_Conf_Net_Mask0,
 		ethernet_t.Ethernet_Conf_Net_Mask1,
 		ethernet_t.Ethernet_Conf_Net_Mask2,
@@ -827,12 +932,7 @@ int webSocket_Function_SET_IPADDR(struct netconn *pxNetCon ,portCHAR *pcRxString
 	
 	flash_write__ethernetInfo(&ethernet_t);  //쓰고
 	flash_read__ethernetInfo(&ethernet_t);   // 다시 읽고
-	memset(cDynamicPage,0x00,sizeof(cDynamicPage));
-	cDynamicPage[0]= 0x81;
-	cDynamicPage[1]= strlen(pcRxString);
-	cDynamicPage[2]= NULL;
-	strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
 }
 void sendErrorWebSocket(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t errorCode ){
 	cDynamicPage[0]= 0x81;
@@ -876,52 +976,6 @@ int webSocket_Function_UPS_EX_DATA(struct netconn *pxNetCon ,portCHAR *pcRxStrin
 	socket_netconn_write( pxNetCon, dataLen);
 }
 
-int webSocket_Function_UPS_DATA(struct netconn *pxNetCon ,portCHAR *pcRxString)
-{
-	uint16_t *pData ;//=(int *)&upsModeBusData ;//
-	memset(cDynamicPage,0x00,sizeof(cDynamicPage));
-	pData =(int16_t *)&upsModeBusData ;
-	portTickType snmp_systemTime=getTimeLong();
-	pData[10] =  (uint16_t)(0xFFFF & snmp_systemTime);
-	pData[11] =  (uint16_t)(snmp_systemTime>>16);
-
-	
-	cDynamicPage[0]= 0x81;
-	cDynamicPage[2]= NULL;
-	cDynamicPage[1]=0;
-	for(int i=0;i<20;i++)
-	{
-		sprintf( pcRxString, "%d:",  *(pData+i) );
-		cDynamicPage[1] += strlen(pcRxString);
-		strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-		pcRxString = NULL;
-	}
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-
-	cDynamicPage[0]= 0x81;
-	cDynamicPage[1]=0;
-	cDynamicPage[2]= NULL;
-	for(int i=20;i<50;i++)
-	{
-		sprintf( pcRxString, "%d:",  *(pData+i) );
-		cDynamicPage[1] += strlen(pcRxString);
-		strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-		pcRxString = NULL;
-	}
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-	
-	cDynamicPage[0]= 0x81;
-	cDynamicPage[1]=0;
-	cDynamicPage[2]= NULL;
-	for(int i=50;i<59;i++)
-	{
-		sprintf( pcRxString, "%d:",  *(pData+i) );
-		cDynamicPage[1] += strlen(pcRxString);
-		strncat(cDynamicPage,pcRxString,strlen(pcRxString));
-		pcRxString = NULL;
-	}
-	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
-}
 int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 {
 	int err;
@@ -982,6 +1036,7 @@ int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 	if( pxRxBuffer != NULL )
 	{
 		netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
+
 		if( NULL != pcRxString   )
 		{
 			*(pcRxString+usLength) = NULL;
@@ -1009,9 +1064,10 @@ int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 			else if( strncmp("S_MAILCONF",pcRxString,10)  == 0)	request_command =15  ;
 			else if( strncmp("S_MAILTEST",pcRxString,10)  == 0)	request_command =16  ;
 			else if( strncmp("changePasswd",pcRxString,12)  == 0)	request_command =17  ;
+			else if( strncmp("TRAPTEST",pcRxString,8)  == 0)	request_command =18  ;
+			else if( strncmp("R_ALL_IP",pcRxString,8)  == 0)	request_command =19  ;
 
-			if(request_command == 1)  // UPS_DATA
-			webSocket_Function_UPS_DATA(pxNetCon ,pcRxString);
+			//if(request_command == 1)  // UPS_DATA webSocket_Function_UPS_DATA(pxNetCon ,pcRxString);
 			if(request_command == 2)
 			send_log_to_web(pxNetCon ,pcRxString,Message_Digest);
 			if(request_command == 3)  // SET_TIME
@@ -1042,7 +1098,10 @@ int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 			webSocket_Function_S_MAILTEST(pxNetCon ,pcRxString);
 			if(request_command == 17) 
 			webSocket_Function_S_PASSWD(pxNetCon ,pcRxString);
-
+			if(request_command == 18) 
+			webSocket_Function_SET_TRAPTEST(pxNetCon ,pcRxString)	;
+			if(request_command == 19) 
+			webSocket_Function_GET_ALLIP(pxNetCon ,pcRxString)	;
 		}
 		netbuf_delete( pxRxBuffer );
 	}
@@ -1063,6 +1122,8 @@ int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 					// keyvalue[12]  : SBB 한계용량(%)  100
 					// ---> keyvalue[13]  : SBC 제조년월일
 					// keyvalue[14]  : SBD UPS 제조회사
+//보내고 싶은 데이타를pcRxString 에 넣어준후 데이타의 길이를 알려 준다
+//	socket_netconn_write( pxNetCon, dataLen);
 int socket_netconn_write(struct netconn *pxNetCon,int dataLen)
 {
 	portCHAR* pcString = mem_malloc(dataLen+4);
@@ -1292,6 +1353,7 @@ void write_timeserver_ipaddress(int timeServer_pos,int16_t *ipaddress)
 	getTimeFromServer();
 }
 
+/*
 void html_SETUP_EMAIL(struct netconn *pxNetCon,portCHAR *pcRxString)
 {
 	//portCHAR e_mail_server[15];
@@ -1402,17 +1464,30 @@ void html_SETUP_EMAIL(struct netconn *pxNetCon,portCHAR *pcRxString)
 		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 	}
 	webHTML_netconn_write(pxNetCon,"</script>");
-	webHTML_netconn_write(pxNetCon,webHTML_setupEmail_script);
+	//webHTML_netconn_write(pxNetCon,webHTML_setupEmail_script);
 	webHTML_netconn_write(pxNetCon,webHTML_CSS);
 	webHTML_netconn_write(pxNetCon,webHTML_menu);
 	webHTML_netconn_write(pxNetCon,webHTML_EMAILSETUP_content);
 	webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
 }
+*/
 void setupUpsReload(struct netconn *pxNetCon,char *commandType){
 	//sprintf( cDynamicPage, "<script>alert('%s'+' 설정완료!');window.location.assign(window.location.pathname)</script>",commandType);		netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 }
 void html_SETUP_UPS(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *parameter)
 {
+	//ups_info_t ups_info;
+	webHTML_netconn_write(pxNetCon,setupUpsHtml_1);
+	sprintf( cDynamicPage,"<script>var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	sprintf( cDynamicPage,"</script>");
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	webHTML_netconn_write(pxNetCon,setupUpsHtml_2);
+	webHTML_netconn_write(pxNetCon,setupUpsHtml_3);
+	webHTML_netconn_write(pxNetCon,setupUpsHtml_4);
+	return;
+	/*
 	data_ethernet_t ethernet_t;
 	int16_t ipaddress[6] ;
 	portTickType systemTime=getTimeLong();
@@ -1571,6 +1646,7 @@ void html_SETUP_UPS(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *pa
 	webHTML_netconn_write(pxNetCon,"<script> (document.getElementById('reload_time')).value=autoLoadTime;</script>");
 	
 	webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
+	*/
 }
 void html_default(struct netconn *pxNetCon,Bool bLogview)
 {
@@ -1594,6 +1670,17 @@ void html_default(struct netconn *pxNetCon,Bool bLogview)
 
 void html_SETUP_UPSBASIC(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *parameter)
 {
+	webHTML_netconn_write(pxNetCon,setupUpsBasic_1);
+	sprintf( cDynamicPage,"<script>var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+	sprintf( cDynamicPage,"</script>");
+	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+	webHTML_netconn_write(pxNetCon,setupUpsBasic_2);
+	webHTML_netconn_write(pxNetCon,setupUpsBasic_3);
+	webHTML_netconn_write(pxNetCon,setupUpsBasic_4);
+	return;
+	/*
 	data_ethernet_t ethernet_t;
 	flash_read__ethernetInfo(&ethernet_t);   // 기존의 값을 읽는다.
 
@@ -1631,6 +1718,7 @@ void html_SETUP_UPSBASIC(struct netconn *pxNetCon, portCHAR *commandType,portCHA
 	webHTML_netconn_write(pxNetCon,webHTML_EMAILSETUP_content);
 	
 	webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
+	*/
 }
 static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 {
@@ -1658,7 +1746,7 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 	}
 	
 	if( pxRxBuffer != NULL ) netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
-
+	LWIP_DEBUGF_UDP(WEB_DEBUG, ("Web Length %d ",usLength) );
 
 	if( pxRxBuffer != NULL )
 	{
@@ -1694,11 +1782,22 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 			if(strstr(pcRxString,(const char*)"reboot") != NULL) while(1) ;
 
 			char *decode_pcRxString =  urlDecode(pcRxString);
-			html_SETUP_EMAIL(pxNetCon,decode_pcRxString);
+			//html_SETUP_EMAIL(pxNetCon,decode_pcRxString);
 			free(decode_pcRxString);
 		}
 		else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /CHANGE_PASSWD.html") )    )
 		{
+			webHTML_netconn_write(pxNetCon,change_passwd_1);
+			sprintf( cDynamicPage,"<script>var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
+			netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+			sprintf( cDynamicPage,"</script>");
+			netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
+
+			webHTML_netconn_write(pxNetCon,change_passwd_2);
+			webHTML_netconn_write(pxNetCon,change_passwd_3);
+			webHTML_netconn_write(pxNetCon,change_passwd_4);
+			return;
+			/*
 			data_ethernet_t ethernet_t;
 
 			flash_read__ethernetInfo(&ethernet_t);   // 기존의 값을 읽는다.
@@ -1732,42 +1831,11 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 			webHTML_netconn_write(pxNetCon,webHTML_PASSWD_content );
 
 			webHTML_netconn_write(pxNetCon,webHTML_default_START_footer);
+			*/
 		}
 		else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /SETUP_UPS.html") )    ) //이제 GET으로 데이타를 확인한다.
 		{
-			if(strstr(pcRxString,(const char*)"reboot") != NULL) while(1) ;
-
-			portCHAR commandType[30];
-			portCHAR param[30];
-			memset(commandType,0x00,sizeof(commandType));
-			memset(param,0x00,sizeof(param));
-			{
-				if(strstr(pcRxString,(const char*)"?") == NULL || strstr(pcRxString,(const char*)"=") == NULL )
-				{
-					LWIP_DEBUGF_UDP(WEB_DEBUG, ("html_SETUP_UPS()\n") );
-					html_SETUP_UPS(pxNetCon,"","");
-				}
-				else
-				{
-					pcRxString = strstr(pcRxString,(const char*)"?");
-					for(int i=0;i<30;i++)
-					{
-						if(pcRxString[i+1] == '=') break;
-						commandType[i] = pcRxString[i+1];
-					}
-					pcRxString = strstr(pcRxString,(const char*)"=");
-					for(int i=0;i<30;i++)
-					{
-						if(pcRxString[i+1] == NULL || pcRxString[i+1] == 0x20 || pcRxString[i+1] == '\r' || pcRxString[i+1] == '\n'){
-							param[i] = 0x00;
-							break;
-						}
-						param[i] = pcRxString[i+1];
-					}
-					LWIP_DEBUGF_UDP(WEB_DEBUG, ("html_SETUP_UPS()\n %s,%s",commandType,param) );
-					html_SETUP_UPS(pxNetCon,commandType,param);
-				}
-			}
+			html_SETUP_UPS(pxNetCon,"","");
 		}
 		else if(	( NULL != pcRxString               )   && ( NULL != strstr( pcRxString,(const char*) "GET /SETUP_UPSBASIC.html" ) )    )
 		{

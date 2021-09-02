@@ -518,7 +518,6 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 			write_log_event();
 		}
 		vTaskDelay( 2000);
-		wdt_clear();	
 	}
 }
 
