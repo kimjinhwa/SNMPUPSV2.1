@@ -1477,7 +1477,7 @@ void setupUpsReload(struct netconn *pxNetCon,char *commandType){
 void html_SETUP_UPS(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *parameter)
 {
 	//ups_info_t ups_info;
-	webHTML_netconn_write(pxNetCon,setupUpsHtml_1);
+	webHTML_netconn_write(pxNetCon,indexHtml_1);
 	sprintf( cDynamicPage,"<script>var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
 	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 	sprintf( cDynamicPage,"</script>");
@@ -1486,6 +1486,7 @@ void html_SETUP_UPS(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *pa
 	webHTML_netconn_write(pxNetCon,setupUpsHtml_2);
 	webHTML_netconn_write(pxNetCon,setupUpsHtml_3);
 	webHTML_netconn_write(pxNetCon,setupUpsHtml_4);
+	webHTML_netconn_write(pxNetCon,footerHtml);
 	return;
 	/*
 	data_ethernet_t ethernet_t;
@@ -1664,13 +1665,15 @@ void html_default(struct netconn *pxNetCon,Bool bLogview)
 	webHTML_netconn_write(pxNetCon,indexHtml_2);
 	webHTML_netconn_write(pxNetCon,indexHtml_3);
 	webHTML_netconn_write(pxNetCon,indexHtml_4);
+	webHTML_netconn_write(pxNetCon,footerHtml);
+
 	return;
 
 }
 
 void html_SETUP_UPSBASIC(struct netconn *pxNetCon, portCHAR *commandType,portCHAR *parameter)
 {
-	webHTML_netconn_write(pxNetCon,setupUpsBasic_1);
+	webHTML_netconn_write(pxNetCon,indexHtml_1);
 	sprintf( cDynamicPage,"<script>var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
 	netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 	sprintf( cDynamicPage,"</script>");
@@ -1679,6 +1682,7 @@ void html_SETUP_UPSBASIC(struct netconn *pxNetCon, portCHAR *commandType,portCHA
 	webHTML_netconn_write(pxNetCon,setupUpsBasic_2);
 	webHTML_netconn_write(pxNetCon,setupUpsBasic_3);
 	webHTML_netconn_write(pxNetCon,setupUpsBasic_4);
+	webHTML_netconn_write(pxNetCon,footerHtml);
 	return;
 	/*
 	data_ethernet_t ethernet_t;
@@ -1787,7 +1791,7 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 		}
 		else if(	( NULL != pcRxString               )   && (NULL != strstr( pcRxString,(const char*) "GET /CHANGE_PASSWD.html") )    )
 		{
-			webHTML_netconn_write(pxNetCon,change_passwd_1);
+			webHTML_netconn_write(pxNetCon,indexHtml_1);
 			sprintf( cDynamicPage,"<script>var userId='%s';var passwd='%s';",ups_info.user_id, ups_info.passwd);
 			netconn_write( pxNetCon, cDynamicPage, (u16_t) strlen( cDynamicPage ), NETCONN_COPY );
 			sprintf( cDynamicPage,"</script>");
@@ -1796,6 +1800,7 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 			webHTML_netconn_write(pxNetCon,change_passwd_2);
 			webHTML_netconn_write(pxNetCon,change_passwd_3);
 			webHTML_netconn_write(pxNetCon,change_passwd_4);
+			webHTML_netconn_write(pxNetCon,footerHtml);
 			return;
 			/*
 			data_ethernet_t ethernet_t;
