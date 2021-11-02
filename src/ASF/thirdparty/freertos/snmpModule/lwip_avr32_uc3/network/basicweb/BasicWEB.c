@@ -100,6 +100,9 @@ portTASK_FUNCTION( vBasicWEBServer, pvParameters )
 	rtc_enable(&AVR32_RTC);
 	data_ethernet_t ethernet_t;
 	flash_read__ethernetInfo(&ethernet_t);
+	//WEB PORT가 23이면 웹을 Disable한다.
+	// :IPFinder로 살리면 다시 살아난다..80포트로
+	if(ethernet_t.port == 23) return;
 	while(1)webFunction(ethernet_t.port);
 	/* Create a new tcp connection handle */
 }
