@@ -838,7 +838,7 @@ snmp_msg_event(u8_t request_id)
 }
 
 
-Bool isNowSNMPServiceRunning = false;
+uint16_t isNowSNMPServiceRunning = 0;
 /* lwIP UDP receive callback function */
 static void
 snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t port)
@@ -851,7 +851,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 	u16_t payload_ofs = 0;
 	u16_t varbind_ofs = 0;
 
-	isNowSNMPServiceRunning = true;
+	isNowSNMPServiceRunning++;
 	processRequestCheckAndWaitTimeout(1000);
 	//addTo_QueueTask(eSNMP);
 	
@@ -878,7 +878,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 		/* exceeding number of concurrent requests */
 		pbuf_free(p);
 		vParTestSetLED(0, pdFALSE);
-		isNowSNMPServiceRunning = false;
+		isNowSNMPServiceRunning++;
 		//receiveFrom_QueueTask(eSNMP);
 		return;
 	}
@@ -910,7 +910,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 		pbuf_free(p);
 		LWIP_DEBUGF(SNMP_MSG_DEBUG, ("snmp_pdu_header_check() failed\n"));
 		vParTestSetLED(0, pdFALSE);
-		isNowSNMPServiceRunning = false;
+		isNowSNMPServiceRunning++;
 		//receiveFrom_QueueTask(eSNMP);
 		return;
 	}
@@ -929,7 +929,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 		(errors are only returned for a specific varbind failure) */
 		LWIP_DEBUGF(SNMP_MSG_DEBUG, ("snmp_pdu_dec_varbindlist() failed\n"));
 		vParTestSetLED(0, pdFALSE);
-		isNowSNMPServiceRunning = false;
+		isNowSNMPServiceRunning++;
 		//receiveFrom_QueueTask(eSNMP);
 		return;
 	}
@@ -946,7 +946,7 @@ snmp_recv(void *arg, struct udp_pcb *pcb, struct pbuf *p, ip_addr_t *addr, u16_t
 	/* handle input event and as much objects as possible in one go */
 	snmp_msg_event(req_idx);// req_idx´Â 0ÀÌ´Ù.
 	vParTestSetLED(0, pdFALSE);
-	isNowSNMPServiceRunning = false;
+	isNowSNMPServiceRunning++;
 	//receiveFrom_QueueTask(eSNMP);
 	return;
 }

@@ -438,11 +438,11 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 	vTaskDelay( 4000);
 	snmp_coldstart_trap();
 	int rx_char;
-	int wait_count=0;
+	int wait_count=3;
 	wdt_clear();
 	if(ups_info.ups_type== 50 || ups_info.ups_type== 51 || ups_info.ups_type== 52)
 	{  // if megatec then get ups information from ups
-		while(1){  //rtx_char에 데이타가 있으면 리턴한다 그렇지 않다면 나올필요가 없다..
+		while(wait_count--){  //rtx_char에 데이타가 있으면 리턴한다 그렇지 않다면 나올필요가 없다..
 				   //이 경우에도 Web은 작동 하므로 웹	에서 프로토콜을 변경하여 준다...
 			modebusPrcessCount++;
 			vParTestSetLED(1, pdTRUE);
@@ -457,7 +457,7 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 			vParTestSetLED(1, pdFALSE);
 			//여기서 계속 부팅은 안되게 하지만 커넥션은 기다려 준다.
 			wdt_clear();
-			vTaskDelay( 1000);
+			vTaskDelay( 300);
 		};
 		if(ups_info.ups_type== 50 ) { upsModeBusData.Input_Phase = 3; upsModeBusData.Output_Phase= 3; }
 		else if(ups_info.ups_type== 51 ) { upsModeBusData.Input_Phase = 3; upsModeBusData.Output_Phase= 1; }

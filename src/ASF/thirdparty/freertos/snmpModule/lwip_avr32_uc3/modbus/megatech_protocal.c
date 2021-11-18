@@ -769,13 +769,18 @@ Bool requestUpsStatus_megatec()
 	Bool ret;
 	if(ups_info.ups_type== 50 || ups_info.ups_type== 51)
 	{
-			while(!requestUpsStatus_Q1_megatec());
-			while(!requestUps_G1_megatec()) ;
-			while(!requestUps_G2_megatec());
-			while(!requestUps_G3_megatec());
+			ret = requestUpsStatus_Q1_megatec();
+			if(!ret)return ret;
+			ret = requestUps_G1_megatec() ;
+			if(!ret)return ret;
+			ret = requestUps_G2_megatec();
+			if(!ret)return ret;
+			ret = requestUps_G3_megatec();
+			if(!ret)return ret;
 	}
 	else{
-		while(!requestUpsStatus_Q1_megatec());
+		ret = requestUpsStatus_Q1_megatec();
+			if(!ret)return ret;
 	}
 	return true;
 }

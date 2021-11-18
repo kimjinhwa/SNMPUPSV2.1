@@ -51,13 +51,14 @@ bool isReboot=false;
 extern wdt_opt_t opt;
 extern uint16_t modebusPrcessCount;
 extern int isNowWebServiceRunningCount;
-extern Bool isNowSNMPServiceRunning ;
+extern uint16_t  isNowSNMPServiceRunning ;
+
 
 static portTASK_FUNCTION( vWatchdog, pvParameters )
 {
 	uint16_t isModbusAlive;
 	int beforeNowWebServiceRunningCount=0;
-	Bool beforeNowSNMPServiceRunning=false ;
+	uint16_t beforeNowSNMPServiceRunning=0;
 	( void ) pvParameters;
 	wdt_enable(&opt);
 	vTaskDelay( 3000);
@@ -68,9 +69,9 @@ static portTASK_FUNCTION( vWatchdog, pvParameters )
 			isModbusAlive = modebusPrcessCount;
 			beforeNowWebServiceRunningCount = isNowWebServiceRunningCount;
 
-			if(isNowSNMPServiceRunning )
+			if(isNowSNMPServiceRunning > 0 )
 			beforeNowSNMPServiceRunning = isNowSNMPServiceRunning ;
-			else beforeNowSNMPServiceRunning = false;
+			//else beforeNowSNMPServiceRunning = false;
 
 			wdt_clear();
 			vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
@@ -86,14 +87,24 @@ static portTASK_FUNCTION( vWatchdog, pvParameters )
 			//웹서비스가 실행 중이라면 이제는 반드시 끝이 났어야 한다
 			if(beforeNowWebServiceRunningCount == isNowWebServiceRunningCount) isReboot = true;
 
+			/*
 			if( beforeNowSNMPServiceRunning == true) {  // snmp는 시간을 추가하여 준다.
 				wdt_clear();
 				vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
+				if(isNowSNMPServiceRunning==true)break;
 				vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
+				if(isNowSNMPServiceRunning==true)break;
+				wdt_clear();
 				vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
+				if(isNowSNMPServiceRunning==true)break;
+				vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
+				wdt_clear();
+				vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
+				if(isNowSNMPServiceRunning==true)break;
 				vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
 				if(isNowSNMPServiceRunning==true)isReboot = true;  // 문제가 생긴 것이다.
 			}
+			*/
 		}
 		else{
 			vParTestSetLED(1, pdTRUE); vParTestSetLED(2, pdTRUE);
