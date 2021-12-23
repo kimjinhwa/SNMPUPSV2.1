@@ -34,6 +34,7 @@
 
 #include "lwip/arch.h"
 #include "usart.h"
+#include "string.h"
 
 /** lower two bits indicate debug level
  * - 0 all
@@ -104,7 +105,7 @@ extern int udp_send_msg(char *msg,int len);
                                    ((debug) & LWIP_DBG_ON) && \
                                    ((debug) & LWIP_DBG_TYPES_ON) && \
                                    ((s16_t)((debug) & LWIP_DBG_MASK_LEVEL) >= LWIP_DBG_MIN_LEVEL)) { \
-                                 LWIP_PLATFORM_DIAG message; \
+                                 LWIP_PLATFORM_DIAG_UDP message; \
                                  if ((debug) & LWIP_DBG_HALT) { \
                                    while(1); \
                                  } \

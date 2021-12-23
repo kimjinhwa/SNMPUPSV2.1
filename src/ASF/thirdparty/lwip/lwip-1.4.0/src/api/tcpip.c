@@ -297,6 +297,7 @@ tcpip_untimeout(sys_timeout_handler h, void *arg)
  * @param apimsg a struct containing the function to call and its parameters
  * @return ERR_OK if the function was called, another err_t if not
  */
+
 err_t
 tcpip_apimsg(struct api_msg *apimsg)
 {
