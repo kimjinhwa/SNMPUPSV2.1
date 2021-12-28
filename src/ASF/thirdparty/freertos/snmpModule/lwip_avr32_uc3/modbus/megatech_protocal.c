@@ -19,7 +19,8 @@ err_t snmp_send_trap_ups(s8_t generic_trap, s32_t specific_trap) ;
 err_t snmp_send_trap_ups_exp(s8_t generic_trap, s32_t specific_trap);
 
 //extern struct ups_modbus_data upsModeBusData;
-extern int udp_send_msg(char *msg,int len);
+extern int udp_send_msg(char *msg,int len,char *ipaddress,int port);
+
 extern ups_modbus_data_t upsModeBusData;
 extern xppc_data_t	xppc_data;
 

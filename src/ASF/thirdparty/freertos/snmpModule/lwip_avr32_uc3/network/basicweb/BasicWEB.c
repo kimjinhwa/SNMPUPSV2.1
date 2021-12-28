@@ -797,7 +797,7 @@ int webSocket_Function_SET_TRAPADDR(struct netconn *pxNetCon ,portCHAR *pcRxStri
 //err_t snmp_send_trap(s8_t generic_trap, struct snmp_obj_id *eoid, s32_t specific_trap,const char* strMessage);
 
 void snmp_trap_userOid(char *uOid,s8_t generic_trap, s32_t specific_trap);
-
+err_t snmp_send_trapDirect(s8_t generic_trap, struct snmp_obj_id *eoid, s32_t specific_trap,const char* strMessage);
 int webSocket_Function_SET_TRAPTEST(struct netconn *pxNetCon ,portCHAR *pcRxString)
 {
 	uint8_t *testIp;
@@ -844,7 +844,8 @@ int webSocket_Function_SET_TRAPTEST(struct netconn *pxNetCon ,portCHAR *pcRxStri
 	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
 
 	
-	snmp_trap_userOid(trapCode,SNMP_GENTRAP_ENTERPRISESPC,200);
+	snmp_send_trapDirect(6, NULL, 63,trapCode);
+	//snmp_trap_userOid(trapCode,SNMP_GENTRAP_ENTERPRISESPC,200);
 }
 
 int webSocket_Function_GET_ALLIP(struct netconn *pxNetCon ,portCHAR *pcRxString)

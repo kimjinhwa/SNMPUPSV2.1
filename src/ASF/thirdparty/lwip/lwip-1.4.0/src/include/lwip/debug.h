@@ -77,8 +77,8 @@
     LWIP_PLATFORM_ASSERT(message); handler;}} while(0)
 #endif /* LWIP_ERROR */
 
-extern int udp_send_msg(char *msg,int len);
-#define LWIP_PLATFORM_DIAG_UDP(x,...) do{ char tmpbuf[256];sprintf(tmpbuf,(char *)x,##__VA_ARGS__);udp_send_msg(tmpbuf,strlen(tmpbuf));}while(0)
+extern int udp_send_msg(char *msg,int len,char *ipaddress,int port);
+#define LWIP_PLATFORM_DIAG_UDP(x,...) do{ char tmpbuf[256];sprintf(tmpbuf,(char *)x,##__VA_ARGS__);udp_send_msg(tmpbuf,strlen(tmpbuf),"192.168.0.252",163);}while(0)
 
 #define LWIP_DEBUGF_UDP(debug, message) do { \
 	if ( \
@@ -98,7 +98,7 @@ extern int udp_send_msg(char *msg,int len);
  */
 
 
-extern int udp_send_msg(char *msg,int len);
+extern int udp_send_msg(char *msg,int len,char *ipaddress,int port);
 
 #define LWIP_DEBUGF(debug, message) do { \
                                if ( \

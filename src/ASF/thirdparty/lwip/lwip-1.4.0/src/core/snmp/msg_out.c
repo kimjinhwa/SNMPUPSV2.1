@@ -373,8 +373,74 @@ static void ocstrncpy_1(u8_t *dst, u8_t *src, u16_t n)
  * and .iso.org.dod.internet.private.enterprises.yourenterprise
  * (sysObjectID) for specific traps.
  */
-err_t
-snmp_send_trap(s8_t generic_trap, struct snmp_obj_id *eoid, s32_t specific_trap,const char* strMessage)
+ //전체 길이는 고정한다. 0x59
+ //데이타 부분과 specific부분만 수정을 한다.
+err_t snmp_send_trapDirect(s8_t generic_trap, struct snmp_obj_id *eoid, s32_t specific_trap,const char* strMessage)
+{
+	char  trapMessageStruct[] = {
+	0x30,0x59,0x02,0x01,0x00,	0x04,0x06,0x70,0x75,0x62,	0x6c,0x69,0x63,0xa4,0x4c,	0x06,0x07,0x2b,0x06,0x01,
+	0x04,0x01,0x87,0x27,0x40,	0x04,0xc0,0xa8,0x00,0xc8,	0x02,0x01,0x06,0x02,0x01,	0x03,0x43,0x01,0x64,0x30,
+	0x32,0x30,0x30,0x06,0x07,	0x2b,0x06,0x01,0x04,0x01,	0x87,0x27,0x04,0x25,0x49,	0x6e,0x74,0x65,0x72,0x6e,
+	0x61,0x6c,0x20,0x64,0x69,	0x61,0x67,0x6e,0x6f,0x73,	0x74,0x69,0x63,0x20,0x73,	0x65,0x6c,0x66,0x2d,0x74,
+	0x65,0x73,0x74,0x20,0x66,	0x61,0x69,0x6c,0x65,0x64,	0x2e
+	}; 
+	int generic_pos = 32; 
+	int specific_trap_pos=35;
+	int msg_pos=  54;
+	int maxStr_len = 0x25;
+	int strMessageLen=0;
+
+	for(int i=0;i<0x25;i++)trapMessageStruct[msg_pos + i] = 0x20;// fill space
+	strMessageLen=strlen(strMessage);
+	strMessageLen = min(0x25,strMessageLen);// 최대 0x25를 넘지 않게 한다. 
+	for(int i=0;i< strMessageLen;i++){
+		trapMessageStruct[msg_pos +i] = strMessage[i];
+	}
+	//memcpy((char *)trapMessageStruct[msg_pos],strMessage,strMessageLen);
+	trapMessageStruct[generic_pos] = min(127,generic_trap);
+	trapMessageStruct[specific_trap_pos] = min(127,specific_trap);
+
+	struct snmp_trap_dst *td;
+	struct netif *dst_if;
+	struct snmp_varbind *vb;
+	
+	ip_addr_t dst_ip;
+	u16_t i,tot_len=0x5B; // 59 + 2개
+
+	ip_addr_t dst;
+	trap_address_t trap_address;
+	
+	for (i=0;i<SNMP_TRAP_DESTINATIONS;i++)  // 10로 되어 있다.
+	{
+		
+		trapIpAddressRead(i,&trap_address) ;
+		if( trap_address.Ethernet_Conf_IpAddr0 != 0xFF)
+		{
+			//trap_dst 를 enable시킨다
+			snmp_trap_dst_enable(i, 1);
+			IP4_ADDR(&dst,trap_address.Ethernet_Conf_IpAddr0,
+			trap_address.Ethernet_Conf_IpAddr1,
+			trap_address.Ethernet_Conf_IpAddr2,
+			trap_address.Ethernet_Conf_IpAddr3);
+			snmp_trap_dst_ip_set(i,&dst);
+		}
+	}
+	
+	for (i=0, td = &trap_dst[i]; i<SNMP_TRAP_DESTINATIONS; i++, td++)
+	{
+		if ((td->enable != 0) && !ip_addr_isany(&td->dip))
+		{
+			/* network order trap destination */
+			ip_addr_copy(trap_msg.dip, td->dip);
+			/* lookup current source address for this dst */
+			dst_if = ip_route(&td->dip);
+			ip_addr_copy(dst_ip, dst_if->ip_addr);
+			udp_send_msg(trapMessageStruct,tot_len, ipaddr_ntoa(&td->dip),162 );
+		}
+	}
+	return ERR_OK;
+}
+err_t snmp_send_trap(s8_t generic_trap, struct snmp_obj_id *eoid, s32_t specific_trap,const char* strMessage)
 {
 	struct snmp_trap_dst *td;
 	struct netif *dst_if;
@@ -906,7 +972,7 @@ snmp_varbind_list_enc(struct snmp_varbind_root *root, struct pbuf *p, u16_t ofs)
   return ofs;
 }
 
-int udp_send_msg(char *msg,int len)
+int udp_send_msg(char *msg,int len,char *ipaddress,int port)
 {
 	err_t err;
 	struct udp_pcb *pcb;
@@ -918,10 +984,10 @@ int udp_send_msg(char *msg,int len)
 	if (p == NULL){ return ERR_MEM; }
     
 	ip_addr_t sip;
-	sip.addr = ipaddr_addr("192.168.0.252") ;
-	udp_connect(pcb, &sip, 163);
+	sip.addr = ipaddr_addr(ipaddress) ;
+	udp_connect(pcb, &sip, port);
 
-	err = udp_sendto(pcb, p, &sip, 163);
+	err = udp_sendto(pcb, p, &sip, port);
 	if (err == ERR_MEM) err = ERR_MEM;
 	else err = ERR_OK;
 	udp_disconnect(pcb);
