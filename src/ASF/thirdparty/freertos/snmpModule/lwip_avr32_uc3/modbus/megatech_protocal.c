@@ -797,7 +797,7 @@ void checkTrap_2phase_megatec()
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,200);	
 			snmp_send_trap_ups(SNMP_GENTRAP_ENTERPRISESPC,300);
-			snmp_send_trap_ups_exp(0,6);//senaUpsInputBad
+			snmp_send_trap_ups_exp(6,2);//UpsOnBattery
 			is_Converter_Operation_Fault_send_to_snmp_b7 = true;
 		}
 	}
@@ -808,7 +808,7 @@ void checkTrap_2phase_megatec()
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,201);	
 			snmp_send_trap_ups(SNMP_GENTRAP_ENTERPRISESPC,300);
 			snmp_send_trap_ups(SNMP_GENTRAP_ENTERPRISESPC,301);
-			snmp_send_trap_ups_exp(0,26);//senaUpsPowerRestored
+			snmp_send_trap_ups_exp(6,9);//powerRestored
 			is_Converter_Operation_Fault_send_to_snmp_b7 = false;
 		}
 	}
@@ -823,8 +823,7 @@ void checkTrap_2phase_megatec()
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,202);
 			snmp_send_trap_ups(SNMP_GENTRAP_ENTERPRISESPC,302);
-			snmp_send_trap_ups_exp(0,3);//senaUpsBatteryLow
-			snmp_send_trap_ups_exp(0,1);//senaUpsBatteryLow
+			snmp_send_trap_ups_exp(6,7);//UpsBatteryLow
 			is_Converter_Operation_Fault_send_to_snmp_b6 = true;
 		}
 	}
@@ -835,7 +834,7 @@ void checkTrap_2phase_megatec()
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,203);
 			snmp_send_trap_ups(SNMP_GENTRAP_ENTERPRISESPC,302);
 			snmp_send_trap_ups(SNMP_GENTRAP_ENTERPRISESPC,303);
-			snmp_send_trap_ups_exp(0,2);//senaUpsOnBattery
+			snmp_send_trap_ups_exp(6,11);//returnFromLowBattery
 			is_Converter_Operation_Fault_send_to_snmp_b6=false;
 		}
 	}
@@ -848,7 +847,7 @@ void checkTrap_2phase_megatec()
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,204);
-			snmp_send_trap_ups_exp(0,9);//senaUpsOnBypass
+			snmp_send_trap_ups_exp(6,60);//upsBypassMode
 			is_Converter_Operation_Fault_send_to_snmp_b5 = true;
 		}
 	}
@@ -857,7 +856,7 @@ void checkTrap_2phase_megatec()
 		if(is_Converter_Operation_Fault_send_to_snmp_b5){
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,204);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,205);
-			snmp_send_trap_ups_exp(0,26);//senaUpsPowerRestored
+			snmp_send_trap_ups_exp(6,59);//upsInverterMode 
 			is_Converter_Operation_Fault_send_to_snmp_b5=false;
 		}
 	}
@@ -870,7 +869,7 @@ void checkTrap_2phase_megatec()
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,206);
-			snmp_send_trap_ups_exp(0,18);//senaUpsGenFault
+			snmp_send_trap_ups_exp(6,55);//upsInverterOutputFail
 			is_Converter_Operation_Fault_send_to_snmp_b4 = true;
 		}
 	}
@@ -879,7 +878,7 @@ void checkTrap_2phase_megatec()
 		if(is_Converter_Operation_Fault_send_to_snmp_b4){
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,206);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,207);
-			snmp_send_trap_ups_exp(0,26);//senaUpsPowerRestored
+			snmp_send_trap_ups_exp(6,59);//upsInverterMode 
 			is_Converter_Operation_Fault_send_to_snmp_b4=false;
 		}
 	}
