@@ -93,6 +93,7 @@ uint16_t modebusProcessRunning=0;
 //extern wdt_opt_t opt;
 uint32_t  snmp_get_everyMinute();
 void  snmp_set_everyMinute(uint16_t value);
+err_t snmp_send_trap_ups_exp(s8_t generic_trap, s32_t specific_trap);
 int wait_command() ;
 
 bool is_Converter_Operation_Fault_send_to_snmp=false;
@@ -395,7 +396,7 @@ void snmp_coldstart_trap(void);
 
 void serial_init_2400();
 void serial_init_9600();
-Bool bModebusSuccess=false;
+Bool bModebusSuccess=true;
 static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 {
 	//portTickType xFlashRate, xLastFlashTime;
@@ -485,19 +486,21 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 
 		upsModeBusData.Company_code_And_upstype = ups_info.ups_type;
 	}
-	else{
-		int revCount;	
-		int ret;
-		char buffer[RECEIVE_BUFFER_SIZE];
-		int receivedCount;
-	
-		while(requestUpsData() != USART_SUCCESS)
-		{
-			wdt_clear();
-			vTaskDelay(2000)	;
-		}
-	}
+	//무창포 현장 디버깅 결과 아래의 코드는 의미가 없어서 삭제한다.
+	//else{
+		//int revCount;	
+		//int ret;
+		//char buffer[RECEIVE_BUFFER_SIZE];
+		//int receivedCount;
+	//
+		//while(requestUpsData() != USART_SUCCESS)
+		//{
+			//wdt_clear();
+			//vTaskDelay(2000)	;
+		//}
+	//}
 
+	wdt_clear();
 
 	for(;;)
 	{
@@ -505,9 +508,25 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 		vParTestSetLED(3, pdTRUE);
 		modebusPrcessCount++;
 		modebusProcessRunning = 1;
-		addTo_QueueTask(eMODBUS);//모드버스를 시작한다. 
+		addTo_QueueTask(eMODBUS);//모드버스를 시작한다.
 		portENTER_CRITICAL();
-		bModebusSuccess= requestUpsData();   // 173 ms taken
+		//처음 시작시에는 true로 있다.
+		if( bModebusSuccess) {
+			bModebusSuccess= requestUpsData();   // 173 ms taken
+			if(bModebusSuccess == false )  //통신에 문제가 생기면 트랩을 발생시킨다.
+				snmp_send_trap_ups_exp(6,1);//UPS communication has been lost
+			//문제가 없다면 트랩은 없다
+		}
+		else{  
+			//현재 통신에 문제가 생긴 상태이면 트랩은 한번 더 발생시키고
+			snmp_send_trap_ups_exp(6,1);//UPS communication has been lost
+			bModebusSuccess= requestUpsData();   // 173 ms taken
+			if(bModebusSuccess == true)  //통신에 문제가 없으면
+				snmp_send_trap_ups_exp(6,8);//UPS communication has established 
+			// 계속 문제가 있다면  트랩은 계속 송신된다.
+		}
+		
+
 		modebusProcessRunning = 0;
 		portEXIT_CRITICAL();
 		receiveFrom_QueueTask(eMODBUS);
@@ -548,7 +567,6 @@ int16_t processRequestCheckAndWaitTimeout(int processTimeOut)
 	}
 	return 0;
 }
-
 
 
 

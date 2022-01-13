@@ -74,6 +74,7 @@ struct snmp_trap_dst trap_dst[SNMP_TRAP_DESTINATIONS];
 /** TRAP message structure */
 struct snmp_msg_trap trap_msg;
 
+void vParTestSetLED( unsigned portBASE_TYPE uxLED, signed portBASE_TYPE xValue );
 static u16_t snmp_resp_header_sum(struct snmp_msg_pstat *m_stat, u16_t vb_len);
 static u16_t snmp_trap_header_sum(struct snmp_msg_trap *m_trap, u16_t vb_len);
 static u16_t snmp_varbind_list_sum(struct snmp_varbind_root *root);
@@ -340,30 +341,42 @@ err_t snmp_send_trap_ups_exp(s8_t generic_trap, s32_t specific_trap)
 {
 
 	uint8_t trapCode[36];
-	snmp_send_trapDirect(generic_trap, NULL, 63,trapCode);
-	switch( generic_trap){
+
+	vParTestSetLED(0, pdTRUE);
+	vParTestSetLED(1, pdTRUE);
+	vParTestSetLED(2, pdTRUE);
+
+	switch( specific_trap){
+		case 1: strcpy(trapCode,"UPS communication has been lost");	//31
+			break;	
 		case 2:
 			strcpy(trapCode,"UPS has switched to battery power");	//33
-			break;	
-		case 9:
-			strcpy(trapCode,"UPS utility power has been restored"); //35	
 			break;	
 		case 7:
 			strcpy(trapCode,"Batteries are low");	
 			break;	
+		case 8: strcpy(trapCode,"UPS communication has established");	//31
+			break;	
+		case 9:
+			strcpy(trapCode,"UPS utility power has been restored"); //35	
+			break;	
 		case 11:
 			strcpy(trapCode,"UPS returned from a low battery");	
 			break;	
-		case 60:
-			strcpy(trapCode,"entering Bypass Mode");	
-			break;	
 		case 59:
 			strcpy(trapCode,"Static Switch in Inverter Mode");	
+			break;	
+		case 60:
+			strcpy(trapCode,"entering Bypass Mode");	
 			break;	
 		default:
 			strcpy(trapCode,"Undefined Message");	
 			break;
 	}
+	snmp_send_trapDirect(generic_trap, NULL, 63,trapCode);
+	vParTestSetLED(0, pdFALSE);
+	vParTestSetLED(1, pdFALSE);
+	vParTestSetLED(2, pdFALSE);
 	//trap_msg.outvb.head = NULL;
 	//trap_msg.outvb.tail = NULL;
 	//trap_msg.outvb.count = 0;
@@ -399,6 +412,7 @@ static void ocstrncpy_1(u8_t *dst, u8_t *src, u16_t n)
  */
  //전체 길이는 고정한다. 0x59
  //데이타 부분과 specific부분만 수정을 한다.
+
 err_t snmp_send_trapDirect(s8_t generic_trap, struct snmp_obj_id *eoid, s32_t specific_trap,const char* strMessage)
 {
 	char  trapMessageStruct[] = {

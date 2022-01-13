@@ -142,16 +142,9 @@ void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 
 		memcpy( ups_info.sysname,"UPS IF3P3801P220AA",sizeof("UPS IF3P3801P220AA")) ;
 		
-	    #ifdef IFTECH_ADDRESS
-		ups_info.ups_type = 31;   // 31, 32, 11,
-		#endif
-		#ifdef  HANGANG_ADDRESS 
-		ups_info.ups_type = 51;		// 50  Megatech 3p3p  // 51  Megatech 3p1p // 52  Megatech 1p1p 
-		#endif
 
-	    #ifdef KEP_SEOUL_DIVSION
-		ups_info.ups_type = 51;		// 50  Megatech 3p3p  
-		#endif
+		ups_info.ups_type = UPS_TYPE;   // 31, 32, 11,
+
 
 		ups_info.company_code=00;
 		ups_info.capacity=30;

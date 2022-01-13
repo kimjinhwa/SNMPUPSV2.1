@@ -22,6 +22,7 @@ uint32_t  snmp_get_everyMinute();
 void  snmp_set_everyMinute(uint16_t value);
 err_t snmp_send_trap_ups_kepco(s8_t generic_trap, s32_t specific_trap) ;
 err_t snmp_send_trap_ups(s8_t generic_trap, s32_t specific_trap) ;
+err_t snmp_send_trap_ups_exp(s8_t generic_trap, s32_t specific_trap);
 
 //extern struct ups_modbus_data upsModeBusData;
 extern int udp_send_msg(char *msg,int len,char *ipaddress,int port);
@@ -207,18 +208,22 @@ bool requestUpsData_22_32_33()
 	};
 	return true;
 }
-
+// if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
+// 위의 부분을 왜 넣었는지 모르겠다. 
+// 우선은 삭제한다. 
+// 계속 전송해도 문제 없다. 
 void checkTrap_2phase_iftech_22()
 {
 
-	if(  !(upsModeBusData.Converter_State  & BIT(11)) ) // D11: Utility line failure
+	if(  !(upsModeBusData.Converter_State  & BIT(11)) ) // D11: 1 - Inverter Mode  0: Bypass Mode
 	{											
 		//계속 전송을 방지 한다.
 		//if(!is_Converter_Operation_Fault_send_to_snmp)				//  정전이 됐고 SNMP가 전송 됐으면	
-		if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
+		//if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,200);	
+			snmp_send_trap_ups_exp(6,60);//entering Bypass Mode
 			is_Converter_Operation_Fault_send_to_snmp = true;
 
 		}
@@ -228,6 +233,7 @@ void checkTrap_2phase_iftech_22()
 		if(is_Converter_Operation_Fault_send_to_snmp){
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,200);	
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,201);	
+			snmp_send_trap_ups_exp(6,59);//Static Switch in Inverter Mode
 			is_Converter_Operation_Fault_send_to_snmp = false;
 		}
 	}
@@ -241,10 +247,11 @@ void checkTrap_2phase_iftech_22()
 	{
 		//계속 전송을 방지 한다.
 		//if(!is_Inverter_Operation_Fault_send_to_snmp)				
-		if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
+		//if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,202);
+			snmp_send_trap_ups_exp(6,2);//UPS has switched to battery power
 			is_Inverter_Operation_Fault_send_to_snmp = true;
 		}
 	}
@@ -253,6 +260,7 @@ void checkTrap_2phase_iftech_22()
 		if(is_Inverter_Operation_Fault_send_to_snmp){
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,202);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,203);
+			snmp_send_trap_ups_exp(6,9);//UPS utility power has been restored
 			is_Inverter_Operation_Fault_send_to_snmp=false;
 		}
 	}
@@ -292,11 +300,12 @@ void checkTrap_3phase_iftech_32_33()
 	if(  (upsModeBusData.Converter_Operation_Fault  & 0x2EE0)  ) 
 	{
 		//if(!is_Inverter_Operation_Fault_send_to_snmp)				
-		if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
+		//if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,202);
 			snmp_send_trap_ups(SNMP_GENTRAP_ENTERPRISESPC,200);
+			snmp_send_trap_ups_exp(6,2);//UpsOnBattery
 			is_Inverter_Operation_Fault_send_to_snmp = true;
 		}
 	}
@@ -312,7 +321,7 @@ void checkTrap_3phase_iftech_32_33()
 	if(  (upsModeBusData.Inverter_Operation_Fault  & BIT(10))  )
 	{
 		//if(!is_maintanence_NFB_send_snmp)
-		if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
+		//if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,224);
@@ -337,7 +346,7 @@ void checkTrap_3phase_iftech_32_33()
 	) // D11: Utility line failure
 	{
 		//if(!is_Converter_Operation_Fault_send_to_snmp)				//  정전이 됐고 SNMP가 전송 됐으면
-		if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
+		//if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
 		{
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,200);
