@@ -80,6 +80,18 @@ static portTASK_FUNCTION( vWatchdog, pvParameters )
 			vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
 			vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
 			wdt_clear();
+			wdt_clear();
+			vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
+			vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
+			wdt_clear();
+			wdt_clear();
+			vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
+			vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
+			wdt_clear();
+			wdt_clear();
+			vParTestSetLED(2, pdTRUE); vTaskDelay( 1000);
+			vParTestSetLED(2, pdFALSE); vTaskDelay( 1000);
+			wdt_clear();
 
 			//시리얼통신이 죽을 일은 없다.
 			//if(isModbusAlive == modebusPrcessCount) isReboot = true;

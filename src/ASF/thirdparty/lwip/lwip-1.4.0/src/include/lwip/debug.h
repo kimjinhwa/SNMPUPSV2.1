@@ -98,7 +98,6 @@ extern int udp_send_msg(char *msg,int len,char *ipaddress,int port);
  */
 
 
-extern int udp_send_msg(char *msg,int len,char *ipaddress,int port);
 
 #define LWIP_DEBUGF(debug, message) do { \
                                if ( \

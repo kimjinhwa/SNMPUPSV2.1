@@ -403,17 +403,17 @@ a lot of data that needs to be copied, this should be set high. */
 
 #define DBG_MIN_LEVEL                   LWIP_DBG_LEVEL_SEVERE
 
-#define SNMP_MIB_DEBUG					LWIP_DBG_OFF
 
 #define SNMP_MSG_DEBUG                  LWIP_DBG_OFF
 
-#define WEB_DEBUG						LWIP_DBG_ON
 
 #define FLASH_DEBUG						LWIP_DBG_OFF
 
-#define MODBUS_DEBUG					LWIP_DBG_ON
-
 #define DNS_DEBUG						LWIP_DBG_OFF
+
+#define MODBUS_DEBUG					LWIP_DBG_OFF
+#define WEB_DEBUG						LWIP_DBG_OFF
+#define SNMP_MIB_DEBUG					LWIP_DBG_OFF
 
 // \note For a list of all possible lwIP configurations, check http://lwip.wikia.com/wiki/Lwipopts.h
 
