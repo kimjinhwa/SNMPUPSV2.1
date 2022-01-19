@@ -1041,6 +1041,9 @@ int udp_send_msg_network(char *msg,int len,char *ipaddress,int port)
 	else err = ERR_OK;
 	udp_disconnect(pcb);
 	pbuf_free(p);
+
+	xQueueReceive( xUdpMessageQueue , &msg, ( portTickType ) 0 ) ;
+
 	if (err == ERR_OK)return 0; 
 	return -1;
 }
