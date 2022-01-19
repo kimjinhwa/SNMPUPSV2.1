@@ -1010,7 +1010,18 @@ snmp_varbind_list_enc(struct snmp_varbind_root *root, struct pbuf *p, u16_t ofs)
   return ofs;
 }
 
+extern xQueueHandle xUdpMessageQueue ;
+int udp_send_msg_network(char *msg,int len,char *ipaddress,int port);
 int udp_send_msg(char *msg,int len,char *ipaddress,int port)
+{
+	if( pdFALSE== xQueueSend( xUdpMessageQueue , ( void * ) &msg, 0 )){
+		return -1;
+	}
+	udp_send_msg_network(msg,len,ipaddress,port);
+	return 1;
+}
+
+int udp_send_msg_network(char *msg,int len,char *ipaddress,int port)
 {
 	err_t err;
 	struct udp_pcb *pcb;

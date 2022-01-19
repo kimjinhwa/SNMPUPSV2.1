@@ -93,9 +93,10 @@ extern uint16_t isModebusRunning;
 
 int webFunction(int port);
 portTASK_FUNCTION( vBasicWEBServer, pvParameters );
-
+xQueueHandle xUdpMessageQueue ;
 portTASK_FUNCTION( vBasicWEBServer, pvParameters )
 {
+	xUdpMessageQueue = xQueueCreate( 1, sizeof(bool *) );
 	rtc_init(&AVR32_RTC, RTC_OSC_RC, RTC_PSEL_RC_1_76HZ);
 	rtc_enable(&AVR32_RTC);
 	data_ethernet_t ethernet_t;
@@ -1760,7 +1761,7 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 	}
 	
 	if( pxRxBuffer != NULL ) netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
-	LWIP_DEBUGF_UDP(WEB_DEBUG, ("Web Length %d ",usLength) );
+	LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nWeb Length %d ",usLength) );
 
 	if( pxRxBuffer != NULL )
 	{
