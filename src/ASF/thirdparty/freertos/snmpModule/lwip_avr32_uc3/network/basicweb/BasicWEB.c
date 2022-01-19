@@ -124,7 +124,7 @@ int webFunction(int port)
 	errorCheck=netconn_listen( pxHTTPListener );
 	if(errorCheck != ERR_OK) return errorCheck;
 
-	netconn_set_recvtimeout(pxHTTPListener ,3000);
+	netconn_set_recvtimeout(pxHTTPListener ,1000);
 	int count = 0;
 	int accept_err ;
 	//for(count=0 ;count<600;count++ )
@@ -133,8 +133,8 @@ int webFunction(int port)
 		vTaskDelay( webSHORT_DELAY );
 		stopModebusGet=false;
 		//accept_err
-		//errorCheck=netconn_accept(pxHTTPListener, &pxNewConnection);// != ERR_OK)
-		while(netconn_accept(pxHTTPListener, &pxNewConnection) != ERR_OK)
+		errorCheck=netconn_accept(pxHTTPListener, &pxNewConnection);// != ERR_OK)
+		//while(netconn_accept(pxHTTPListener, &pxNewConnection) != ERR_OK)
 		{
 			count++;
 			isNowWebServiceRunningCount++;
@@ -146,13 +146,12 @@ int webFunction(int port)
 			}
 			//else 
 			//{    //ERR_CONN -13  not connected
-			//
-				//vTaskDelay( webSHORT_DELAY );
-				//vTaskDelay( webSHORT_DELAY );
-			    //break;	
-			//}
-			LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accept timeout error %d",pxHTTPListener->last_err ) );
-			vTaskDelay( webSHORT_DELAY );
+			
+		//		vTaskDelay( webSHORT_DELAY );
+		//		vTaskDelay( webSHORT_DELAY );
+		//	    break;	
+		//	}
+			//vTaskDelay( webSHORT_DELAY );
 		}
 		if(errorCheck == ERR_OK)
 		{
@@ -166,7 +165,6 @@ int webFunction(int port)
 				{
 					prvweb_ParseHTMLRequest(pxNewConnection);
 				}
-				stopModebusGet=false;
 				//portEXIT_CRITICAL();
 			}
 		}
@@ -1749,7 +1747,7 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 		if(pxNetCon->last_err<0)
 		{
 			vParTestSetLED(2, pdTRUE);
-			LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nWeb delay error %d and return...",pxNetCon->last_err) );
+			LWIP_DEBUGF_UDP(WEB_DEBUG, ("Web delay error %d and return...",pxNetCon->last_err) );
 			netconn_close( pxNetCon );
 			netconn_delete( pxNetCon );
 			netbuf_delete( pxRxBuffer );
@@ -1762,7 +1760,7 @@ static void prvweb_ParseHTMLRequest( struct netconn *pxNetCon )
 	}
 	
 	if( pxRxBuffer != NULL ) netbuf_data( pxRxBuffer, ( void * ) &pcRxString, &usLength );
-	LWIP_DEBUGF_UDP(WEB_DEBUG, ("\nWeb receive Length %d ",usLength) );
+	LWIP_DEBUGF_UDP(WEB_DEBUG, ("Web Length %d ",usLength) );
 
 	if( pxRxBuffer != NULL )
 	{
