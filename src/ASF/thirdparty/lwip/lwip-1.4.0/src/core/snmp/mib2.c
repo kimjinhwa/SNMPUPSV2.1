@@ -205,9 +205,7 @@ static u8_t *trapiplocation__ptr = (u8_t*)&trapiplocation_default[0];
 
 /* mib-2.system counter(s) */
 static u32_t sysuptime = 0;
-u32_t static every_minute = 50*100;
 
-u32_t sysuptime_from_SetTime = 0;
 /* mib-2.ip counter(s) */
 static u32_t ipinreceives = 0,
              ipinhdrerrors = 0,
@@ -1054,16 +1052,15 @@ void snmp_set_sysobjid(struct snmp_obj_id *oid)
  * or signal handler depending on your runtime environment.
  */
 void  snmp_set_everyMinute(uint16_t value){
-	 every_minute=value;
+	setResetMinute();
  }
  uint32_t  snmp_get_everyMinute(){
-	 return every_minute;
+	 return getSystimeMinute();
  }
+
 void snmp_inc_sysuptime(void)
 {
-	sysuptime++;
-	every_minute++;
-	sysuptime_from_SetTime++;
+	sysuptime = getSysuptime();
 }
 
 void snmp_add_sysuptime(u32_t value)
@@ -1073,8 +1070,7 @@ void snmp_add_sysuptime(u32_t value)
 
 void snmp_get_sysuptime(u32_t *value)
 {
-  SNMP_GET_SYSUPTIME(sysuptime);
-  //sysuptime = getTimeLong();
+  sysuptime = getSysuptime();
   *value = sysuptime;
 }
 

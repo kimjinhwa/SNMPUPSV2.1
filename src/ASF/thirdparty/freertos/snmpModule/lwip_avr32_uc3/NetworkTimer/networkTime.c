@@ -37,7 +37,6 @@
 #include "snmp.h"
 #define mainAUTO_RELOAD_TIMER_PERIOD	pdMS_TO_TICKS(10)
 
-extern u32_t sysuptime_from_SetTime ;
 
 static void prvAutoReloadTimerCallBack(xTimerHandle xTimer) ;
 portTickType systemTime=0;
@@ -126,6 +125,8 @@ static portTASK_FUNCTION( vWatchdog, pvParameters )
 	}
 }
 
+static u32_t sysuptime10ms = 0;
+static u32_t systimeMinute = 0;
 void vStartSoftTimer( unsigned portBASE_TYPE xPriority )
 {
 	xTimerHandle	xAutoReloadTimer;
@@ -148,9 +149,20 @@ void vStartSoftTimer( unsigned portBASE_TYPE xPriority )
 	xTaskCreate( vWatchdog, ( signed char * ) "watchdog", watchSTACK_SIZE, NULL, xPriority , ( xTaskHandle * ) NULL );
 }
 
+u32_t getSysuptime(){
+	return sysuptime10ms;	
+}
+u32_t getSystimeMinute(){
+	return systimeMinute ;	
+}
+void setResetMinute(){
+	systimeMinute =0;
+}
+
 static void prvAutoReloadTimerCallBack(xTimerHandle xTimer)
-{
-	snmp_inc_sysuptime();
+{	
+	sysuptime10ms++;
+	if( sysuptime10ms%100 == 0 )systimeMinute++;  // 매 1분마다 증가 한다.
 }
 
 
@@ -202,7 +214,6 @@ time_t makeTime(tmElements_t *tmr){
 void setSystemTimeLong(uint32_t lTime)
 {
 	systemTime = lTime;
-	sysuptime_from_SetTime = 0;
 }
 uint32_t getTimeLong()
 {
@@ -211,7 +222,7 @@ uint32_t getTimeLong()
 	//return (uint32_t)systemTime + (xTaskGetTickCount()*0.56987826086956521)/1000;
 	
 	//return (uint32_t)systemTime + xTaskGetTickCount()/1250;
-	return (uint32_t)systemTime +sysuptime_from_SetTime/125.0;
+	return (uint32_t)systemTime + sysuptime10ms/125.0;
 }
 void breakTime(time_t timeInput){
 

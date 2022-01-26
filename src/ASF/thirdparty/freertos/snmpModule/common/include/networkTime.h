@@ -41,6 +41,9 @@ void vStartSoftTimer();
 void breakTime(time_t timeInput);
 time_t makeTime(tmElements_t *tm);
 void setSystemTimeLong(uint32_t lTime);
+u32_t getSysuptime();
+u32_t getSystimeMinute();
+void setResetMinute();
 uint32_t getTimeLong();
 
 int hour() ;
