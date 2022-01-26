@@ -23,6 +23,7 @@
 #endif
 
 #define BIT(n)  1<<n
+#define TRAP_INTERVAL	1
 
 //extern struct ups_modbus_data upsModeBusData;
 //extern ups_modbus_data_t upsModeBusData;

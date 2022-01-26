@@ -162,7 +162,10 @@ void setResetMinute(){
 static void prvAutoReloadTimerCallBack(xTimerHandle xTimer)
 {	
 	sysuptime10ms++;
-	if( sysuptime10ms%100 == 0 )systimeMinute++;  // 매 1분마다 증가 한다.
+	if( sysuptime10ms%6000 == 0 )
+	{
+		systimeMinute++;  // 매 1분마다 증가 한다.
+	}
 }
 
 
