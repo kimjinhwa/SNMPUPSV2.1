@@ -46,29 +46,29 @@
 #ifndef DISPLAY_TASK_H
 #define DISPLAY_TASK_H
 
-#include "portmacro.h"
-#include "queue.h"
+//#include "portmacro.h"
+//#include "queue.h"
 
 /*! The handle of the queue of DISPLAY. */
 
-extern xQueueHandle xDISPLAYQueue;
+//extern xQueueHandle xDISPLAYQueue;
 
 /*!
  * \brief Start the supervisor module.
  *
  * \param uxPriority The priority base of the supervisor tasks.
  */ 
-void vEmail_Start( unsigned portBASE_TYPE uxPriority );
+//void vEmail_Start( unsigned portBASE_TYPE uxPriority );
 
 /* The function that implements the SMTP client task. */
-portTASK_FUNCTION_PROTO( vDisplay, pvParameters );
+//portTASK_FUNCTION_PROTO( vDisplay, pvParameters );
 
 /*!
  * \brief Start the supervisor module.
  *
  * \param uxPriority The priority base of the supervisor tasks.
  */
-void sendMessage(char *mess);
+//void sendMessage(char *mess);
 
 
 #endif

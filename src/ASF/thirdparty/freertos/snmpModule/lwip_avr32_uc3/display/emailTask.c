@@ -43,91 +43,51 @@
  *****************************************************************************/
 
 
-#include <string.h>
-
-// Scheduler includes.
-#include "FreeRTOS.h"
-#include "task.h"
-#include "emailTask.h"
-
-// Demo includes.
-#include "portmacro.h"
-#include "partest.h"
-#include "intc.h"
-#include "display.h"
-#include "lwipopts.h"
-#include "debug.h"
-#include "opt.h"
-#define DISPLAY_STACK_SIZE	        ( configMINIMAL_STACK_SIZE  )
-#include "eventSMTP.h"
+//#include <string.h>
+//
+//// Scheduler includes.
+//#include "FreeRTOS.h"
+//#include "task.h"
+//#include "emailTask.h"
+//
+//// Demo includes.
+//#include "portmacro.h"
+//#include "partest.h"
+//#include "intc.h"
+//#include "display.h"
+//#include "lwipopts.h"
+//#include "debug.h"
+//#include "opt.h"
+//#define DISPLAY_STACK_SIZE	        ( configMINIMAL_STACK_SIZE  )
+//#include "eventSMTP.h"
 //! The supervisor queue length.
-#define DISPLAY_QUEUE_SIZE   1
+//#define DISPLAY_QUEUE_SIZE   1
 
 //! pointer to the memory image of the User Mess line 
-portCHAR Line[100];
+//portCHAR Line[100];
 
 //! pointer to the memory image of the User Menu line 
-portCHAR * UserMessScreen = Line;
+//portCHAR * UserMessScreen = Line;
 
-xQueueHandle xDISPLAYQueue = 0;
+//xQueueHandle xDISPLAYQueue = 0;
 
-void vEmail_Start( unsigned portBASE_TYPE uxPriority )
-{
-   // Spawn the Sentinel task. 
-   xTaskCreate( vDisplay, ( const signed portCHAR * )"DISPLAY",
-                DISPLAY_STACK_SIZE, NULL, uxPriority, ( xTaskHandle * )NULL );
 
-   // Create the supervisor queue to deal with MMI actions
-   xDISPLAYQueue = xQueueCreate( DISPLAY_QUEUE_SIZE, sizeof(bool *) );
-   
-   if( 0 == xDISPLAYQueue )
-   {
-      // not able to creeat the Display Queue.
-      //while( 1 );
-   }
-}
-
-//! Basic SMTP client task definition
-portTASK_FUNCTION( vDisplay , pvParameters )
-{
-  char *temp_string;
-
-  //display_init(FOSC0 * 4);
-  for (;;)
-  {
-      //
-	  //if ( pdTRUE == xQueueReceive( xDISPLAYQueue, &temp_string, ( portTickType ) 0 ) )
-      //{
-       // if (temp_string != NULL)
-        //{
-         // //display_print((const char*)temp_string);
-		  //sendEventMail(temp_string);
-		 // vTaskDelay(1000);
-		  
-      //  }
-      //}
-	  //
-	  vParTestToggleLED(2);
-      vTaskDelay(1000);
-  }
-}
- 
-void sendMessage(char *mess)
-{
-  // Add the refresh need to the xMMIQueue.
-  
-  
-  if( xQueuePeek( xDISPLAYQueue, &( UserMessScreen ), ( portTickType ) 10 ) )
-  {
-	  strncpy(UserMessScreen,mess,100);
-	  //LWIP_DEBUGF_UDP(WEB_DEBUG, ("\n%s",UserMessScreen  ));
-  }
-  else
-  {
-	  strncpy(UserMessScreen,mess,100);
-	  //LWIP_DEBUGF_UDP(WEB_DEBUG, ("\n%s",UserMessScreen  ));
-	  xQueueSend( xDISPLAYQueue, ( void * ) &UserMessScreen, 0 );
-  }
-  
-  
-}
+//void sendMessage(char *mess)
+//{
+  //// Add the refresh need to the xMMIQueue.
+  //
+  //
+  //if( xQueuePeek( xDISPLAYQueue, &( UserMessScreen ), ( portTickType ) 10 ) )
+  //{
+	  //strncpy(UserMessScreen,mess,100);
+	  ////LWIP_DEBUGF_UDP(WEB_DEBUG, ("\n%s",UserMessScreen  ));
+  //}
+  //else
+  //{
+	  //strncpy(UserMessScreen,mess,100);
+	  ////LWIP_DEBUGF_UDP(WEB_DEBUG, ("\n%s",UserMessScreen  ));
+	  //xQueueSend( xDISPLAYQueue, ( void * ) &UserMessScreen, 0 );
+  //}
+  //
+  //
+//}
