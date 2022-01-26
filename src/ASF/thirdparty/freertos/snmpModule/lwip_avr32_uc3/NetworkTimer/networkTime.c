@@ -98,7 +98,7 @@ static portTASK_FUNCTION( vWatchdog, pvParameters )
 
 			//웹서비스가 실행 중이라면 이제는 반드시 끝이 났어야 한다
 			if(beforeNowWebServiceRunningCount == isNowWebServiceRunningCount) isReboot = true;
-
+			else isNowWebServiceRunningCount=0;
 			/*
 			if( beforeNowSNMPServiceRunning == true) {  // snmp는 시간을 추가하여 준다.
 				wdt_clear();

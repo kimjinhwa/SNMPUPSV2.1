@@ -83,7 +83,6 @@ ups_modbus_data_t upsModeBusData;
 xppc_data_t	xppc_data;
 
 uint16_t modebusPrcessCount=0;
-uint16_t modebusProcessRunning=0;
 
 //Installed_Battery_Cells	10	NEP 33
 //				11	NEP 32
@@ -507,7 +506,6 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 		//processRequestCheckAndWaitTimeout(1000); //프로세스가 돌고 있다면 기다린다.
 		vParTestSetLED(3, pdTRUE);
 		modebusPrcessCount++;
-		modebusProcessRunning = 1;
 		addTo_QueueTask(eMODBUS);//모드버스를 시작한다.
 		portENTER_CRITICAL();
 		//처음 시작시에는 true로 있다.
@@ -527,7 +525,6 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 		}
 		
 
-		modebusProcessRunning = 0;
 		portEXIT_CRITICAL();
 		receiveFrom_QueueTask(eMODBUS);
 		vParTestSetLED(3, pdFALSE);

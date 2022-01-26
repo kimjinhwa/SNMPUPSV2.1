@@ -9,7 +9,6 @@
 #define MIBKEP_H_
 
 extern int16_t charging_method;
-extern Bool bModebusSuccess;
 //kep_mgmt  이렇게 하면 .1.3.6.1.2---과 .1.3.6.1.4---는 동일한 값을 표현한다.
 const mib_scalar_node ups_scalar_kep = {
 	&ups_get_object_def_kep,
@@ -167,12 +166,6 @@ static void ups_get_object_def_kep(u8_t ident_len, s32_t *ident, struct obj_def 
 {
 	/* return to object name, adding index depth (1) */
 
-	/*
-	if(bModebusSuccess ==  false){
-		od->instance = MIB_OBJECT_NONE;
-		return ;	
-	}
-	*/
 	ident_len += 1;
 	ident -= 1;
 	if (ident_len == 2)

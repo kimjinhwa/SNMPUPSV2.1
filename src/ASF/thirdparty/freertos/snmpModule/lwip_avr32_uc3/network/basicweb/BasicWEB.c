@@ -135,6 +135,7 @@ int webFunction(int port)
 		stopModebusGet=false;
 		//accept_err
 		errorCheck=netconn_accept(pxHTTPListener, &pxNewConnection);// != ERR_OK)
+
 		//while(netconn_accept(pxHTTPListener, &pxNewConnection) != ERR_OK)
 		{
 			count++;

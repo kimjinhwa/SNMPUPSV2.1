@@ -42,7 +42,6 @@ static void ups_get_value_exp(struct obj_def *od, u16_t len, void *value);
 static u8_t ups_set_test_exp(struct obj_def *od, u16_t len, void *value);
 static void ups_set_value_exp(struct obj_def *od, u16_t len, void *value);
 
-extern Bool bModebusSuccess;
 
 const mib_scalar_node ups_scalar_exp = {
 	&ups_get_object_def_exp,
