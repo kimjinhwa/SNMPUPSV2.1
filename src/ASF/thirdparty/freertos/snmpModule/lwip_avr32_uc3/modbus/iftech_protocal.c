@@ -208,18 +208,14 @@ bool requestUpsData_22_32_33()
 	};
 	return true;
 }
-// if(snmp_get_everyMinute()>60*100)  // 10ms마다 증가 하므로 100이면 1초
-// 위의 부분을 왜 넣었는지 모르겠다. 
-// 우선은 삭제한다. 
-// 계속 전송해도 문제 없다. 
 void checkTrap_2phase_iftech_22()
 {
 
 	if(  !(upsModeBusData.Converter_State  & BIT(11)) ) // D11: 1 - Inverter Mode  0: Bypass Mode
 	{											
 		//계속 전송을 방지 한다.
-		if(!is_Converter_Operation_Fault_send_to_snmp)				//  정전이 됐고 SNMP가 전송 됐으면	
-		if(snmp_get_everyMinute()>TRAP_INTERVAL)  // 분명 1 보다는 큰 값일 것이다. 
+		//if(!is_Converter_Operation_Fault_send_to_snmp)				//  정전이 됐고 SNMP가 전송 됐으면	
+		if(snmp_get_everyMinute()>=TRAP_INTERVAL)  // 분명 1 보다는 큰 값일 것이다. 
 		{                      
 			snmp_set_everyMinute(0);  // 0으로 설정을 해 놓는다. 그러면 1분동안은 이곳에 다시 들어 오지 않는다
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,200);	
@@ -246,8 +242,8 @@ void checkTrap_2phase_iftech_22()
 	  ) 
 	{
 		//계속 전송을 방지 한다.
-		if(!is_Inverter_Operation_Fault_send_to_snmp)				
-		if(snmp_get_everyMinute()>TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
+		//if(!is_Inverter_Operation_Fault_send_to_snmp)				
+		if(snmp_get_everyMinute()>=TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,202);
@@ -299,8 +295,8 @@ void checkTrap_3phase_iftech_32_33()
 	//정전 또는 입력 전원이상
 	if(  (upsModeBusData.Converter_Operation_Fault  & 0x2EE0)  ) 
 	{
-		if(!is_Inverter_Operation_Fault_send_to_snmp)				
-		if(snmp_get_everyMinute()>TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
+		//if(!is_Inverter_Operation_Fault_send_to_snmp)				
+		if(snmp_get_everyMinute()>=TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,202);
@@ -320,8 +316,8 @@ void checkTrap_3phase_iftech_32_33()
 	//차단기 켜짐 
 	if(  (upsModeBusData.Inverter_Operation_Fault  & BIT(10))  )
 	{
-		if(!is_maintanence_NFB_send_snmp)
-		if(snmp_get_everyMinute()>TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
+		//if(!is_maintanence_NFB_send_snmp)
+		if(snmp_get_everyMinute()>=TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,224);
@@ -345,8 +341,8 @@ void checkTrap_3phase_iftech_32_33()
 	!(upsModeBusData.Converter_State  & BIT(14))
 	) // D11: Utility line failure
 	{
-		if(!is_Converter_Operation_Fault_send_to_snmp)				//  정전이 됐고 SNMP가 전송 됐으면
-		if(snmp_get_everyMinute()>TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
+		//if(!is_Converter_Operation_Fault_send_to_snmp)				//  정전이 됐고 SNMP가 전송 됐으면
+		if(snmp_get_everyMinute()>=TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
 		{
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,200);

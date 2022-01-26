@@ -792,7 +792,7 @@ void checkTrap_2phase_megatec()
 	{											
 		//계속 전송을 방지 한다.
 		//if(!is_Converter_Operation_Fault_send_to_snmp)				//  정전이 됐고 SNMP가 전송 됐으면	
-		if(snmp_get_everyMinute()>TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
+		if(snmp_get_everyMinute()>=TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,200);	
@@ -818,7 +818,7 @@ void checkTrap_2phase_megatec()
 	{
 		//계속 전송을 방지 한다.
 		//if(!is_Inverter_Operation_Fault_send_to_snmp)				
-		if(snmp_get_everyMinute()>TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
+		if(snmp_get_everyMinute()>=TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,202);
@@ -843,7 +843,7 @@ void checkTrap_2phase_megatec()
 	{
 		//계속 전송을 방지 한다.
 		//if(!is_Inverter_Operation_Fault_send_to_snmp)
-		if(snmp_get_everyMinute()>TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
+		if(snmp_get_everyMinute()>=TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,204);
@@ -865,7 +865,7 @@ void checkTrap_2phase_megatec()
 	{
 		//계속 전송을 방지 한다.
 		//if(!is_Inverter_Operation_Fault_send_to_snmp)
-		if(snmp_get_everyMinute()>TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
+		if(snmp_get_everyMinute()>=TRAP_INTERVAL)  // 10ms마다 증가 하므로 100이면 1초
 		{                      
 			snmp_set_everyMinute(0);
 			snmp_send_trap_ups_kepco(SNMP_GENTRAP_ENTERPRISESPC,206);
