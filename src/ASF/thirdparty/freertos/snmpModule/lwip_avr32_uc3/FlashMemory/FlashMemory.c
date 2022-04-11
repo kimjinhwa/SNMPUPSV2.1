@@ -73,7 +73,7 @@ uint8_t flash_read_reLoadTime(){
 	flashc_memcpy( reloadTime_,(void *)&(nvram_reloadTime),  sizeof(nvram_reloadTime),false);
 	return reloadTime_[0];
 }
-
+#define UPS_COMP_N_VER	"IFTECH UPS V2.0.2"
 void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 {
 	nvram_data_ethernet_t *nvram_data ;
@@ -128,7 +128,7 @@ void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 		
 		//ups_info_t ups_info;
 		memset((char *)&ups_info,0x00,sizeof(ups_info_t));
-		memcpy(ups_info.upsIdentManufacturer,"IFTECH UPS",sizeof("IFTECH UPS")) ;
+		memcpy(ups_info.upsIdentManufacturer,UPS_COMP_N_VER	,sizeof(UPS_COMP_N_VER	)) ;
 		memcpy(ups_info.upsIdentModel,"MODEL IF-M00K ",sizeof("MODEL IF-M00K ")) ;
 		memcpy(ups_info.upsIdentUPSSoftwareVersion,"V1.0.0",sizeof("V1.0.0")) ;//  max length is 11
 		memcpy(ups_info.batLastReplaceDate,"01/01/21",sizeof("01/01/21")) ;//  max length is 8  
@@ -177,7 +177,11 @@ void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 		uint8_t reLoadTime = 10;
 		flash_write_reLoadTime( &reLoadTime);
 	}
-	
+	//버전관리를 위해 이부분은 새로 써 넣는다.
+	memcpy(ups_info.upsIdentManufacturer,UPS_COMP_N_VER	,sizeof(UPS_COMP_N_VER	)) ;
+	memcpy(ups_info.upsIdentUPSSoftwareVersion,"V2.2.2",sizeof("V1.0.0")) ;//  max length is 11
+	flash_write_ups_info(&ups_info);
+		
 	ethernet_t->Ethernet_Conf_EthAddr0 = nvram_data->Ethernet_Conf_EthAddr0;
 	ethernet_t->Ethernet_Conf_EthAddr1 = nvram_data->Ethernet_Conf_EthAddr1;
 	ethernet_t->Ethernet_Conf_EthAddr2 = nvram_data->Ethernet_Conf_EthAddr2;
