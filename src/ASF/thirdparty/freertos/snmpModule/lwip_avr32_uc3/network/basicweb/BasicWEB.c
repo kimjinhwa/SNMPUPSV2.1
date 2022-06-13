@@ -655,7 +655,7 @@ int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 		//memset(send_buf,0x00,80);
 		ups_info.ups_type = ups_info.ups_type; 
 		ups_info.out_voltage=ups_info.out_voltage;
-		ups_info.ups_version=121;   // 121 -> 1.21
+		ups_info.ups_version=SWVERSION;   // 121 -> 1.21
 		ups_info.charging_voltage=ups_info.charging_voltage;
 		uint8_t ayear,amonth,aday,aHour,aMinute ;
 		ups_info.bat_install_year=ups_info.bat_install_year;
@@ -681,7 +681,7 @@ int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 		memset(ups_info.sysname, 0x00, sizeof(ups_info.sysname)) ;
 		memcpy(ups_info.sysname, keyvalue[2].value, strlen(keyvalue[2].value)) ;// keyvalue[2].value  : SB1 UPS 모델 IFU550
 		ups_info.out_voltage=atoi(keyvalue[3].value);//ups_info.company_code=00; 					//ups_info.capacity=30;					//ups_info.input_voltage=380;					// keyvalue[3].value  : SB2 UPS 정격전압   380
-		ups_info.ups_version=121;   // 121 -> 1.21
+		ups_info.ups_version=SWVERSION;   // 121 -> 1.21
 		ups_info.charging_voltage=atoi(keyvalue[4].value);// keyvalue[4]  : SB3 UPS 충전전압   220
 		uint8_t ayear,amonth,aday,aHour,aMinute ;
 		char dtemp[30];					// keyvalue[5]  : SB4 최종배터리교체일(년/월/일) 2018/10/10
