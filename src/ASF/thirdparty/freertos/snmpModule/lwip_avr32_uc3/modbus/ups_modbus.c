@@ -510,30 +510,28 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 		addTo_QueueTask(eMODBUS);//모드버스를 시작한다.
 		portENTER_CRITICAL();
 		//처음 시작시에는 true로 있다.
+		bModebusSuccess= requestUpsData();   // 173 ms taken
 		if( bModebusSuccess) {
-			bModebusSuccess= requestUpsData();   // 173 ms taken
-			if(bModebusSuccess == false )  //통신에 문제가 생기면 트랩을 발생시킨다.
-			{
-				communication_errorCount++;
-				if(communication_errorCount >= COMMUNICATION_ERRCOUNT_TRAP)
-					snmp_send_trap_ups_exp(6,1);//UPS communication has been lost
-			}
+			//if(bModebusSuccess == false )  //통신에 문제가 생기면 트랩을 발생시킨다.
+			//{
+			//	communication_errorCount++;
+				//if(communication_errorCount >= COMMUNICATION_ERRCOUNT_TRAP)
+				//	snmp_send_trap_ups_exp(6,1);//UPS communication has been lost
+			//}
 			//문제가 없다면 트랩은 없다
 		}
 		else{  
 			//현재 통신에 문제가 생긴 상태이면 트랩은 한번 더 발생시키고
-
-			communication_errorCount==0;
-			snmp_send_trap_ups_exp(6,1);//UPS communication has been lost
-			bModebusSuccess= requestUpsData();   // 173 ms taken
-			if(bModebusSuccess == true)  //통신에 문제가 없으면
-			{
-				snmp_send_trap_ups_exp(6,8);//UPS communication has established 
-			}
+			communication_errorCount++;
+			//UPS communication has been lost
+			//snmp_send_trap_ups_exp(6,1);
+			//bModebusSuccess= requestUpsData();   // 173 ms taken
+			//if(bModebusSuccess == true)  //통신에 문제가 없으면
+			//{
+			//	snmp_send_trap_ups_exp(6,8);//UPS communication has established 
+			//}
 			// 계속 문제가 있다면  트랩은 계속 송신된다.
 		}
-		
-
 		portEXIT_CRITICAL();
 		receiveFrom_QueueTask(eMODBUS);
 		vParTestSetLED(3, pdFALSE);

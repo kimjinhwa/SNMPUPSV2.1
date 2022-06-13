@@ -89,10 +89,14 @@ to use an MII interface. */
 /*! The IP address being used. */
 //#define IFTECH_PROTOCAL
 //한국도로공사용을 정의 한다.
+//#define IFTECH_PROTOCAL_KEP
 #define IFTECH_PROTOCAL_EXP
 //#define MEGAGECH_PROTOCAL
 //#define KEP_SEOUL_DIVSION
 
+#ifdef IFTECH_PROTOCAL_KEP  // 한국도로공사의 IFTECH 버전을 사용할 경우에 정의 한다.31, 32, 11,
+#define UPS_TYPE   31   
+#endif
 #ifdef IFTECH_PROTOCAL  // 한국도로공사의 IFTECH 버전을 사용할 경우에 정의 한다.31, 32, 11,
 #define UPS_TYPE   31   
 #endif

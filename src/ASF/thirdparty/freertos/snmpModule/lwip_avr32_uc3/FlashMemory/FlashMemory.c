@@ -178,6 +178,7 @@ void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 		flash_write_reLoadTime( &reLoadTime);
 	}
 	//버전관리를 위해 이부분은 새로 써 넣는다.
+	flash_read_ups_info(&ups_info);
 	memcpy(ups_info.upsIdentManufacturer,UPS_COMP_N_VER	,sizeof(UPS_COMP_N_VER	)) ;
 	memcpy(ups_info.upsIdentUPSSoftwareVersion,"V2.2.2",sizeof("V1.0.0")) ;//  max length is 11
 	flash_write_ups_info(&ups_info);
