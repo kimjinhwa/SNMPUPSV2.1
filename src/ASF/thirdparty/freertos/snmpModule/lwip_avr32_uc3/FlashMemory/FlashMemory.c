@@ -151,7 +151,7 @@ void flash_read__ethernetInfo(data_ethernet_t *ethernet_t)
 		ups_info.input_voltage=380;
 		ups_info.out_voltage=380;
 		ups_info.installed_battery=32;
-		ups_info.ups_version=121;   // 121 -> 1.21
+		ups_info.ups_version=SWVERSION;   // 121 -> 1.21
 		ups_info.install_year=20;  // 2018 -> 18
 		ups_info.install_month=2;
 		ups_info.install_day = 10;

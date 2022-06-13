@@ -82,7 +82,7 @@ to use an MII interface. */
 #define ETHERNET_CONF_ETHADDR4                        0x39
 #define ETHERNET_CONF_ETHADDR5                        0x21 
 // 한전 0x20 신내, 중계, 광장, 은평 
-
+#define SWVERSION	222
 // 0x 14까지 영신에 출고
 // 0x 3B까지 영신에 출고`
 // 0x 47까지 영신에 출고
@@ -90,8 +90,8 @@ to use an MII interface. */
 //#define IFTECH_PROTOCAL
 //한국도로공사용을 정의 한다.
 //#define IFTECH_PROTOCAL_KEP
-#define IFTECH_PROTOCAL_EXP
-//#define MEGAGECH_PROTOCAL
+//#define IFTECH_PROTOCAL_EXP
+#define MEGAGECH_PROTOCAL
 //#define KEP_SEOUL_DIVSION
 
 #ifdef IFTECH_PROTOCAL_KEP  // 한국도로공사의 IFTECH 버전을 사용할 경우에 정의 한다.31, 32, 11,
