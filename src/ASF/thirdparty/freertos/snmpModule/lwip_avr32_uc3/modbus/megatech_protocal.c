@@ -768,6 +768,7 @@ void CancelTest_CT_megatec()
 Bool requestUpsStatus_megatec()
 {
 	Bool ret;
+	upsModeBusData.Installed_Battery_Cells=ups_info.installed_battery;
 	if(ups_info.ups_type== 50 || ups_info.ups_type== 51)
 	{
 			ret = requestUpsStatus_Q1_megatec();

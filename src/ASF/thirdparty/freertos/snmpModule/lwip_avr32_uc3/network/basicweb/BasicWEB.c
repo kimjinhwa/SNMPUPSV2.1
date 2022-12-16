@@ -165,6 +165,8 @@ int webFunction(int port)
 				//LWIP_DEBUGF_UDP(WEB_DEBUG, ("\r\n netconn_accepted! ") );
 				if(processRequestCheckAndWaitTimeout(1000)==0)
 				{
+				
+					flash_read_ups_info(&ups_info);
 					prvweb_ParseHTMLRequest(pxNewConnection);
 				}
 				//portEXIT_CRITICAL();
@@ -188,6 +190,37 @@ int webFunction(int port)
 
 
 
+void	set_batt_cells(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Message_Digest)
+{
+	// 이미 있는 버퍼를 활용한다.
+	memset(Message_Digest,0x00,21);
+
+	data_ethernet_t ethernet_t;
+
+	portCHAR *LocalpcRxString = pcRxString;
+	for(;;){
+		if( *(LocalpcRxString) == '='){
+			LocalpcRxString = LocalpcRxString+1;
+			break;
+		}
+		else LocalpcRxString = LocalpcRxString+1;
+		if( *(LocalpcRxString) == NULL) return;
+	};
+	int batCells =0;
+	while(*LocalpcRxString != NULL){
+		*(Message_Digest + batCells++) = *LocalpcRxString;
+		LocalpcRxString++;
+	}
+	batCells= atoi(Message_Digest);
+
+	ups_info.installed_battery =batCells;
+	flash_write_ups_info(&ups_info);
+	sprintf(cDynamicPage,"SET_BATT=%d",ups_info.installed_battery );
+	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
+	flash_read_ups_info(&ups_info);
+	
+	
+}
 void	set_web_port(struct netconn *pxNetCon ,portCHAR *pcRxString,uint8_t *Message_Digest)
 {
 	// 이미 있는 버퍼를 활용한다.
@@ -616,7 +649,7 @@ int webSocket_Function_S_PASSWD(struct netconn *pxNetCon ,portCHAR *pcRxString){
 	strcpy(ups_info.passwd,keyvalue[1].value);
 	strcpy(ups_info.user_id,keyvalue[2].value);
 	flash_write_ups_info(&ups_info);
-
+	flash_read_ups_info(&ups_info);
 	sprintf(cDynamicPage,"change_ok");
 	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
 
@@ -716,6 +749,7 @@ int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 		//LWIP_DEBUGF_UDP(WEB_DEBUG,("\nCompanyName : %s  "   , ups_info.upsIdentManufacturer));
 		flash_write_ups_info(&ups_info);
 		setUpsInfoToweb(pxNetCon,keyvalue,keycount,send_buf,"SET_BASIC_R");
+		flash_read_ups_info(&ups_info);
 		// System Rebooting
 		while(1) ;
 
@@ -883,11 +917,16 @@ int webSocket_Function_GET_ALLIP(struct netconn *pxNetCon ,portCHAR *pcRxString)
 	TimeServerIpAddressRead(0,&time_server_a);   // 다시 읽고
 	sprintf(pcRxString,"&%d.%d.%d.%d", time_server_a.Ethernet_Conf_IpAddr0, time_server_a.Ethernet_Conf_IpAddr1, time_server_a.Ethernet_Conf_IpAddr2, time_server_a.Ethernet_Conf_IpAddr3);
 	strcat(cDynamicPage,pcRxString );
+	
 	TimeServerIpAddressRead(1,&time_server_a);   // 다시 읽고
 	sprintf(pcRxString,"&%d.%d.%d.%d", time_server_a.Ethernet_Conf_IpAddr0, time_server_a.Ethernet_Conf_IpAddr1, time_server_a.Ethernet_Conf_IpAddr2, time_server_a.Ethernet_Conf_IpAddr3);
 	strcat(cDynamicPage,pcRxString );
 
+	sprintf(pcRxString,"&%d", ups_info.installed_battery);
+	strcat(cDynamicPage,pcRxString );
+
 	socket_netconn_write( pxNetCon, strlen(cDynamicPage));
+
 	//
 	//socket_netconn_write( pxNetCon, strlen(cDynamicPage));
 
@@ -1077,7 +1116,8 @@ int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 			else if( strncmp("S_MAILTEST",pcRxString,10)  == 0)	request_command =16  ;
 			else if( strncmp("changePasswd",pcRxString,12)  == 0)	request_command =17  ;
 			else if( strncmp("TRAPTEST",pcRxString,8)  == 0)	request_command =18  ;
-			else if( strncmp("R_ALL_IP",pcRxString,8)  == 0)	request_command =19  ;
+			else if( strncmp("R_ALL_IP",pcRxString,8)  == 0)	request_command =19  ;  // 모든 IP정보를 웹에 전달해 준다.
+			else if( strncmp("SET_BATT",pcRxString,8)  == 0)	request_command =20  ;  // 모든 IP정보를 웹에 전달해 준다.
 
 			//if(request_command == 1)  // UPS_DATA webSocket_Function_UPS_DATA(pxNetCon ,pcRxString);
 			if(request_command == 2)
@@ -1114,6 +1154,8 @@ int webSocket_proc(struct netconn *pxNetCon ,portCHAR *pcRxString)
 			webSocket_Function_SET_TRAPTEST(pxNetCon ,pcRxString)	;
 			if(request_command == 19) 
 			webSocket_Function_GET_ALLIP(pxNetCon ,pcRxString)	;
+			if(request_command == 20) 
+			set_batt_cells(pxNetCon ,pcRxString,Message_Digest);
 		}
 		netbuf_delete( pxRxBuffer );
 	}
