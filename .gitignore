@@ -6,6 +6,9 @@ Release/
 nodejs
 *.*~
 *.bak
+*.swp
+mib/*.cds
+mib/*.cmi
 =======
 *~
 Debug/
