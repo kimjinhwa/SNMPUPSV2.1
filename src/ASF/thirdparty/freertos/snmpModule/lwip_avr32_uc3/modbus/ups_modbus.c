@@ -78,7 +78,6 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters );
 
 //bool modbus_data_request = false;
 ups_info_t ups_info;
-//struct ups_modbus_data upsModeBusData;
 ups_modbus_data_t upsModeBusData;
 xppc_data_t	xppc_data;
 
@@ -440,6 +439,7 @@ static portTASK_FUNCTION( vModbusUpsTask, pvParameters )
 	int rx_char;
 	int wait_count=3;
 	wdt_clear();
+	upsModeBusData.Ups_Capacitor= ups_info.capacity;
 	if(ups_info.ups_type== 50 || ups_info.ups_type== 51 || ups_info.ups_type== 52)
 	{  // if megatec then get ups information from ups
 		while(wait_count--){  //rtx_char에 데이타가 있으면 리턴한다 그렇지 않다면 나올필요가 없다..

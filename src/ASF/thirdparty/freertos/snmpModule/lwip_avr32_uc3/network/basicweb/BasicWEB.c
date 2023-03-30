@@ -713,7 +713,7 @@ int webSocket_Function_SET_BASIC(struct netconn *pxNetCon ,portCHAR *pcRxString)
 		ups_info.ups_type =  atoi(keyvalue[1].value); // 31;   // 33, 31, 11, 50, 51, 52 , 80  SB0
 		memset(ups_info.sysname, 0x00, sizeof(ups_info.sysname)) ;
 		memcpy(ups_info.sysname, keyvalue[2].value, strlen(keyvalue[2].value)) ;// keyvalue[2].value  : SB1 UPS 모델 IFU550
-		ups_info.out_voltage=atoi(keyvalue[3].value);//ups_info.company_code=00; 					//ups_info.capacity=30;					//ups_info.input_voltage=380;					// keyvalue[3].value  : SB2 UPS 정격전압   380
+		ups_info.out_voltage=atoi(keyvalue[3].value);//ups_info.company_code=00; 										//ups_info.input_voltage=380;					// keyvalue[3].value  : SB2 UPS 정격전압   380
 		ups_info.ups_version=SWVERSION;   // 121 -> 1.21
 		ups_info.charging_voltage=atoi(keyvalue[4].value);// keyvalue[4]  : SB3 UPS 충전전압   220
 		uint8_t ayear,amonth,aday,aHour,aMinute ;

@@ -1536,7 +1536,7 @@ static void ups_get_upsConfig_value(struct obj_def *od, u16_t len, void *value)
 	u32_t *uint_ptr = (u32_t*)value;
 	u8_t id;
 	uint16_t * pData =(uint16_t *)&upsModeBusData ;
-	//flash_read_ups_info(&ups_info);
+	flash_read_ups_info(&ups_info);
 	
 	id = (u8_t)od->id_inst_ptr[0];
 

@@ -1699,6 +1699,7 @@ static void ups_get_upsBaseConfig_value(struct obj_def *od, u16_t len, void *val
 	
 	id = (u8_t)od->id_inst_ptr[0];
 
+	flash_read_ups_info(&ups_info);
 	switch(id){
 		case 1: //nominal input voltage
 		*uint_ptr =(u32_t)ups_info.input_voltage;
@@ -1758,6 +1759,8 @@ static void ups_set_upsBaseConfig_value(struct obj_def *od, u16_t len, void *val
 	id = (u8_t)od->id_inst_ptr[0];
 	u32_t *uint_ptr = (u32_t*)value;
 	//ups_info_t ups_info;
+
+	flash_read_ups_info(&ups_info);
 	switch(id){
 		case 1: //nominal input voltage
 		ups_info.input_voltage=(u16_t)*uint_ptr;//
@@ -1902,7 +1905,7 @@ static void ups_get_upsSmartConfig_value(struct obj_def *od, u16_t len, void *va
 	uint16_t * pData =(uint16_t *)&upsModeBusData ;
 	
 	id = (u8_t)od->id_inst_ptr[0];
-
+	flash_read_ups_info(&ups_info);
 	switch(id){
 		case 1: //nominal input voltage
 		*uint_ptr =(u32_t)ups_info.input_voltage;

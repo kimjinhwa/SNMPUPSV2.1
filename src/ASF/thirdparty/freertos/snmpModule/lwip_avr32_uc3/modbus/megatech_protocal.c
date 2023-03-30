@@ -672,9 +672,9 @@ Bool parse_GF_megatec(char *str)
 	for( i=0;argv[i] != NULL ;i++){
 		if(argv[i] >= 0x40 || argv[i]<0x30){ argv[i]=0x00;break;};
 	}	
-	output_voltage=  atof(argv); 
-	ups_info.capacity = output_voltage;
-	upsModeBusData.Ups_Capacitor= ups_info.capacity;
+	//output_voltage=  atof(argv); 
+	//ups_info.capacity = output_voltage;
+	//upsModeBusData.Ups_Capacitor= ups_info.capacity;
 	//str= (str+14+2);  // space를 건너 뛴다.
 
 	return true;
@@ -712,8 +712,8 @@ Bool parse_F_megatec(char *str)
 	output_current =   atof(argv[0]);  
 	upsRankedCurrent =output_current*1.027;
 	//3상이면 1.732를 곱하여준다.
-	if(ups_info.ups_type == 50 ) ups_info.capacity =(uint16_t) (output_voltage*output_current*1.73205/1000.0) ;
-	else ups_info.capacity =(uint16_t) (output_voltage*output_current/1000.0) ;
+	//if(ups_info.ups_type == 50 ) ups_info.capacity =(uint16_t) (output_voltage*output_current*1.73205/1000.0) ;
+	//else ups_info.capacity =(uint16_t) (output_voltage*output_current/1000.0) ;
 	//upsModeBusData.Ups_Capacitor= (int) atof(argv[0]); 
 	//upsModeBusData.Ups_Capacitor= (int) atof(argv[0]); 
 	upsModeBusData.Ups_Capacitor= ups_info.capacity;
